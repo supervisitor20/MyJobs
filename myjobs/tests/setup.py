@@ -6,7 +6,7 @@ from django.contrib.auth import login
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches, reverse
 from django.http import HttpRequest
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.client import Client, MULTIPART_CONTENT
 from myjobs.decorators import MissingActivity
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
@@ -91,13 +91,12 @@ class TestClient(Client):
         request.session.save()
 
 
+@override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs")
 class MyJobsBase(TestCase):
 
     fixtures = ['deploy/initial_data.json']
 
     def setUp(self):
-        settings.ROOT_URLCONF = "myjobs_urls"
-        settings.PROJECT = "myjobs"
 
         self.app_access = AppAccessFactory()
         self.activities = [
