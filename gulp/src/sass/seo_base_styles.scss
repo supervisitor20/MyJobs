@@ -383,11 +383,25 @@ a.direct_optionsLess {
     @extend .facet-header;
   }
 }
+
 #mobile_direct_disambiguationDiv {
   h3 {
     @extend .facet-header;
   }
 }
+
+.filter-box {
+  border: 1px solid $extra-light-gray;
+  background-color: $medium-gray;
+  margin-bottom: 30px;
+  border-top: none;
+  border-radius: 3px;
+  box-sizing: border-box;
+  box-shadow: 2px 2px 3px #bbb;
+  padding: 0px 10px;
+  margin: 0 15px;
+}
+
 .filter-panel {
   display: block;
 	margin: 10px 0;
@@ -1194,17 +1208,7 @@ margin-bottom: 50px;
       }
     }
   }
-	.filter-box {
-		border: 1px solid $extra-light-gray;
-    background-color: $medium-gray;
-    margin-bottom: 30px;
-    border-top: none;
-    border-radius: 3px;
-    box-sizing: border-box;
-    box-shadow: 2px 2px 3px #bbb;
-    padding: 0px 10px;
-		margin: 0 15px;
-	}
+
   #search {
     margin-bottom: 0;
 
