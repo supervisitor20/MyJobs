@@ -184,7 +184,9 @@ class CustomPasswordResetForm(PasswordResetForm):
              subject_template_name='registration/password_reset_subject.txt',
              email_template_name='registration/password_reset_email.html',
              use_https=False, token_generator=default_token_generator,
-             from_email=None, request=None):
+             from_email=None, request=None, html_email_template_name=None,
+             extra_email_context=None
+    ):
         """
         Cleaned save that doesn't do lots of stuff we don't need. Adds
         categories to emails and allows them to be html.

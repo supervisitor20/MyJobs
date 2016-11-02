@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 
 from myblocks.models import LoginBlock, RegistrationBlock
 from myjobs.tests.factories import UserFactory, RoleFactory
@@ -24,6 +25,7 @@ from seo.models import SeoSite
 from universal.helpers import build_url
 
 
+@override_settings(ACCOUNT_ACTIVATION_DAYS=7, SITE=None)
 class RegistrationViewTests(MyJobsBase):
     """
     Test the registration views.
@@ -36,12 +38,10 @@ class RegistrationViewTests(MyJobsBase):
 
         """
         super(RegistrationViewTests, self).setUp()
-        self.old_activation = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', None)
-        if self.old_activation is None:
-            settings.ACCOUNT_ACTIVATION_DAYS = 7  # pragma: no cover
 
         # Update the only existing site so we're working with
         # my.jobs for historical/aesthetic purposes.
+        settings.SITE = SeoSite.objects.get()
         settings.SITE.domain = 'my.jobs'
         settings.SITE.save()
         self.profile = ActivationProfile.objects.create(user=self.user,
@@ -412,7 +412,7 @@ class MergeUserTests(MyJobsBase):
 
 
 class DseoLoginTests(DirectSEOBase):
-    fixtures = (settings.PROJ_ROOT + '/myblocks/fixtures/login_page.json', )
+    fixtures = DirectSEOBase.fixtures + ['myblocks/fixtures/login_page.json']
 
     def test_login(self):
         password = 'secret'
