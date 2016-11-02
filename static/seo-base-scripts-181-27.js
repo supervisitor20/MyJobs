@@ -1,5 +1,5 @@
 /**
- * Legacy es5.1 functions used in seo_base.html template
+ * Legacy es5.1 functions used in seo_base_bootstrap3.html template
 **/
 
 $(document).ready(function() {
@@ -42,7 +42,6 @@ $(document).ready(function() {
                 url: "/ajax/ac/?lookup=location&term="+request.term,
                 dataType: "jsonp",
                 success: function( data ) {
-                    //alert(data[1].label);
                     response( $.map( data, function( item ) {
                         return {
                             label: item.location + " - (" + item.jobcount + ")",
@@ -83,18 +82,18 @@ $(document).ready(function() {
             .appendTo( ul );
   };
 
-  // Submit the search form if location AND title fields have a value in them.
+  // Size the width of the drop down list to match width of input, always, in any size, without CSS
+  $.ui.autocomplete.prototype._resizeMenu = function() {
+      var ul = this.menu.element;
+      ul.outerWidth(this.element.outerWidth());
+  };
+
+  // Submit the search form if location AND title fields have a value in them (and MOC if applicable).
   $("#standardSearch input[type=text]").bind("autocompleteselect", function(event, ul) {
         /**
-            This applies to the MOC, Location, and Title fields on the
-            standardSearch form.
-
             Inputs:
             :event: The autocompleteselect event
             :ul: The autocomplete object (an unordered list)
-
-            Returns:
-            Nothing (but does submit search form if both fields have values)
          **/
         $(this).val(ul.item.value);
         if ($('#moc').length > 0) {
