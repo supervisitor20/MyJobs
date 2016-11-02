@@ -255,7 +255,7 @@ class FacetListWidget(object):
             accordion_class = '<h3 class="filter-accordion">'
         column_header = (accordion_class +
                          '<span class="direct_highlightedText">%s</span></h3>')
-        column_header = column_header % (self.get_title())
+        column_header = column_header % self.get_title()
 
         return column_header
 
