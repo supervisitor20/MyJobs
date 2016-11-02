@@ -471,7 +471,7 @@ def filter_partners(request, partner_library=False):
         start_date = request.GET.get('start_date', request.POST.get('start_date'))
         end_date = request.GET.get('end_date', request.POST.get('end_date'))
 
-        partners = Partner.objects.select_related('contact')
+        partners = Partner.objects
         contact_city = 'contact__locations__city'
         contact_state = 'contact__locations__state'
         sort_by.replace('city', 'contact__locations__city')
