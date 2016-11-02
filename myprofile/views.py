@@ -75,8 +75,8 @@ def handle_form(request):
     """
     http404_view = 'myprofile.views.handle_form'
 
-    item_id = request.REQUEST.get('id', 'new')
-    module = request.REQUEST.get('module')
+    item_id = request.GET.get('id', request.POST.get('id', 'new'))
+    module = request.GET.get('module', request.POST.get('module'))
     module = module.replace(" ", "")
 
     ctx = {}
@@ -165,7 +165,7 @@ def handle_form(request):
 
 @user_passes_test(User.objects.not_disabled)
 def delete_item(request):
-    item_id = request.REQUEST.get('item')
+    item_id = request.GET.get('item', request.POST.get('item'))
     try:
         request.user.profileunits_set.get(id=item_id).delete()
     except ProfileUnits.DoesNotExist:
