@@ -218,6 +218,14 @@ CELERY_ROUTES = {
         'queue': 'mongo',
         'routing_key': 'mongo.jobsfs_to_mongo'
     },
+    'tasks.requeue_missed_searches': {
+        'queue': 'myjobs',
+        'routing_key': 'myjobs.requeue_missed_Searches'
+    },
+    'tasks.requeue_failures': {
+        'queue': 'priority',
+        'routing_key': 'priority.requeue_failures'
+    },
 }
 CELERYBEAT_SCHEDULE = {
     'weekly-partner-library-update': {
