@@ -109,7 +109,8 @@ def view_full_feed(request):
                                    'view_name': 'Saved Searches',
                                    'is_pss': is_pss,
                                    'start_date': start_date,
-                                   'count': count},
+                                   'count': count,
+                                   'debug': settings.DEBUG},
                                   RequestContext(request))
     else:
         return HttpResponseRedirect(reverse('saved_search_main'))

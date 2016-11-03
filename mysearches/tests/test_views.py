@@ -392,16 +392,14 @@ class MySearchViewTests(MyJobsBase):
             self.assertEqual(send.status_code, 404)
             self.assertEqual(len(mail.outbox), 0)
 
-            settings.DEBUG = True
-            self.client.login_user(self.user)
-            response = self.client.get(full_feed)
-            self.assertIn('>Send</a>', response.content)
-            send = self.client.get(send_url)
-            self.assertEqual(send.status_code, 302)
-            self.assertEqual(len(mail.outbox), 1)
-            mail.outbox = []
-
-            settings.DEBUG = False
+            with self.settings(DEBUG=True):
+                self.client.login_user(self.user)
+                response = self.client.get(full_feed)
+                self.assertIn('>Send</a>', response.content)
+                send = self.client.get(send_url)
+                self.assertEqual(send.status_code, 302)
+                self.assertEqual(len(mail.outbox), 1)
+                mail.outbox = []
 
     def test_send_link_respects_permissions(self):
         # The send_saved_search view requires that DEBUG be enabled.
