@@ -38,6 +38,7 @@ class ViewSourceGroupTests(RedirectBase):
         self.assertEqual(models.ViewSourceGroup.objects.count(), 2)
 
 
+
 class BaseRedirectTests(RedirectBase):
     def test_get_any(self):
         redirect = factories.RedirectFactory(guid='{%s}' % uuid4())

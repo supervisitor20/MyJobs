@@ -4,43 +4,33 @@ import sys
 from django.core.management import call_command
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from django.conf import settings
 
 import redirect_settings
 import secrets
 
 
+@override_settings(ROOT_URLCONF='redirect_urls', PROJECT='redirect',
+                   MIDDLEWARE_CLASSES=redirect_settings.MIDDLEWARE_CLASSES,
+                   options=secrets.options, my_agent_auth=secrets.my_agent_auth,
+                   SOLR=settings.SOLR)
 class RedirectBase(TransactionTestCase):
+
+    fixtures = ['redirect/migrations/excluded_view_sources.json']
+
     def setUp(self):
         super(RedirectBase, self).setUp()
-        self._middleware_classes = settings.MIDDLEWARE_CLASSES
         self._template_context = settings.TEMPLATE_CONTEXT_PROCESSORS
         self._default_solr = getattr(settings, 'SOLR', None)
 
         # Set some settings that don't get set when not using redirect
         # settings.
-        settings.ROOT_URLCONF = 'redirect_urls'
-        settings.PROJECT = 'redirect'
-        settings.MIDDLEWARE_CLASSES = redirect_settings.MIDDLEWARE_CLASSES
-        settings.TEMPLATE_CONTEXT_PROCESSORS = (
-            redirect_settings.TEMPLATE_CONTEXT_PROCESSORS)
-        settings.SOLR = {'default': 'http://127.0.0.1:8983/solr/seo_test/'}
-        settings.options = secrets.options
-        settings.my_agent_auth = secrets.my_agent_auth
+        self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] = redirect_settings.TEMPLATE_CONTEXT_PROCESSORS
+        settings.SOLR = {'default': settings.SOLR['seo_test']}
         clear_url_caches()
 
-        stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-        fixture = os.path.join(settings.PROJECT_PATH,
-                               'redirect/migrations/excluded_view_sources.json')
-        try:
-            # This makes lots of output that we don't care about; suppress it.
-            call_command("loaddata",
-                         fixture)
-        finally:
-            sys.stdout.close()
-            sys.stdout = stdout
 
         default_backend, archive_backend = (
             settings.DATABASES['default']['ENGINE'].split('.')[-1],
@@ -58,7 +48,6 @@ class RedirectBase(TransactionTestCase):
 
     def tearDown(self):
         super(RedirectBase, self).tearDown()
-        settings.MIDDLEWARE_CLASSES = self._middleware_classes
-        settings.TEMPLATE_CONTEXT_PROCESSORS = self._template_context
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors
         if self._default_solr:
             settings.SOLR = self._default_solr
