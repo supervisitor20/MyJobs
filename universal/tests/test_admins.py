@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.admin import site
 from django.core.urlresolvers import reverse
-from django.db.models import get_models
 from django.apps  import apps
 
 from myjobs.models import User

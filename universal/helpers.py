@@ -72,7 +72,7 @@ def update_url_param(url, param, new_val):
 
     url_parts = list(urlparse(url))
     parts = copy(url_parts)
-    query = QueryDict(parts[4], mutable=True)
+    query = QueryDict(parts[4].encode("utf-8"), mutable=True)
     query[param] = new_val
     parts[4] = query.urlencode()
 
