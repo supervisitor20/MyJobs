@@ -220,7 +220,7 @@ CELERY_ROUTES = {
     },
     'tasks.requeue_missed_searches': {
         'queue': 'myjobs',
-        'routing_key': 'myjobs.requeue_missed_Searches'
+        'routing_key': 'myjobs.requeue_missed_searches'
     },
     'tasks.requeue_failures': {
         'queue': 'priority',
