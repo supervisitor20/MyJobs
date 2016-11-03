@@ -242,10 +242,7 @@ class SavedSearchModelsTests(MyJobsBase):
                 "+%E2%80%93+Material+Handler%2FDriver+Helper+%E2%80%93+3rd"
                 "+Shift%2C+Part-time")
 
-        try:
-            search.send_email()
-        except UnicodeEncodeError as e:
-            self.fail(e)
+        search.send_email()
 
     def test_pss_contact_record_tagged(self):
         """
