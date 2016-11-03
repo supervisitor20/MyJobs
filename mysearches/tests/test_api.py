@@ -1,5 +1,6 @@
 import json
 
+from django.test import override_settings
 from django.test.client import RequestFactory
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -17,6 +18,7 @@ from myblocks.tests.test_secure_blocks import (make_cors_request,
                                                make_jsonp_request)
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
+from seo.models import SeoSite
 
 class SecureSavedSearchHelpersTestCase(MyJobsBase):
     """
@@ -220,6 +222,7 @@ class SecureSavedSearchHelpersTestCase(MyJobsBase):
             user_creation_retrieval(None, "test@email.com")
 
 
+@override_settings(SITE=None)
 class SecureSavedSearchAPITestCase(MyJobsBase):
     """
     Test cases for the main API functions of the secure saved search API
@@ -229,6 +232,7 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
 
     def setUp(self):
         super(SecureSavedSearchAPITestCase, self).setUp()
+        settings.SITE = SeoSite.objects.get(pk=1)
         self.domain = settings.SITE.domain
         self.child_url = 'http://wwww.my.jobs/'
         self.secure_ss_url = reverse('secure_saved_search')
