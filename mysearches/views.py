@@ -29,7 +29,7 @@ from universal.decorators import warn_when_inactive, restrict_to_staff
 
 @user_is_allowed(SavedSearch, 'id', pass_user=True)
 def delete_saved_search(request, user=None):
-    search_id = request.REQUEST.get('id')
+    search_id = request.GET.get('id', request.POST.get('id'))
     user = user or request.user
     try:
         search_id = int(search_id)
@@ -85,7 +85,7 @@ def saved_search_main(request):
 @user_passes_test(User.objects.not_disabled)
 @warn_when_inactive(feature="Saved Searches are")
 def view_full_feed(request):
-    search_id = request.REQUEST.get('id')
+    search_id = request.GET.get('id')
     saved_search = SavedSearch.objects.get(id=search_id)
     if hasattr(saved_search, 'partnersavedsearch'):
         is_pss = True
@@ -214,8 +214,8 @@ def save_search_form(request):
 @user_passes_test(User.objects.not_disabled)
 @warn_when_inactive(feature="Saved Searches are")
 def edit_search(request):
-    search_id = request.REQUEST.get('id')
-    partner_saved_search = request.REQUEST.get('pss')
+    search_id = request.GET.get('id', request.POST.get('id'))
+    partner_saved_search = request.GET.get('pss', request.POST.get('pss'))
     if not partner_saved_search:
         if search_id:
             saved_search = get_object_or_404(SavedSearch, id=search_id,
@@ -274,7 +274,7 @@ def unsubscribe_confirmation(request):
         "all_searches": reverse('unsubscribe') + "?id=digest",
         "all_email": reverse('unsubscribe_all') + "?id=all"
     }
-    search_id = request.REQUEST.get('id')
+    search_id = request.GET.get('id', request.POST.get('id'))
     if search_id is not None and search_id.isdigit():
         unsub_links['single_search'] = reverse(
             'unsubscribe') + "?id={}".format(search_id)
@@ -293,7 +293,7 @@ def unsubscribe(request, user=None):
     :search_id: the string 'digest' to disable all searches
         or the id value of a specific search to be disabled
     """
-    search_id = request.REQUEST.get('id')
+    search_id = request.GET.get('id', request.POST.get('id'))
     user = user or request.user
     has_pss = None
     try:
@@ -353,10 +353,10 @@ def unsubscribe(request, user=None):
 
 
 def saved_search_widget(request):
-    saved_search_url = request.REQUEST.get('url')
-    use_v2 = request.REQUEST.get('v2', 0)
-    callback = request.REQUEST.get('callback')
-    success_email = request.REQUEST.get('success')
+    saved_search_url = request.GET.get('url', request.POST.get('url'))
+    use_v2 = request.GET.get('v2', request.POST.get('v2', 0))
+    callback = request.GET.get('callback', request.POST.get('callback'))
+    success_email = request.GET.get('success', request.POST.get('success'))
     search = None
     user = request.user if request.user.is_authenticated() else None
 

@@ -1,8 +1,7 @@
 from django.core import mail
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
-from django.db import IntegrityError
-from django.middleware.transaction import transaction
+from django.db import IntegrityError, transaction
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.models import User
@@ -254,7 +253,7 @@ class MyProfileTests(MyJobsBase):
         military_service.save()
 
         ms_object = ProfileUnits.objects.filter(
-            content_type__model="military service").count()
+            content_type__model="MilitaryService").count()
         self.assertEqual(ms_object, 1)
 
     def test_add_license(self):
@@ -286,7 +285,7 @@ class MyProfileTests(MyJobsBase):
         vh_instance.save()
 
         ms_object = ProfileUnits.objects.filter(
-            content_type__model="volunteer history").count()
+            content_type__model="VolunteerHistory").count()
         self.assertEqual(ms_object, 1)
 
 
