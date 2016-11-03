@@ -43,8 +43,8 @@ class ArchiveRouter(object):
         database.
 
         """
-        if db == "archive":
-            return model == RedirectArchive
+        if db == "archive" and model == RedirectArchive:
+            return True
         elif model == RedirectArchive:
             return False
         return None

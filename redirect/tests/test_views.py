@@ -287,7 +287,7 @@ class ViewSourceViewTests(RedirectBase):
             reverse('home', args=[self.redirect_guid,
                                   self.manipulation.view_source]))
         url = self.redirect.url.split('#')
-        test_url = 'http://testserver/' + url[0] + self.manipulation.value_1
+        test_url = url[0] + self.manipulation.value_1
         self.assertEqual(response['Location'], test_url)
 
     def test_replacethenadd_redirect(self):
@@ -306,8 +306,8 @@ class ViewSourceViewTests(RedirectBase):
             reverse('home', args=[self.redirect_guid,
                                   self.manipulation.view_source]))
         old, new = self.manipulation.value_1.split('!!!!')
-        test_url = 'http://testserver/%s%s' % \
-            (self.redirect.url, self.manipulation.value_2.replace('&', '?'))
+        test_url = '%s%s' % (self.redirect.url,
+                             self.manipulation.value_2.replace('&', '?'))
         self.assertEqual(response['Location'], test_url)
 
     def test_replacethenaddpre_redirect(self):
@@ -336,8 +336,7 @@ class ViewSourceViewTests(RedirectBase):
             reverse('home', args=[self.redirect_guid,
                                   self.manipulation.view_source]))
         url = self.redirect.url.split('#')
-        test_url = 'http://testserver/' + ('%s#' %
-                                           self.manipulation.value_1).join(url)
+        test_url = ('%s#' % self.manipulation.value_1).join(url)
         self.assertEqual(response['Location'], test_url)
 
     def test_sourceurlwrapappend_redirect(self):
@@ -427,8 +426,7 @@ class ViewSourceViewTests(RedirectBase):
                                   self.manipulation.view_source]))
         old = self.manipulation.value_1
         new = self.manipulation.value_2
-        test_url = 'http://testserver/' + new.join(
-            self.redirect.url.rsplit(old, 1))
+        test_url = new.join(self.redirect.url.rsplit(old, 1))
         self.assertEqual(response['Location'], test_url)
 
     def test_switchlastthenadd_redirect(self):
@@ -448,7 +446,7 @@ class ViewSourceViewTests(RedirectBase):
                                   self.manipulation.view_source]))
         old, new = self.manipulation.value_1.split('!!!!')
         new_url = new.join(self.redirect.url.rsplit(old, 1))
-        test_url = 'http://testserver/' + new_url + self.manipulation.value_2
+        test_url = new_url + self.manipulation.value_2
         self.assertEqual(response['Location'], test_url)
 
     def test_state_job(self):
