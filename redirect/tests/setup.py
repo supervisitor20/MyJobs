@@ -21,7 +21,6 @@ class RedirectBase(TransactionTestCase):
 
     def setUp(self):
         super(RedirectBase, self).setUp()
-        self._template_context = settings.TEMPLATE_CONTEXT_PROCESSORS
         self._default_solr = getattr(settings, 'SOLR', None)
 
         # Set some settings that don't get set when not using redirect

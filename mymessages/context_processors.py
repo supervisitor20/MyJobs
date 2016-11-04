@@ -2,7 +2,7 @@ def message_lists(request):
     """
     Ensures lists of messages, if any, are always in template contexts.
     """
-    if request.user.is_anonymous() or not request.user.pk:
+    if hasattr(request, 'user') and request.user.is_anonymous() or not request.user.pk:
         # User is anonymous or has been deleted; We shouldn't try
         # retrieving messages.
         return {}
