@@ -59,6 +59,8 @@ class Moc(models.Model):
     moc_detail = models.OneToOneField('MocDetail', null=True)
 
 
+
+
 class MocDetail(models.Model):
     # Needs to be evaluated for utility. This is a bit of legacy code that seems
     # superfluous. I can envision a UI-level data structure like this, but a

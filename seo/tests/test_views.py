@@ -1049,6 +1049,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
 
         moc = moc_factories.MocFactory.build(code=moc_code, branch="army",
                                              id=4105)
+        moc.moc_detail.save()
         moc.save()
 
         # Perform a search by moc with an moc_models.Moc object in ORM
@@ -1783,8 +1784,10 @@ class SeoViewsTestCase(DirectSEOTestCase):
         """
         SeoSite.objects.get(id=1).delete()
         ats = factories.ATSSourceCodeFactory.build()
+        ats.group.save()
         ats.save()
         gac = factories.GACampaignFactory.build()
+        gac.group.save()
         gac.save()
         site = factories.SeoSiteFactory.build(
             google_analytics_campaigns=gac,
@@ -2181,6 +2184,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
     def test_xml_parse_moc(self):
         filepath = download_feed_file(self.buid_id)
         moc = moc_factories.MocFactory.build()
+        moc.moc_detail.save()
         moc.save()
         onet = moc_factories.OnetFactory.build(code="11303102")
         onet.save()
