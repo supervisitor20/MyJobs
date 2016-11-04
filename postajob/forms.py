@@ -2,6 +2,7 @@ from ajax_select.fields import AutoCompleteSelectField
 from authorize import AuthorizeInvalidError, AuthorizeResponseError
 from datetime import date, datetime, timedelta
 from fsm.widget import FSM
+from collections import OrderedDict
 
 from django.contrib import admin
 from django.core.exceptions import ValidationError
@@ -622,8 +623,10 @@ class PurchasedProductNoPurchaseForm(RequestForm):
         self.product = kwargs.pop('product', None)
         super(PurchasedProductNoPurchaseForm, self).__init__(*args, **kwargs)
         if not self.company:
-            self.fields['company_name'] = CharField(label='Company Name')
-            self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+            d = OrderedDict()
+            d['company_name'] = CharField(label='Company Name')
+            d.update(self.fields)
+            self.fields = d
         autofocus_input(self, 'address_line_one')
 
     def clean(self):
@@ -710,8 +713,10 @@ class PurchasedProductForm(RequestForm):
         self.product = kwargs.pop('product', None)
         super(PurchasedProductForm, self).__init__(*args, **kwargs)
         if not self.company:
-            self.fields['company_name'] = CharField(label='Company Name')
-            self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+            d = OrderedDict()
+            d['company_name'] = CharField(label='Company Name')
+            d.update(self.fields)
+            self.fields = d
         autofocus_input(self)
 
     def clean(self):
@@ -954,9 +959,10 @@ class CompanyProfileForm(RequestForm):
             self.fields.pop('authorize_net_login', None)
             self.fields.pop('authorize_net_transaction_key', None)
 
-        self.fields['company_name'] = CharField(
-            initial=self.instance.company.name, label='Company Name')
-        self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+        d = OrderedDict()
+        d['company_name'] = CharField(initial=self.instance.company.name, label='Company Name')
+        d.update(self.fields)
+        self.fields = d
 
         # companies pulled from content acquisition should be read-only
         if not self.instance.company.user_created:
