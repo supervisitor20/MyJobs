@@ -91,7 +91,7 @@ class TestClient(Client):
         request.session.save()
 
 
-@override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs")
+@override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs", MEMOIZE=False)
 class MyJobsBase(TestCase):
 
     fixtures = ['deploy/initial_data.json']
@@ -127,7 +127,6 @@ class MyJobsBase(TestCase):
 
         self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
         settings.TEMPLATES[0]['OPTIONS']['context_processors'] += ['mymessages.context_processors.message_lists']
-        setattr(settings, 'MEMOIZE', False)
 
         self.patcher = patch('urllib2.urlopen', return_file())
         self.mock_urlopen = self.patcher.start()
