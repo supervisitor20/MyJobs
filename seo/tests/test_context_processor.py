@@ -1,5 +1,6 @@
 #  -*- coding: utf-8 -*-
 from django.conf import settings
+from django.test import override_settings
 
 from myjobs.models import User
 from seo.tests import factories
@@ -7,6 +8,7 @@ from seo.models import SeoSite
 from setup import DirectSEOBase
 
 
+@override_settings(SITE=None, SITE_ID=None)
 class SiteTestCase(DirectSEOBase):
     """
         This test case is intended to verify the context processors are being
