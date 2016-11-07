@@ -220,7 +220,6 @@ class CompanyFactory(factory.django.DjangoModelFactory):
             return Company.objects.latest('id').id + 1
         except Company.DoesNotExist:
             return 1
-CompanyFactory.reset_sequence()
 
 
 class GoogleAnalyticsFactory(factory.django.DjangoModelFactory):
