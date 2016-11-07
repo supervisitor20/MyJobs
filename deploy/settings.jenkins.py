@@ -9,7 +9,7 @@ ENVIRONMENT = 'Jenkins'
 
 DATABASES = {
     'default': {
-        'NAME': 'redirect',
+        'NAME': 'db',
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
         'PASSWORD': 'P@ssW0rd',
@@ -25,7 +25,7 @@ DATABASES = {
         'PORT': '3306',
     },
     'archive': {
-        'NAME': 'qcredirect',
+        'NAME': 'archive',
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
         'PASSWORD': 'P@ssW0rd',
