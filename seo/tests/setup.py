@@ -41,7 +41,8 @@ class TestSolrGrpEngine(SolrGrpEngine):
 
 
 @override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo", MEMOIZE=False,
-                   HAYSTACK_CONNECTIONS=settings.TEST_HAYSTACK_CONNECTIONS)
+                   HAYSTACK_CONNECTIONS=settings.TEST_HAYSTACK_CONNECTIONS,
+                   MIDDLEWARE_CLASSES=settings.MIDDLEWARE_CLASSES)
 class DirectSEOBase(TransactionTestCase):
 
     fixtures = ['deploy/initial_data.json']
@@ -82,7 +83,7 @@ class DirectSEOBase(TransactionTestCase):
         middleware_classes = self.base_middleware_classes + (
             'wildcard.middleware.WildcardMiddleware',
             'middleware.RedirectOverrideMiddleware')
-        setattr(settings, 'MIDDLEWARE_CLASSES', middleware_classes)
+        settings.MIDDLEWARE_CLASSES =  middleware_classes
 
         self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
         settings.TEMPLATES[0]['OPTIONS']['context_processors'] += [
