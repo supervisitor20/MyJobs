@@ -9,7 +9,7 @@ ENVIRONMENT = 'Jenkins'
 
 DATABASES = {
     'default': {
-        'NAME': 'db',
+        'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
         'PASSWORD': 'P@ssW0rd',
@@ -25,7 +25,7 @@ DATABASES = {
         'PORT': '3306',
     },
     'archive': {
-        'NAME': 'archive',
+        'NAME': 'qcredirect',
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
         'PASSWORD': 'P@ssW0rd',
@@ -38,7 +38,6 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
-
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 PASSWORD_HASHERS = (
@@ -46,7 +45,6 @@ PASSWORD_HASHERS = (
 )
 JENKINS_TEST_RUNNER = 'silent_testrunner.SilentTestRunner'
 CELERY_ALWAYS_EAGER = True
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 CC_AUTH = TESTING_CC_AUTH
 
