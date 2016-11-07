@@ -166,15 +166,12 @@
   </div>
 </section><!--FOOTER END-->
 
-
-
-<script defer src="{{ STATIC_URL }}jquery-1.11.3.min.js"></script>
-<script defer src="{{ STATIC_URL }}seo-base-scripts.js"></script>
-
+<script defer src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
+<script defer src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
+<script defer src="{% static "seo-base-scripts-181-27.js" %}"></script>
 <script defer src="{% static "utils.181-20.js" %}"></script>
 <script defer src="{% static "secure-blocks/secure-block.181-20.js" %}"></script>
-<script defer src="{% static 'search.181-20.js' %}"></script>
-
+<script defer src="{% static "pager.164-21.js" %}"></script>
 
 {% if site_config.use_secure_blocks %}
     <script defer>
@@ -186,8 +183,6 @@
     </script>
 {% endif %}
 
-<script defer src="{{ STATIC_URL }}pager.164-21.js"></script>
-
 {% if "network" in site_tags %}
     <script defer>
         var site_name = "{{ site_name }}";
@@ -195,8 +190,6 @@
             impersonating = {% if request.impersonator %}true{% else %}false{% endif %};
     </script>
 {% endif %}
-
-<script defer src="//d2e48ltfsb5exy.cloudfront.net/framework/v2/js/code/jquery-ui-1.8.17.custom.min.js"></script>
 
 {% block ga_js %}{% include "ga.html"%}{% endblock %}
 {% block scrollJS %}{% endblock %}

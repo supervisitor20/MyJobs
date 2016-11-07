@@ -59,7 +59,6 @@
 {% get_menus as menus %}
 <nav id="mobile_footer" class="menu-container" role="menu">
   <div class="row">
-    <div>
       {% if user.is_authenticated and request.session.keys|length %}
         <ul class="mob-nav-section">
             {% for menu in menus %}
@@ -106,16 +105,15 @@
             </li>
         </ul>
       {% endif %}
-    </div>
+
   </div>
 </nav>
 
 {% if group_member and company_name|length > 1 %}
 {% json_companies company_name as companies %}
-<script>
-    var tools_companies = {{ companies|safe }};
-</script>
+    <script>
+        var tools_companies = {{ companies|safe }};
+    </script>
 {% endif %}
-{% compress js %}
-<script defer src="{% static "topbar_v2.js" %}"></script>
-{% endcompress %}
+
+<script defer src="{% static "topbar_v2-181-27.js" %}"></script>
