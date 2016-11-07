@@ -319,7 +319,6 @@ PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
 INSTALLED_APPS += PROJECT_APPS
 
 JENKINS_TASKS = (
-    'django_jenkins.tasks.with_coverage',
     'django_jenkins.tasks.run_pep8',
     'django_jenkins.tasks.run_pyflakes',
 )
