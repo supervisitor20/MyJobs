@@ -91,7 +91,8 @@ class TestClient(Client):
         request.session.save()
 
 
-@override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs", MEMOIZE=False)
+@override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs", MEMOIZE=False,
+                   TEMPLATES=settings.TEMPLATES)
 class MyJobsBase(TestCase):
 
     fixtures = ['deploy/initial_data.json']
@@ -125,7 +126,6 @@ class MyJobsBase(TestCase):
         self.ms_solr = Solr(settings.SOLR['seo_test'])
         self.ms_solr.delete(q='*:*')
 
-        self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
         settings.TEMPLATES[0]['OPTIONS']['context_processors'] += ['mymessages.context_processors.message_lists']
 
         self.patcher = patch('urllib2.urlopen', return_file())
@@ -136,7 +136,6 @@ class MyJobsBase(TestCase):
 
     def tearDown(self):
         self.ms_solr.delete(q='*:*')
-        settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors
         try:
             self.patcher.stop()
         except RuntimeError:
