@@ -2409,7 +2409,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         config.save()
         self.assertTrue(self.client.login(email='matt@directemployers.org',
                                           password='lingo23'))
-        resp = self.client.get('/admin/seo/configuration/1/')
+        resp = self.client.get('/admin/seo/configuration/1/change/')
         self.assertEqual(resp.status_code, 200)
 
     def test_ajax_get_facets(self):
