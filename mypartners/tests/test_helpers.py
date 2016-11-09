@@ -143,7 +143,7 @@ class PartnerLibraryFilterTests(PartnerLibraryTestCase):
         """
 
         # create a new partner
-        library_id = random.randint(1, self.partner_library.count())
+        library_id = random.choice([library.pk for library in self.partner_library])
         request = self.request_factory.get(
             'prm/view/partner-library/add', dict(
                 company=self.company.id, library_id=library_id))

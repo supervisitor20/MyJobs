@@ -1616,7 +1616,7 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
         Given a library id, it should be possible to create a valid partner and
         contact along with the relationships between the two.
         """
-        library_id = random.randint(1, self.partner_library.count())
+        library_id = random.choice([library.pk for library in self.partner_library])
         request = self.request_factory.get(
             'prm/view/partner-library/add', dict(
                 company=self.company.id,
