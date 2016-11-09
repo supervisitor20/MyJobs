@@ -52,7 +52,7 @@ def secure_redirect(request, page):
     """
     if settings.SITE.site_tags.filter(site_tag='network').exists():
         return RedirectView.as_view(
-            url='https://secure.my.jobs/%s' % page)(request)
+            url='https://secure.my.jobs/%s' % page, permanent=True)(request)
     else:
         raise Http404("seo.views.settings_views.secure_redirect: not a "
                       "network site")
