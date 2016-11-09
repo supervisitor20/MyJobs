@@ -660,13 +660,13 @@ class SeoSiteTestCase(DirectSEOTestCase):
         # available on site but not site2.
         resp = self.client.get('/88888888888888888888888888888888/job/',
                                HTTP_HOST='buckconsultants.jobs', follow=True)
-        expected = 'http://buckconsultants.jobs/indianapolis-in/retail-associate/88888888888888888888888888888888/job/'
+        expected = '/indianapolis-in/retail-associate/88888888888888888888888888888888/job/'
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.redirect_chain[-1][0], expected)
 
         resp = self.client.get('/88888888888888888888888888888888/job/',
                                HTTP_HOST='somewhere.jobs', follow=True)
-        expected = 'http://somewhere.jobs/'
+        expected = '/'
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.redirect_chain[-1][0], expected)
 
@@ -674,7 +674,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         # anyway.
         resp = self.client.get('/88888888888888888888888888888888/job/',
                                HTTP_HOST='anywhere.jobs', follow=True)
-        expected = 'http://anywhere.jobs/indianapolis-in/retail-associate/88888888888888888888888888888888/job/'
+        expected = '/indianapolis-in/retail-associate/88888888888888888888888888888888/job/'
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.redirect_chain[-1][0], expected)
 
@@ -1621,9 +1621,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
         for (path, target) in zip(paths, targets):
             resp = self.client.get(path)
             self.assertEqual(resp.status_code, 301)
-            domain = "http://testserver"
-            domain_target = "{d}{t}".format(d=domain, t=target)
-            self.assertEqual(resp.get('location'), domain_target)
+
+            self.assertEqual(resp.get('location'), target)
 
     def test_slug_tag_redirect(self):
         """Filter paths in canonical order don't result in a redirect"""
