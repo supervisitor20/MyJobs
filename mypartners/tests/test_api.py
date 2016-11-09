@@ -57,19 +57,6 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                          msg=return_msg.format(response_json[0]["email"],
                                                self.inbox.email))
 
-    def test_non_staff_cannot_use_view(self):
-        """
-        Temporary test. Ensure user cannot access this view if they are not
-        staff. Remove when launching NonUserOutreach module.
-
-        """
-        non_staff_user = UserFactory(is_staff=False, email="testuser@test.com")
-        self.client.login_user(non_staff_user)
-        response = self.client.get(reverse('api_get_nuo_inbox_list'), follow=False)
-        self.assertEqual(response.status_code, 404, msg="ensure NUO inboxes "
-                                                        "returns 404 for non "
-                                                        "staff users")
-
     def test_user_requires_prm_access(self):
         """
         Verify that the has_access("prm") decorator works properly.
@@ -81,12 +68,16 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                         "access user")
 
         non_company_user = UserFactory(email="testuser@test.com")
-        self.client.login_user(non_company_user)
+        non_company_user.set_password('12345')
+        non_company_user.save()
+        self.client.logout()
+        self.client.login(email="testuser@test.com", password='12345')
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
         self.assertEqual(response.status_code,
                          404,
                          msg="assert NUO inboxes returns 404 for a user that "
-                             "is not a company user for a member company")
+                             "is not a company user for a member company.  "
+                             "Instead got %s" % response.status_code)
 
     def test_add_new_inbox(self):
         """Tests that a user can create a new outreach inbox."""
