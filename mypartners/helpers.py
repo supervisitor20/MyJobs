@@ -569,7 +569,7 @@ def new_partner_from_library(request):
     company = get_company_or_404(request)
 
     try:
-        library_id = int(request.GET.get('library_id', request.POST.get('library_id')) or 0)
+        library_id = int(request.GET.get('library_id', request.POST.get('library_id', 0)))
     except ValueError:
         raise Http404("mypartners.helpers.new_partner_from_library: "
                       "id isn't an int")
