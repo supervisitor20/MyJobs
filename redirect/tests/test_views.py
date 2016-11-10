@@ -654,9 +654,9 @@ class ViewSourceViewTests(RedirectBase):
         self.assertTrue(response['Location'].endswith(self.redirect.url))
 
     def test_myjobs_redirects(self):
-        paths = ['/terms', '/search?location=Indianapolis']
+        paths = ['/terms/', '/search/?location=Indianapolis']
         for path in paths:
-            response = self.client.get(path, follow=True)
+            response = self.client.get(path)
             self.assertEqual(response.status_code, 301)
             self.assertTrue(response['Location'].startswith(
                 'http://www.my.jobs'))
@@ -1284,12 +1284,12 @@ class UpdateBUIDTests(RedirectBase):
 
 class RedirectViewTests(RedirectBase):
     def test_get_redirect(self):
-        redirect = RedirectFactory(guid='{%s}' % uuid.uuid4())
-        expired_redirect = RedirectArchiveFactory(guid='{%s}' % uuid.uuid4())
+        redirect = RedirectFactory(guid='{%s}' % uuid.uuid4(), url="http://purple.com")
+        expired_redirect = RedirectArchiveFactory(guid='{%s}' % uuid.uuid4(), url="http://purple.com")
 
         # Follow a redirect in the Redirect table.
         guid = clean_guid(redirect.guid)
-        response = self.client.get(reverse('home', args=[guid]), follow=True)
+        response = self.client.get(reverse('home', args=[guid]))
         self.assertEqual(response.status_code, 301)
 
         # Follow a redirect in the RedirectArchive table.
@@ -1315,7 +1315,7 @@ class RedirectViewTests(RedirectBase):
 
         path = reverse('home', args=[guid, '', '+'])
         response = self.client.get(path,
-                                   HTTP_HOST='my.jobs', follow=True)
+                                   HTTP_HOST='my.jobs')
         self.assertEqual(response['Location'],
                          'https://my.jobs' + path.replace('%2B', '+'))
         self.assertEqual(response.status_code, 301)
