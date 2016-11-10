@@ -66,7 +66,7 @@ class BlocksTestBase(DirectSEOBase):
         SeoSiteFacetFactory(customfacet=self.facet, seosite=self.site)
         SeoSiteFacetFactory(customfacet=self.bad_facet, seosite=self.site)
 
-        url = '%s/new-jobs/' % self.job['title_slug']
+        url = '/%s/new-jobs/' % self.job['title_slug']
         self.search_results_with_custom_facet = RequestFactory().get(url)
         self.search_results_with_custom_facet.user = self.user
 
