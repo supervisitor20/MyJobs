@@ -7,10 +7,9 @@ from seo.tests.setup import DirectSEOBase
 
 class HelpersTests(DirectSEOBase):
     def test_success_url(self):
-        request = RequestFactory()
-        setattr(request, 'REQUEST', {})
+        request = RequestFactory().get('/')
         self.assertEqual(helpers.success_url(request), reverse('home'))
 
         url = 'https://www.my.jobs/'
-        setattr(request, 'REQUEST', {'next': url})
+        request = RequestFactory().get('/', data={'next': url})
         self.assertEqual(helpers.success_url(request), url)
