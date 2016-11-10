@@ -29,11 +29,9 @@ class SiteRedirectMiddlewareTestCase(DirectSEOBase):
         """
         response = self.client.get(
             '/style/style.css',
-            HTTP_HOST=u'.'.join([u'www', self.test_site.domain]),
-            follow=True)
-        redirect_url, status_code = response.redirect_chain[0]
-        self.assertEqual(status_code, 301)
-        self.assertEqual(redirect_url,
+            HTTP_HOST=u'.'.join([u'www', self.test_site.domain]))
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response.url,
                          u'http://%s/style/style.css' % self.test_site.domain)
 
     def test_host_is_not_a_redirect(self):
