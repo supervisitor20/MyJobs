@@ -130,6 +130,19 @@ legend{
   border-radius: 3px;
   font-weight: 100;
 }
+
+.show-more {
+  @extend .global-btn;
+  font-weight: 400;
+  color: $white !important;
+  text-decoration: none;
+  padding: 0.8rem;
+  margin-right: 0.3rem;
+}
+.show-less {
+  @extend .show-more;
+  background-color: orangered !important;
+}
 /*NEED TO ORGANIZE THIS CSS*/
 .no-scroll {
   overflow: hidden;
@@ -196,10 +209,7 @@ legend{
     }
   }
 }
-.more-less-facet-filter{
-  color: $primary-navy-blue;
-  padding-right: 10px;
-}
+
 .site-name {
   color: #3a4135;
   position: relative;
@@ -699,7 +709,7 @@ margin-bottom: 50px;
 /*RIGHT SIDE SEARCH RESULTS STYLES*/
   .right-content {
     .show-more-jobs {
-      float: right;
+      float: left;
       margin-top: 25px;
       @extend .global-btn;
     }
@@ -1579,7 +1589,7 @@ margin-bottom: 50px;
     padding: 0;
 
     .show-more-jobs {
-      float: right !important;
+      float: left;
     }
     .job-location-information {
       color: $primary-navy-blue;
