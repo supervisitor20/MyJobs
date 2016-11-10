@@ -21,7 +21,7 @@ class JobsFStoJsonTest(DirectSEOBase):
         super(JobsFStoJsonTest, self).setUp()
         self.document = path.join(path.dirname(__file__), 'data/789274C9-D0AA-49D6-8257-A8E977576183.xml')
         self.bu = BusinessUnitFactory()
-        import_jobs.add_company(self.bu)
+        import_jobs.init.add_company(self.bu)
 
     def test_dates_have_timezones(self):
         """Assert that dates on imports can be resolved to specifc utc times"""
