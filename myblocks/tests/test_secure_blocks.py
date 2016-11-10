@@ -12,7 +12,7 @@ class TestSecureBlocks(DirectSEOBase):
     """
     Tests that the secure blocks api view in various circumstances.
     """
-    fixtures = ['login_page.json']
+    fixtures = DirectSEOBase.fixtures + ['login_page.json']
 
     def setUp(self):
         super(TestSecureBlocks, self).setUp()
