@@ -1056,7 +1056,9 @@ class SearchEditTests(MyPartnersTestCase):
         self.assertEqual(MessageInfo.objects.count(), 0)
         search = PartnerSavedSearchFactory(user=self.contact_user,
                                            created_by=self.staff_user)
-        self.client.login_user(search.user)
+        search.user.set_password('12345')
+        search.user.save()
+        self.client.login(email=search.user.email, password='12345')
         url = self.get_url('save_search_form',
                            id=search.id, pss=True)
 
@@ -1065,6 +1067,7 @@ class SearchEditTests(MyPartnersTestCase):
                                'day_of_week': search.day_of_week,
                                'frequency': search.frequency,
                                'sort_by': search.sort_by})
+
         search = PartnerSavedSearch.objects.get(pk=search.pk)
         self.assertFalse(search.is_active)
         self.assertEqual(search.unsubscriber, search.user.email)
