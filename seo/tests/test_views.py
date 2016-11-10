@@ -340,8 +340,8 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['count'], 2)
 
-        test_path = '/retail-associate-розничная-ассоциированных/jobs-in/'
-        with_path = '%s?filter_path=%s'
+        test_path = u'/retail-associate-розничная-ассоциированных/jobs-in/'
+        with_path = u'%s?filter_path=%s'
         with_path = with_path % (base_url, test_path)
         resp = self.client.get(with_path)
         result = json.loads(resp.content)
