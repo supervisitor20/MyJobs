@@ -360,24 +360,60 @@ a.direct_optionsLess {
 }
 
 #mobile_direct-saved-search-box, #direct-saved-search-box {
+  padding: 0 15px;
+  margin-bottom: -3.1rem;
 
+  h3 {
+    @extend .facet-header;
+    margin: -1px -15px;
+    font-size: 20px;
+  }
   form {
     padding: 15px 0px 0px 0px;
   }
-  h3 {
-    @extend .facet-header;
-  }
-
   .enter-email {
     border: 2px solid $primary-navy-blue;
   }
   .email-frequency {
     border: 2px solid $primary-navy-blue;
   }
-	.get-title {
-		text-align: center;
-	}
+  .email-box {
+    border: 1px solid $extra-light-gray;
+    background-color: $medium-gray;
+    margin-bottom: 30px;
+    border-top: none;
+    border-radius: 3px;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 3px #bbb;
+    margin-top: 75px;
+    padding: 0px 10px;
+  }
+  .search-sent-text {
+      text-align: center;
+  }
+  .direct-action-btn {
+      margin: 20px 0;
+      text-align: center;
+
+      a {
+          background-color: $btn-gray;
+          color: $white;
+          padding: 10px;
+          border-radius: 3px;
+      }
+  }
+  .save-email {
+    margin-top: 15px;
+    width: 100%;
+    background-color: $primary-navy-blue;
+    color: $white;
+
+    &:hover {
+      background-color: $btn-gray;
+    }
+  }
 }
+
 #direct_disambiguationDiv {
   h3 {
     @extend .facet-header;
@@ -1163,50 +1199,6 @@ margin-bottom: 50px;
       text-align: center;
     }
 
-  }
-  #mobile_direct-saved-search-box, #direct-saved-search-box {
-    padding: 0 15px;
-    margin-bottom: -40px;
-
-    h3 {
-      margin: -1px -15px;
-			font-size: 20px;
-    }
-    .email-box {
-      border: 1px solid $extra-light-gray;
-      background-color: $medium-gray;
-      margin-bottom: 30px;
-      border-top: none;
-      border-radius: 3px;
-      box-sizing: border-box;
-      box-shadow: 2px 2px 3px #bbb;
-      margin-top: 75px;
-      padding: 0px 10px;
-    }
-		.search-sent-text {
-			text-align: center;
-		}
-		.direct-action-btn {
-			margin: 20px 0;
-			text-align: center;
-
-			a {
-				background-color: $btn-gray;
-				color: $white;
-				padding: 10px;
-				border-radius: 3px;
-			}
-		}
-    .save-email {
-      margin-top: 15px;
-      width: 100%;
-      background-color: $primary-navy-blue;
-      color: $white;
-
-      &:hover {
-        background-color: $btn-gray;
-      }
-    }
   }
 
   #search {
