@@ -194,9 +194,9 @@ def edit_item(request):
     """
     http404_view = 'mypartners.views.edit_item'
     try:
-        partner_id = int(request.GET.get("partner", request.POST.get("partner", 0)))
-        item_id = int(request.GET.get('id', request.POST.get("id", 0)))
-        content_id = int(request.GET.get('ct', request.POST.get('ct', 0)))
+        partner_id = int(request.GET.get("partner", request.POST.get("partner", 0)) or 0)
+        item_id = int(request.GET.get('id', request.POST.get("id", 0)) or 0)
+        content_id = int(request.GET.get('ct', request.POST.get('ct', 0)) or 0)
     except ValueError:
         raise Http404("{view}: partner, item, or content type "
                       "id is bad".format(view=http404_view))
