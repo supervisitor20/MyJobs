@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.admin import site
 from django.core.urlresolvers import reverse
-from django.apps  import apps
+from django.apps import apps
 
 from myjobs.models import User
 from myjobs.tests.setup import MyJobsBase
@@ -23,23 +23,24 @@ def admin_test(self):
     # the url cache to fill.
     self.client.get('/')
 
-    models = []
-    for app in settings.PROJECT_APPS:
-        models.extend(apps.get_app_config(app).models)
     admins = []
-    for model in models:
-        try:
-            # site._registry is a dictionary of Model:ModelAdmin mappings.
-            admins.append(site._registry[model])
-        except KeyError:
-            # Not all models are in the admin (myjobs.Ticket, for example).
-            pass
+    for app in settings.PROJECT_APPS:
+        for model_name in apps.get_app_config(app).models:
+            try:
+                # site._registry is a dictionary of Model:ModelAdmin mappings.
+                model = apps.get_model(app, model_name)
+                admins.append(site._registry[model])
+            except KeyError:
+                # Not all models are in the admin (myjobs.Ticket, for example).
+                pass
     # admin.urls on the inner for loop contains all urls, including edit
     # and history. We only care about add and list.
-    urls = [reverse('admin:'+url.name)
-            for admin in admins
-            for url in admin.urls
-            if url.name.endswith(('_add', '_changelist'))]
+    urls = []
+    for admin in admins:
+        for url in admin.urls:
+            if hasattr(url, 'name') and url.name != None and url.name.endswith(('_add', '_changelist')):
+                urls.append(reverse('admin:' + url.name))
+
     # Ensure we have something to test.
     self.assertTrue(len(urls) > 0)
     for url in urls:
