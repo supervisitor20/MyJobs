@@ -310,10 +310,10 @@ class FacetListWidget(object):
                          'data-total-items="%(total_items)s" '
                          'data-offset="%(offset)s">'
 
-                         '<a class="more-less-facet-filter direct_optionsMore" '
+                         '<a class="show-more more-less-facet-filter direct_optionsMore" '
                          'href="#" rel="nofollow">%(more)s</a>'
 
-                         '<a class="more-less-facet-filter direct_optionsLess" href="#" '
+                         '<a class="show-less more-less-facet-filter direct_optionsLess" href="#" '
                          'rel="nofollow">%(less)s</a>'
 
                          '</span>')
@@ -321,8 +321,8 @@ class FacetListWidget(object):
             more_less = more_less % dict(num_items=self.num_to_show,
                                          type=self.selector_type,
                                          total_items=self._num_items_rendered,
-                                         more=_("(show more)"),
-                                         less=_("(show less)"),
+                                         more=_("Show More +"),
+                                         less=_("Show Less -"),
                                          offset=self.offset)
         else:
             more_less = ('<span id="direct_moreLessLinks_%(type)sDisambig" '
