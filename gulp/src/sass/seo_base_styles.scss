@@ -14,6 +14,7 @@ $black: #000000;
 $white: #ffffff;
 
 /* START OF NEW SASS STYLES FOR REBRANDING */
+
 *:focus {
   outline: 0;
 }
@@ -85,6 +86,37 @@ legend{
   border: 2px solid $blue;
   @include box-shadow(0px 0px 5px 0px rgba(194,194,194,1));
 }
+
+/** Autocomplete **/
+.ui-autocomplete {
+  min-height: 1.6rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  background: $white;
+  border: 1px solid #999;
+  font-size: 1.5rem;
+}
+
+.ui-menu-item {
+  padding: 0 .4rem;
+}
+
+.ui-menu-item-alternate {
+    background-color: #F2F2F2;
+}
+
+.ui-menu-item a, .ui-menu-item-alternate a {
+    cursor: pointer;
+    margin: 0;
+    display: block;
+}
+
+.ui-menu-item a:hover, .ui-menu-item-alternate a:hover {
+  background: $blue;
+  color: $white;
+}
+/** End Autocomplete **/
+
 .main-search-labels {
   text-align: left;
   font-size: 22px;
@@ -351,11 +383,25 @@ a.direct_optionsLess {
     @extend .facet-header;
   }
 }
+
 #mobile_direct_disambiguationDiv {
   h3 {
     @extend .facet-header;
   }
 }
+
+.filter-box {
+  border: 1px solid $extra-light-gray;
+  background-color: $medium-gray;
+  margin-bottom: 30px;
+  border-top: none;
+  border-radius: 3px;
+  box-sizing: border-box;
+  box-shadow: 2px 2px 3px #bbb;
+  padding: 0px 10px;
+  margin: 0 15px;
+}
+
 .filter-panel {
   display: block;
 	margin: 10px 0;
@@ -489,6 +535,13 @@ margin-bottom: 50px;
     @extend .global-btn;
     text-align: center;
   }
+  .search-submit-moc {
+    @extend .global-btn;
+    text-align: center;
+  }
+  .share-social.search-submit-moc {
+    min-width: 7rem;
+  }
   .search-show-all {
     font-size: 12px;
     position: relative;
@@ -620,6 +673,14 @@ margin-bottom: 50px;
     }
   }
   .search-submit {
+    display: inline-block;
+    margin: 0 15px 10px 0;
+    padding: 9px;
+    font-size: 18px;
+    border-radius: 3px;
+    font-weight: 100;
+  }
+  .search-submit-moc {
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 9px;
@@ -899,13 +960,66 @@ margin-bottom: 50px;
 /*==========  Mobile First Approach  ==========*/
 
 /* Custom, iPhone Retina */
-@media only screen and (min-width : 320px) {
+@media only screen and (min-width: 320px) and (max-width: 480px) {
+    /** Be default iOS devices hides scroll bar,
+  this makes all devices show scrollbar for nested sub menus **/
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 1.5rem;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 0.2rem;
+    background-color: rgba(0, 0, 0, .5);
+  }
+}
+
+@media only screen and (min-width : 320px) and (max-width: 768px) {
+
+  #main_nav {
+    margin-bottom: 3.5rem;
+  }
+
+  #main_content {
+	margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  #brand_logo {
+    .logo{
+      width: 100%;
+      height: 4rem;
+    }
+
+    .location-logo {
+      margin-bottom: .2rem;
+    }
+
+    .site-name {
+      font-size: 2.1rem;
+    }
+  }
+
+  #mobile_footer {
+    height: 6.2rem ;
+
+    i {
+      font-size: 2.5rem !important;
+    }
+  }
+
+  .mob-nav-content {
+    padding: .8rem 0 0 0;
+  }
+
+}
+
+@media only screen and (min-width : 320px) and (max-width: 769px) {
 
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
     width: 100vw !important;
     left: 41%;
-    top: -90px;
+    top: -8.1rem;
 
     li {
       text-align: left;
@@ -922,7 +1036,7 @@ margin-bottom: 50px;
 
   #mobile-messages {
     &:nth-of-type(1) {
-       top: -9.2rem;
+       top: -8.1rem;
     }
   }
 
@@ -947,7 +1061,7 @@ margin-bottom: 50px;
 
   #mobile-profile {
     &:last-of-type {
-       top: -21rem;
+       top: -20.3rem;
     }
   }
 
@@ -955,7 +1069,7 @@ margin-bottom: 50px;
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
     left: 84%;
-    top: -25.5rem;
+    top: -24.5rem;
 
     li {
       text-align: left;
@@ -980,22 +1094,11 @@ margin-bottom: 50px;
     overflow-y: scroll;
   }
 
-  /** Be default iOS devices hides scroll bar, this makes all devices show scroll bar for nested sub menus **/
-  ::-webkit-scrollbar {
-    -webkit-appearance: none;
-    width: 2.7rem;
-  }
-  ::-webkit-scrollbar-thumb {
-    border-radius: 0.5rem;
-    background-color: rgba(0,0,0,.5);
-    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
-  }
-
   .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
       margin-left: calc(-1 * ((100vw - 100%) / 2));
       width: 100vw !important;
-      right: 13%;
-      top: -215px !important;
+      right: 14%;
+      top: -215px;
 
       li {
         text-align: left;
@@ -1059,16 +1162,6 @@ margin-bottom: 50px;
       display: block;
       text-align: center;
     }
-    .logo{
-      width: 100%;
-      height: 8rem;
-    }
-    .location-logo {
-      margin-bottom: 20px;
-    }
-    .site-name{
-      font-size: 2.3rem;
-    }
 
   }
   #mobile_direct-saved-search-box, #direct-saved-search-box {
@@ -1115,17 +1208,7 @@ margin-bottom: 50px;
       }
     }
   }
-	.filter-box {
-		border: 1px solid $extra-light-gray;
-    background-color: $medium-gray;
-    margin-bottom: 30px;
-    border-top: none;
-    border-radius: 3px;
-    box-sizing: border-box;
-    box-shadow: 2px 2px 3px #bbb;
-    padding: 0px 10px;
-		margin: 0 15px;
-	}
+
   #search {
     margin-bottom: 0;
 
@@ -1147,7 +1230,13 @@ margin-bottom: 50px;
     .search-submit {
       width: 94%;
     }
+    .search-submit-moc {
+      width: 94%;
+    }
     .share-social.search-submit {
+      display: none;
+    }
+    .share-social.search-submit-moc {
       display: none;
     }
     .breadcrumb-row {
@@ -1201,50 +1290,6 @@ margin-bottom: 50px;
 	}
 }
 
-/* Extra Small Devices, Phones */
-@media only screen and (min-width : 480px) {
-  .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
-    margin-left: calc(-1 * ((100vw - 100%) / 10));
-    left: 40%;
-  }
-  .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
-    margin-left: calc(-1 * ((100vw - 100%) / 2));
-    left: 50%;
-  }
-  .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
-    margin-left: calc(-1 * ((100vw - 100%)));
-    left: 88%;
-  }
-  .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
-      margin-left: calc(-1 * ((100vw - 100%) / 2));
-      right: 12%;
-  }
-
-  #mobile_social_media {
-    padding-top: 50px;
-    margin: 0 auto;
-    width: 52%;
-  }
-
-  #direct_jobListingTitle, .jobs-found {
-    width: 95%;
-  }
-
-  #brand_logo {
-    .logo{
-      width: 100%;
-      height: 8rem;
-    }
-    .location-logo {
-      margin-bottom: 20px;
-    }
-    .site-name{
-      font-size: 2.6rem;
-    }
-
-  }
-}
-
 /* Small Devices, Tablets */
 @media only screen and (min-width : 768px) {
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
@@ -1257,7 +1302,7 @@ margin-bottom: 50px;
   }
   .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%)));
-    left: 93%;
+    left: 93% !important;
   }
   .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
       margin-left: calc(-1 * ((100vw - 100%) / 2));
@@ -1271,27 +1316,31 @@ margin-bottom: 50px;
   #direct_jobListingTitle, .jobs-found {
     width: 95%;
   }
-  #brand_logo {
-    .logo{
-      width: 100%;
-      height: 8rem;
-    }
-    .location-logo {
-      margin-bottom: 30px;
-    }
-    .site-name{
-      font-size: 3rem;
-    }
 
-  }
+  .navbar-nav.navbar-right.right-nav {
+
+      .dropdown {
+        a {
+          font-size: 1.7rem;
+        }
+      }
+    }
 
 }
 
-/* DirectEmployers Mobile Break Point iPad */
+/* Newer Higher Res Tablets */
 @media only screen
   and (min-width: 769px)
   and (max-width: 991px) {
 
+  #main_content {
+    margin-top: 0;
+  }
+
+  .ui-menu-item a:hover, .ui-menu-item-alternate a:hover {
+    background: $blue;
+    color: $white;
+  }
 
   #direct_companyModule {
     display: none;
@@ -1345,6 +1394,11 @@ margin-bottom: 50px;
       padding: 0.9rem 2rem;
     }
 
+    .search-submit-moc {
+      margin: 0;
+      padding: 0.9rem 1rem 0.9rem 1rem;
+    }
+
     .submit-section {
       padding: 0;
     }
@@ -1382,7 +1436,7 @@ margin-bottom: 50px;
 
       .dropdown {
         a {
-          font-size: 1.8rem;
+          font-size: 1.7rem;
         }
       }
     }
@@ -1399,13 +1453,13 @@ margin-bottom: 50px;
   #brand_logo {
     .logo{
       width: 100%;
-      height: 8rem;
+      height: 5rem;
     }
     .location-logo {
-      margin-bottom: 30px;
+      margin-bottom: 1.5rem;
     }
     .site-name{
-      font-size: 3rem;
+      font-size: 2.7rem;
     }
 
   }
@@ -1465,7 +1519,6 @@ margin-bottom: 50px;
      }
   }
   #direct-saved-search-box {
-    margin-bottom: -31px;
 
     .email-box {
       margin-top: 0px;
@@ -1490,6 +1543,9 @@ margin-bottom: 50px;
     .search-submit {
       width: 32%;
     }
+    .search-submit-moc {
+      width: auto;
+    }
     .caret-up {
       left: 63%;
     }
@@ -1513,6 +1569,9 @@ margin-bottom: 50px;
       padding: 0;
     }
     .share-social.search-submit {
+      display: inline-block;
+    }
+    .share-social.search-submit-moc {
       display: inline-block;
     }
   }
@@ -1559,6 +1618,16 @@ margin-bottom: 50px;
 			width: 35%;
 		}
 	}
+}
+
+/* The M.O.C. place holder text is long,
+    this makes it easier to read at certain screen sizes. */
+@media only screen and (min-width : 769px) and (max-width: 1290px){
+
+  #moc::-webkit-input-placeholder {
+    font-size: 1.1rem;
+  }
+
 }
 
 /* Large Devices, Wide Screens */

@@ -1,15 +1,147 @@
 /**
- * Legacy es5.1 functions used in seo_base.html template
+ * Legacy es5.1 functions used in seo_base_bootstrap3.html template
 **/
 
 $(document).ready(function() {
-  /* needed to render 'topbar' */
+  // needed to render 'topbar'
   if(typeof site_name !== 'undefined' && !$("*[data-widget_type=tools]").length) {
       get_toolbar(site_name);
   }
 
-  /* Save Search Functionality */
+  // Autocomplete functionality for the What input box.
+  $( ".micrositeTitleField" ).autocomplete({
+    source: function( request, response ) {
+        $.ajax({
+            url: "/ajax/ac/?lookup=title&term="+request.term,
+            dataType: "jsonp",
+            success: function( data ) {
+                response( $.map( data, function( item ) {
+                    return {
+                        label: item.title,
+                        value: item.title
+                    };
+                }));
+            }
+        });
+    },
+    open: function(event, ul) {
+        $(".ui-autocomplete li.ui-menu-item:odd").addClass("ui-menu-item-alternate");
+        $(".ui-autocomplete li.ui-menu-item a").removeClass("ui-corner-all");
+    },
+    select: function(event, ui) {
+        $(".micrositeTitleField").val('"' + ui.item.value + '"');
+        return false;
+    },
+    minLength: 2
+  });
+
+  // Autocomplete functionality for the Where input box.
+  $( ".micrositeLocationField" ).autocomplete({
+        source: function( request, response ) {
+            $.ajax({
+                url: "/ajax/ac/?lookup=location&term="+request.term,
+                dataType: "jsonp",
+                success: function( data ) {
+                    response( $.map( data, function( item ) {
+                        return {
+                            label: item.location + " - (" + item.jobcount + ")",
+                            value: item.location
+                        };
+                    }));
+                }
+            });
+        },
+        open: function(event, ul) {
+            $(".ui-autocomplete li.ui-menu-item:odd").addClass("ui-menu-item-alternate");
+        },
+        minLength: 2
+  });
+
+  // Add syntax highlighting to autocomplete results.
+  $.ui.autocomplete.prototype._renderItem = function( ul, item) {
+        /**
+            Inputs:
+            :ul:    the autocomplete object to modify
+            :item:  the individual item to modify
+
+            Returns:
+            Modified item
+        **/
+        var term = this.term;
+        if ((term.charAt(0) === '"' && term.charAt(term.length-1) === '"')){
+            term = this.term.substr(1,term.length-2);
+        } else {
+            term = this.term.split(' ').join('|');
+        }
+
+        var re = new RegExp("(" + term + ")", "gi") ;
+        var t = item.label.replace(re,"<strong class='ac-highlight'>$1</strong>");
+        return $( "<li></li>" )
+            .data( "item.autocomplete", item )
+            .append( "<a>" + t + "</a>" )
+            .appendTo( ul );
+  };
+
+  // Size the width of the drop down list to match width of input, always, in any size, without CSS
+  $.ui.autocomplete.prototype._resizeMenu = function() {
+      var ul = this.menu.element;
+      ul.outerWidth(this.element.outerWidth());
+  };
+
+  // Submit the search form if location AND title fields have a value in them (and MOC if applicable).
+  $("#standardSearch input[type=text]").bind("autocompleteselect", function(event, ul) {
+        /**
+            Inputs:
+            :event: The autocompleteselect event
+            :ul: The autocomplete object (an unordered list)
+         **/
+        $(this).val(ul.item.value);
+        if ($('#moc').length > 0) {
+            if ($('#location').val() !== "" && $('#q').val() !== "" && $('#moc').val() !== "") {
+               $("#standardSearch").submit();
+            }
+        }
+        else {
+            if ($('#location').val() !== "" && $('#q').val() !== "") {
+               $("#standardSearch").submit();
+            }
+        }
+  });
+
+  // Add autocomplete functionality to the MOC/MOS search field.
+  $( ".micrositeMOCField" ).autocomplete({
+        source: function( request, response ) {
+            $.ajax({
+                url: "/ajax/mac/?lookup=moc&term="+request.term,
+                dataType: "jsonp",
+                success: function( data ) {
+                    response( $.map( data, function( item ) {
+                        return {
+                            label: item.label,
+                            value: item.value,
+                            moc_id: item.moc_id
+                        };
+                    }));
+                }
+            });
+        },
+        select: function( event, ui ) {
+            $( "#moc_id" ).val(ui.item.moc_id);
+        },
+        open: function(event, ul) {
+            $(".ui-autocomplete li.ui-menu-item:odd").addClass("ui-menu-item-alternate");
+        },
+        minLength: 2
+  });
+
+  // Clear moc_id value if moc is changed
+  $( "#moc" ).change(function (event) {
+        $( "#moc_id" ).val("");
+  });
+
+  // Save Search Functionality
   get_default_widget_html(false);
+
 });
 
 function get_toolbar(site_name) {
