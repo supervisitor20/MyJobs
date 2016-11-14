@@ -112,7 +112,7 @@ class SourceCodeUploadTests(MyJobsBase):
         user = UserFactory(email='random@example.com')
         user.set_password('secret')
         self.client.login(username=user.email, password='secret')
-        response = self.client.get(reverse('source_code_upload'))
+        response = self.client.get(reverse('source_code_upload'), follow=True)
         self.assertTrue('Log in' in response.content)
 
     def test_integer_source_codes(self):
