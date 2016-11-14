@@ -1,9 +1,11 @@
 from django.conf import settings
+from django.test import override_settings
 
 from seo.tests.setup import DirectSEOBase
 from seo.tests.factories import SeoSiteFactory
 
 
+@override_settings(WILDCARD_REDIRECT=True)
 class WildcardMiddlewareTestCase(DirectSEOBase):
     def test_wildcard_redirect(self):
         """
@@ -14,7 +16,6 @@ class WildcardMiddlewareTestCase(DirectSEOBase):
         site = SeoSiteFactory.build(domain='www.my.jobs', name=u'www.my.jobs')
         site.save()
 
-        settings.WILDCARD_REDIRECT = True
         # check that the redirect ignores domains without a subdomain
         resp = self.client.get('/', HTTP_HOST='domain.jobs')
         self.assertEqual(resp.status_code, 200)
@@ -31,18 +32,16 @@ class WildcardMiddlewareTestCase(DirectSEOBase):
         self.assertEqual(resp.status_code, 200)
 
         # check that it redirects when it supposed to
-        resp = self.client.get('/', HTTP_HOST='fake.usa.jobs', follow=True)
+        resp = self.client.get('/', HTTP_HOST='fake.usa.jobs')
         self.assertEqual(resp.status_code, 301)
-        self.assertRedirects(resp, 'http://usa.jobs', status_code=301,
-                             target_status_code=301)
+        self.assertEqual(resp['Location'], 'http://usa.jobs')
 
         # check that is respects the setting toggle
-        settings.WILDCARD_REDIRECT = False
-        resp = self.client.get('/', HTTP_HOST='wrong.www.my.jobs')
-        self.assertEqual(resp.status_code, 200)
+        with self.settings(WILDCARD_REDIRECT=False):
+            resp = self.client.get('/', HTTP_HOST='wrong.www.my.jobs')
+            self.assertEqual(resp.status_code, 200)
 
     def test_wildcard_redirect_respects_protocol(self):
-        settings.WILDCARD_REDIRECT = True
         resp = self.client.get('/', **{
             'HTTP_HOST': 'fake.usa.jobs',
             'wsgi.url_scheme': 'https'
