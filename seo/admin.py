@@ -667,7 +667,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 new_object = self.model()
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request), self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -675,7 +675,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 formset = FormSet(data=request.POST, files=request.FILES,
                                   instance=new_object,
                                   save_as_new="_saveasnew" in request.POST,
-                                  prefix=prefix, queryset=inline.queryset(request))
+                                  prefix=prefix, queryset=inline.get_queryset(request))
                 formsets.append(formset)
             if all_valid(formsets) and form_validated:
                 self.save_model(request, new_object, form, change=False)
@@ -699,14 +699,13 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             form = self.form(user=request.user, initial=initial)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=self.model(), prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
                 formsets.append(formset)
 
         adminForm = helpers.AdminForm(form, list(self.get_fieldsets(request)),
@@ -774,15 +773,14 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 new_object = obj
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request, new_object),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request, new_object):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(request.POST, request.FILES,
                                   instance=new_object, prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
 
                 formsets.append(formset)
 
@@ -800,14 +798,13 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request, obj),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request, obj):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=obj, prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
                 formsets.append(formset)
 
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
@@ -946,8 +943,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 new_object = self.model()
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -955,7 +951,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 formset = FormSet(data=request.POST, files=request.FILES,
                                   instance=new_object,
                                   save_as_new="_saveasnew" in request.POST,
-                                  prefix=prefix, queryset=inline.queryset(request))
+                                  prefix=prefix, queryset=inline.get_queryset(request))
                 formsets.append(formset)
             if all_valid(formsets) and form_validated:
                 self.save_model(request, new_object, form, change=False)
@@ -979,14 +975,13 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             form = self.form(user=request.user, initial=initial)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=self.model(), prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
                 formsets.append(formset)
         # overwrite for the "parent_site" form information...
         # django-extensions does not allow for addition of the widget
@@ -1060,15 +1055,14 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 new_object = obj
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request, new_object),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request, new_object):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(request.POST, request.FILES,
                                   instance=new_object, prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
 
                 formsets.append(formset)
 
@@ -1086,14 +1080,13 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets_with_inlines(request, obj),
-                                       self.inline_instances):
+            for FormSet, inline in self.get_formsets_with_inlines(request, obj):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=obj, prefix=prefix,
-                                  queryset=inline.queryset(request))
+                                  queryset=inline.get_queryset(request))
                 formsets.append(formset)
         # overwrite for the "parent_site" form information...
         # django-extensions does not allow for addition of the widget
