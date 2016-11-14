@@ -1134,5 +1134,5 @@ class PurchasedJobActionTests(PostajobTestBase):
                       args=[self.purchased_product.pk])
         response = self.client.get(url)
 
-        self.assertFalse(add_job_link in response.content)
+        self.assertFalse(add_job_link in unicode(response.content, errors="ignore"))
         self.assertTrue('id="block-modal"' in response.content)
