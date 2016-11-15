@@ -121,12 +121,8 @@
             {% else %}
               {% include 'v2/includes/search_box_widget.html' %}
             {% endif %}
-            <div class="mobile-search-criteria">
-              <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
-            </div>
-            <div class="mobile-search-facets">
-              {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
-            </div>
+
+            {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
             {% block directseo_main_content %}{% endblock %}
             <div id="mobile_save_email_search">
               {% block mobile_directseo_save_email %}{% endblock %}
