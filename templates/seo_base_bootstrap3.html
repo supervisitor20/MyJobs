@@ -69,12 +69,8 @@
     <div id="direct_innerContainer">
       <section id="main_content">
         <div class="row">
-          <div class="hidden-xs col-md-1"></div>
-          <div class="col-xs-12 col-md-3">
-            <div class="left-content">
-              <section id="brand_logo" class="text-center">
-                <div class="row">
-                  <div class="col-xs-12 col-md-12">
+            <article class="col-xs-12 col-md-3">
+                <section id="brand_logo" class="text-center">
                     <div class="location-logo">
                     {% with site_heading|cut:".jobs" as site_heading_base %}
                       {%if site_heading_base == site_heading %}
@@ -107,34 +103,40 @@
                       {% endif %}
                     {% endwith %}
                     </div>
-                  </div>
-                </div>
-              </section>
-                {% block directseo_right_hand_column %}{% endblock directseo_right_hand_column %}
+                </section>
+            </article>
+            <article class="col-xs-12 col-md-9">
+                {% if site_config.browse_moc_show %}
+                  {% include "v2/includes/search_box_vets_widget.html" %}
+                {% else %}
+                  {% include 'v2/includes/search_box_widget.html' %}
+                {% endif %}
+            </article>
         </div>
-      </div>
+        <div class="row">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
+                <section class="mobile-search-criteria">
+                    <button id="mobile_search" class="mobile-search-btn">Filter Search Criteria</button>
+                </section>
+                <section class="mobile-search-facets">
+                    {% block directseo_right_hand_column %}{% endblock directseo_right_hand_column %}
+                </section>
+            </article>
+            <article class="col-xs-12 col-md-8">
+                <section class="right-content">
+                    {% block directseo_main_content %}{% endblock %}
 
-      <div class="col-xs-12 col-md-8">
-        <div class="right-content">
-            {% if site_config.browse_moc_show %}
-              {% include "v2/includes/search_box_vets_widget.html" %}
-            {% else %}
-              {% include 'v2/includes/search_box_widget.html' %}
-            {% endif %}
-
-            {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
-            {% block directseo_main_content %}{% endblock %}
-            <div id="mobile_save_email_search">
-              {% block mobile_directseo_save_email %}{% endblock %}
-            </div>
-            <div id="mobile_social_media">
-              {% include 'v2/includes/add_this.html' %}
-            </div>
+                    <div id="mobile_save_email_search">
+                      {% block mobile_directseo_save_email %}{% endblock %}
+                    </div>
+                    <div id="mobile_social_media">
+                      {% include 'v2/includes/add_this.html' %}
+                    </div>
+                </section>
+            </article>
         </div>
-      </div>
-    </div>
     </section><!-- main_content -->
-    {% endblock directseo_outer_container %}
+ {% endblock directseo_outer_container %}
 
     </div><!-- direct_innerContainer -->
   </section><!-- direct_container -->

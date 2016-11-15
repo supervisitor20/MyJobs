@@ -436,6 +436,14 @@ a.direct_optionsLess {
   }
 }
 
+.mobile-search-btn {
+  background-color: $btn-gray;
+  color: $primary-navy-blue;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
+}
+
 .filter-box {
   border: 1px solid $extra-light-gray;
   background-color: $medium-gray;
@@ -1163,9 +1171,8 @@ margin-bottom: 50px;
     display: none;
   }
   #mobile_social_media {
-    padding-top: 50px;
-    margin: 0 auto;
-    width: 63%;
+    margin: 5rem auto 7rem auto;
+    width: 76%;
   }
 
   .mobile-search-facets {
@@ -1178,21 +1185,12 @@ margin-bottom: 50px;
   .mobile-search-facets.show-mobile-search-facets {
     display: block;
   }
-  .facets {
-    display: none;
-  }
   .social-media {
     margin-top: 75px;
   }
   .mobile-search-criteria {
     text-align: center;
     padding: 25px 0px;
-  }
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
   }
   #main_nav {
     .right-nav {
@@ -1355,6 +1353,10 @@ margin-bottom: 50px;
     display: none;
   }
 
+  .search-section {
+    padding: 0 0 0 2rem;
+  }
+
   #direct_jobListingTitle, .jobs-found {
     margin: 0 auto;
     width: 91%;
@@ -1364,24 +1366,13 @@ margin-bottom: 50px;
     display: block;
   }
 
-  .facets {
-    display: none;
-  }
-
   .social-media {
     margin-top: 75px;
   }
 
   .mobile-search-criteria {
     text-align: center;
-    padding: 25px 0px;
-  }
-
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
+    padding: 0 0 1.6rem 0;
   }
 
   .right-content {
