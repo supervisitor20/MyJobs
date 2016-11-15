@@ -39,6 +39,10 @@
 {% endblock directseo_main_content %}
 
 {% block directseo_right_hand_column %}
+<section class="mobile-search-criteria">
+    <button id="mobile_search" class="mobile-search-btn">Filter Search Criteria</button>
+</section>
+<section class="mobile-search-facets">
 {% if default_jobs or featured_jobs %}
 <div id="direct_disambiguationDiv" class="facets direct_rightColBox">
   <div class="filter-box">
@@ -50,6 +54,7 @@
   </div>
 </div>
 {% endif %}
+</section>
 {% endblock directseo_right_hand_column %}
 
 {% block directseo_off_site_links %}
