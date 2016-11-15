@@ -56,6 +56,10 @@
 
 {% block directseo_mobile_facets %}
 {% if default_jobs or featured_jobs %}
+<div class="mobile-search-criteria">
+  <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
+</div>
+<div class="mobile-search-facets">
 <div id="mobile_direct_disambiguationDiv" class="mobile-facets direct_rightColBox">
   <div class="filter-box">
     {% for widget in widgets %}
@@ -64,6 +68,7 @@
     {% endif %}
     {% endfor %}
   </div>
+</div>
 </div>
 {% endif %}
 {% endblock directseo_mobile_facets %}
