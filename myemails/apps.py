@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+from django.apps import apps, AppConfig
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
@@ -8,21 +8,15 @@ class MyEmailsConfig(AppConfig):
     def ready(self):
         Event = self.get_model("Event")
         EmailTask = self.get_model("EmailTask")
-
-        def event_receiver(signal, sender, type_):
-            def event_receiver_decorator(fn):
-                dispatch_uid = '%s_%s_%s' % (fn.__name__, sender, type_)
-                wrapper = receiver(signal, sender=sender, dispatch_uid=dispatch_uid)
-                return wrapper(fn)
-
-            return event_receiver_decorator
+        Invoice = apps.get_model('postajob', 'Invoice')
+        PurchasedProduct = apps.get_model('postajob', 'PurchasedProduct')
 
         # I don't really like doing it this way (get from database pre save, set
         # attribute, get again post save), but we need to be able to 1) determine what
         # was changed and 2) only send an email if the save is successful. - TP
 
-        @event_receiver(pre_save, 'postajob.invoice', 'created')
-        @event_receiver(pre_save, 'postajob.purchasedproduct', 'created')
+        @receiver(pre_save, sender=Invoice, weak=False)
+        @receiver(pre_save, sender=PurchasedProduct, weak=False)
         def pre_add_invoice(sender, instance, **kwargs):
             """
             Determines if an invoice has been added to the provided instance.
@@ -37,8 +31,8 @@ class MyEmailsConfig(AppConfig):
                 invoice_added = not hasattr(original, 'invoice') and invoice_added
             instance.invoice_added = invoice_added
 
-        @event_receiver(post_save, 'postajob.invoice', 'created')
-        @event_receiver(post_save, 'postajob.purchasedproduct', 'created')
+        @receiver(post_save, sender=Invoice, weak=False)
+        @receiver(post_save, sender=PurchasedProduct, weak=False)
         def post_add_invoice(sender, instance, **kwargs):
             """
             Schedules tasks for the instance if pre_add_invoice determined that an
