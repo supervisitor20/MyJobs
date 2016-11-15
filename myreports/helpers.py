@@ -90,11 +90,14 @@ def serialize(fmt, data, values=None, order_by=None):
             val = val.strftime("%b %d, %Y %I:%M%p")
 
         return val
-    if values:
-        values = [value.split('__')[0] for value in values]
-    data = [dict({'pk': record['pk']}, **record['fields'])
-            for record in serializers.serialize(
-                'python', data, use_natural_foreign_keys=True, use_natural_primary_keys=True, fields=values)]
+
+    if isinstance(data, query.QuerySet):
+        if values:
+            values = [value.split('__')[0] for value in values]
+        data = [dict({'pk': record['pk']}, **record['fields'])
+                for record in serializers.serialize(
+                    'python', data, use_natural_foreign_keys=True, use_natural_primary_keys=True, fields=values)]
+
     if data:
         values = values or sorted(data[0].keys())
         order_by = order_by or values[0]
