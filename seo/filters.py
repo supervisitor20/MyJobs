@@ -256,11 +256,11 @@ class FacetListWidget(object):
             column_header = (accordion_class +
                              '<span class="direct_highlightedText">%s</span></h3>')
             column_header = column_header % self.get_title()
-            return column_header
-        column_header = (accordion_class +
-                         '<span class="direct_filterLabel">%s</span> '
-                         '<span class="direct_highlightedText">%s</span></h3>')
-        column_header = column_header % (_("Filter by"), self.get_title())
+        else:
+            column_header = (accordion_class +
+                             '<span class="direct_filterLabel">%s</span> '
+                             '<span class="direct_highlightedText">%s</span></h3>')
+            column_header = column_header % (_("Filter by"), self.get_title())
         return column_header
 
     def _render_lis(self):
