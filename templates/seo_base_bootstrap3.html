@@ -57,6 +57,8 @@
     {% if site_config.meta %} {{site_config.meta|safe}} {% endif %}
 
     {% block direct_extraMetaOpenGraph %}{% endblock %}
+
+    {% block meta_serp_schema %}{% endblock meta_serp_schema %}
 </head>
 <body {% block directseo_bodySchema %}{% endblock directseo_bodySchema %}>
 <div id="page_content">
