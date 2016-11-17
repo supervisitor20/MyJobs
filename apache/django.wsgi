@@ -13,6 +13,6 @@ if PROJECT_DIR_PARENT not in sys.path:
 os.environ['CELERY_LOADER'] = 'django'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 application = newrelic.agent.wsgi_application()(application)
