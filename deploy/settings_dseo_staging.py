@@ -66,7 +66,7 @@ MIDDLEWARE_CLASSES += (
     'wildcard.middleware.WildcardMiddleware',
     'middleware.RedirectOverrideMiddleware',
 )
-TEMPLATE_CONTEXT_PROCESSORS += (
+TEMPLATES[0]['OPTIONS']['context_processors'] += (
     "social_links.context_processors.social_links_context",
     "seo.context_processors.site_config_context",
 )

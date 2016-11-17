@@ -95,7 +95,7 @@ HAYSTACK_CONNECTIONS = {
     }
 }
 
-TEMPLATE_CONTEXT_PROCESSORS += (
+TEMPLATES[0]['OPTIONS']['context_processors'] += (
     'mymessages.context_processors.message_lists',
 )
 
