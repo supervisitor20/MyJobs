@@ -266,12 +266,12 @@ function jsonp_ajax_call(ajax_url) {
 JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
 */
   //Javascript to show search criteria in mobile view
-  $(".mobile-search-btn").on("click", function(e) {
+  $(".mobile-search-btn").on("click", function() {
     $(".search-criteria-box").toggleClass("show-search-criteria");
   });
 
   //Javascript for showing the search facets in mobile view on click
-  $("#mobile_search").on("click", function(e) {
+  $("#mobile_search").on("click", function() {
     var mobileSearchFacets = $(".mobile-search-facets");
     mobileSearchFacets.toggleClass("show-mobile-search-facets");
   });
