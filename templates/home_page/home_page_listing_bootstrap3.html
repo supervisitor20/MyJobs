@@ -14,10 +14,10 @@
         {
             "@context": "http://schema.org",
             "@type": "WebSite",
-            "url": "http://www.indianapolis.jobs/",
+            "url": "{{request.get_host}}",
             "potentialAction": {
                 "@type":"SearchAction",
-                "target":"http://www.indianapolis.jobs/jobs/?q={q}&loc=en_us&source=sitelinks_searchbox",
+                "target":"{{request.get_host}}/jobs/?q={q}&loc=en_us&source=sitelinks_searchbox",
                 "query-input":"required name=q"
             }
         }
