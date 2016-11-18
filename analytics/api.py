@@ -178,6 +178,31 @@ def dynamic_chart(request):
     # if request.method != 'POST':
     #     return HttpResponseNotAllowed(['POST'])
 
+    client = MongoClient(MONGO_HOST)
+    job_views = client.analytics.job_views
+
+    query = [
+        {'$match': {'time_first_viewed': {'$type': 'date'}}},
+        {'$match': {'time_first_viewed': {'$gte': datetime.today() -
+                                                  timedelta(days=7)}}},
+        {'$match': {'time_first_viewed': {'$lte': datetime.today()}}},
+        {
+            "$group" :
+                {
+                    "_id":
+                        {
+                            "month": {"$month": "$time_first_viewed"},
+                            "day": {"$dayOfMonth": "$time_first_viewed"},
+                            "year": {"$year": "$time_first_viewed"}
+                        },
+                    "count": {"$sum": '$view_count'}
+                }
+        },
+        {'$sort': {'_id': 1}}
+    ]
+
+    records = job_views.aggregate(query)
+
     response = {
         "column_names":
             [
