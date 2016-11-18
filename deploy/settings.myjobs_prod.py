@@ -9,7 +9,7 @@ DEBUG = False
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_mj/files/"
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/myjobs_static/"
 
 DATABASES = {
     'default': dict({
