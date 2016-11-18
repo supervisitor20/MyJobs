@@ -32,7 +32,7 @@ DATABASES = {
     }, **ARCHIVE_PROD)
 }
 
-ALLOWED_HOSTS = ['secure.my.jobs', 'my.jobs', 'localhost']
+ALLOWED_HOSTS = ['secure.my.jobs', 'my.jobs', 'localhost', 'testing.my.jobs']
 
 # Add newrelic here since it shouldn't be used on non-production servers
 MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('middleware.NewRelic',)
