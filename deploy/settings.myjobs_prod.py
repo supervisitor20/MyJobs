@@ -59,19 +59,19 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime('.'))),
         'LOCATION': [
-            'dseomj-mc-cluster.qksjst.0001.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0002.use1.cache.amazonaws.com:11211',
         ]
     },
     'sessions': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': [
-            'dseomj-mc-cluster.qksjst.0001.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0002.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0003.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0004.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0005.use1.cache.amazonaws.com:11211',
-            'dseomj-mc-cluster.qksjst.0006.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0003.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0004.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0005.use1.cache.amazonaws.com:11211',
+            'dseomj-vpc-cluster.qksjst.0006.use1.cache.amazonaws.com:11211',
          ]
     }
 }
