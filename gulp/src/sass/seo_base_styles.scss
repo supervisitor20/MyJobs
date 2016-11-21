@@ -130,6 +130,19 @@ legend{
   border-radius: 3px;
   font-weight: 100;
 }
+
+.show-more {
+  @extend .global-btn;
+  font-weight: 400;
+  color: $white !important;
+  text-decoration: none;
+  padding: 0.8rem;
+  margin-right: 0.3rem;
+}
+.show-less {
+  @extend .show-more;
+  background-color: orangered !important;
+}
 /*NEED TO ORGANIZE THIS CSS*/
 .no-scroll {
   overflow: hidden;
@@ -196,10 +209,7 @@ legend{
     }
   }
 }
-.more-less-facet-filter{
-  color: $primary-navy-blue;
-  padding-right: 10px;
-}
+
 .site-name {
   color: #3a4135;
   position: relative;
@@ -360,24 +370,60 @@ a.direct_optionsLess {
 }
 
 #mobile_direct-saved-search-box, #direct-saved-search-box {
+  padding: 0 15px;
+  margin-bottom: -3.1rem;
 
+  h3 {
+    @extend .facet-header;
+    margin: -1px -15px;
+    font-size: 20px;
+  }
   form {
     padding: 15px 0px 0px 0px;
   }
-  h3 {
-    @extend .facet-header;
-  }
-
   .enter-email {
     border: 2px solid $primary-navy-blue;
   }
   .email-frequency {
     border: 2px solid $primary-navy-blue;
   }
-	.get-title {
-		text-align: center;
-	}
+  .email-box {
+    border: 1px solid $extra-light-gray;
+    background-color: $medium-gray;
+    margin-bottom: 30px;
+    border-top: none;
+    border-radius: 3px;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 3px #bbb;
+    margin-top: 75px;
+    padding: 0px 10px;
+  }
+  .search-sent-text {
+      text-align: center;
+  }
+  .direct-action-btn {
+      margin: 20px 0;
+      text-align: center;
+
+      a {
+          background-color: $btn-gray;
+          color: $white;
+          padding: 10px;
+          border-radius: 3px;
+      }
+  }
+  .save-email {
+    margin-top: 15px;
+    width: 100%;
+    background-color: $primary-navy-blue;
+    color: $white;
+
+    &:hover {
+      background-color: $btn-gray;
+    }
+  }
 }
+
 #direct_disambiguationDiv {
   h3 {
     @extend .facet-header;
@@ -388,6 +434,14 @@ a.direct_optionsLess {
   h3 {
     @extend .facet-header;
   }
+}
+
+.mobile-search-btn {
+  background-color: $btn-gray;
+  color: $primary-navy-blue;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
 }
 
 .filter-box {
@@ -699,7 +753,7 @@ margin-bottom: 50px;
 /*RIGHT SIDE SEARCH RESULTS STYLES*/
   .right-content {
     .show-more-jobs {
-      float: right;
+      float: left;
       margin-top: 25px;
       @extend .global-btn;
     }
@@ -1117,9 +1171,8 @@ margin-bottom: 50px;
     display: none;
   }
   #mobile_social_media {
-    padding-top: 50px;
-    margin: 0 auto;
-    width: 63%;
+    margin: 5rem auto 7rem auto;
+    width: 76%;
   }
 
   .mobile-search-facets {
@@ -1132,21 +1185,12 @@ margin-bottom: 50px;
   .mobile-search-facets.show-mobile-search-facets {
     display: block;
   }
-  .facets {
-    display: none;
-  }
   .social-media {
     margin-top: 75px;
   }
   .mobile-search-criteria {
     text-align: center;
     padding: 25px 0px;
-  }
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
   }
   #main_nav {
     .right-nav {
@@ -1163,50 +1207,6 @@ margin-bottom: 50px;
       text-align: center;
     }
 
-  }
-  #mobile_direct-saved-search-box, #direct-saved-search-box {
-    padding: 0 15px;
-    margin-bottom: -40px;
-
-    h3 {
-      margin: -1px -15px;
-			font-size: 20px;
-    }
-    .email-box {
-      border: 1px solid $extra-light-gray;
-      background-color: $medium-gray;
-      margin-bottom: 30px;
-      border-top: none;
-      border-radius: 3px;
-      box-sizing: border-box;
-      box-shadow: 2px 2px 3px #bbb;
-      margin-top: 75px;
-      padding: 0px 10px;
-    }
-		.search-sent-text {
-			text-align: center;
-		}
-		.direct-action-btn {
-			margin: 20px 0;
-			text-align: center;
-
-			a {
-				background-color: $btn-gray;
-				color: $white;
-				padding: 10px;
-				border-radius: 3px;
-			}
-		}
-    .save-email {
-      margin-top: 15px;
-      width: 100%;
-      background-color: $primary-navy-blue;
-      color: $white;
-
-      &:hover {
-        background-color: $btn-gray;
-      }
-    }
   }
 
   #search {
@@ -1353,6 +1353,10 @@ margin-bottom: 50px;
     display: none;
   }
 
+  .search-section, .breadcrumb-tags {
+    padding: 1rem 0 0 2rem;
+  }
+
   #direct_jobListingTitle, .jobs-found {
     margin: 0 auto;
     width: 91%;
@@ -1362,24 +1366,13 @@ margin-bottom: 50px;
     display: block;
   }
 
-  .facets {
-    display: none;
-  }
-
   .social-media {
     margin-top: 75px;
   }
 
   .mobile-search-criteria {
     text-align: center;
-    padding: 25px 0px;
-  }
-
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
+    padding: 0 0 1.6rem 0;
   }
 
   .right-content {
@@ -1489,9 +1482,7 @@ margin-bottom: 50px;
   .mobile-search-criteria {
     display: none;
   }
-  .mobile-search-facets.show-mobile-search-facets {
-    display: none;
-  }
+
   .facets {
     display: block;
   }
@@ -1579,7 +1570,7 @@ margin-bottom: 50px;
     padding: 0;
 
     .show-more-jobs {
-      float: right !important;
+      float: left;
     }
     .job-location-information {
       color: $primary-navy-blue;

@@ -48,6 +48,10 @@
 {% endblock %}
 
 {% block directseo_right_hand_column %}
+<section class="mobile-search-criteria">
+    <button id="mobile_search" class="mobile-search-btn">Filter Search Criteria</button>
+</section>
+<section class="mobile-search-facets">
 {% if company %}
 <div id="direct_companyModule" class="facets direct_rightColBox" role="menu">
   {% include 'v2/includes/company_module.html'%}
@@ -82,9 +86,14 @@
     {% endif %}
   </div>
 </div>
+</section>
 {% endblock %}
 
 {% block directseo_mobile_facets %}
+<div class="mobile-search-criteria">
+  <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
+</div>
+<div class="mobile-search-facets">
 <div id="mobile_direct_disambiguationDiv" class="mobile-facets direct_rightColBox" role="menu">
   <div class="filter-box">
     {# If clear_breadcrumb exists, we know at least one search term that can be removed has been applied, so include the breadbox #}
@@ -97,6 +106,7 @@
         {% endfor %}
     {% endif %}
   </div>
+</div>
 </div>
 {% endblock %}
 
