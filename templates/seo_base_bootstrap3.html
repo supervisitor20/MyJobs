@@ -69,12 +69,8 @@
     <div id="direct_innerContainer">
       <section id="main_content">
         <div class="row">
-          <div class="hidden-xs col-md-1"></div>
-          <div class="col-xs-12 col-md-3">
-            <div class="left-content">
-              <section id="brand_logo" class="text-center">
-                <div class="row">
-                  <div class="col-xs-12 col-md-12">
+            <article class="col-xs-12 col-md-3">
+                <section id="brand_logo" class="text-center">
                     <div class="location-logo">
                     {% with site_heading|cut:".jobs" as site_heading_base %}
                       {%if site_heading_base == site_heading %}
@@ -107,38 +103,31 @@
                       {% endif %}
                     {% endwith %}
                     </div>
-                  </div>
-                </div>
-              </section>
+                </section>
+            </article>
+            <article class="col-xs-12 col-md-9">
+                {% if site_config.browse_moc_show %}
+                  {% include "v2/includes/search_box_vets_widget.html" %}
+                {% else %}
+                  {% include 'v2/includes/search_box_widget.html' %}
+                {% endif %}
+            </article>
+        </div>
+        <div class="row">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
                 {% block directseo_right_hand_column %}{% endblock directseo_right_hand_column %}
+            </article>
+            <article class="col-xs-12 col-md-8">
+                <section class="right-content">
+                    {% block directseo_main_content %}{% endblock %}
+                    <div id="mobile_social_media">
+                      {% include 'v2/includes/add_this.html' %}
+                    </div>
+                </section>
+            </article>
         </div>
-      </div>
-
-      <div class="col-xs-12 col-md-8">
-        <div class="right-content">
-            {% if site_config.browse_moc_show %}
-              {% include "v2/includes/search_box_vets_widget.html" %}
-            {% else %}
-              {% include 'v2/includes/search_box_widget.html' %}
-            {% endif %}
-            <div class="mobile-search-criteria">
-              <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
-            </div>
-            <div class="mobile-search-facets">
-              {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
-            </div>
-            {% block directseo_main_content %}{% endblock %}
-            <div id="mobile_save_email_search">
-              {% block mobile_directseo_save_email %}{% endblock %}
-            </div>
-            <div id="mobile_social_media">
-              {% include 'v2/includes/add_this.html' %}
-            </div>
-        </div>
-      </div>
-    </div>
     </section><!-- main_content -->
-    {% endblock directseo_outer_container %}
+ {% endblock directseo_outer_container %}
 
     </div><!-- direct_innerContainer -->
   </section><!-- direct_container -->
@@ -166,15 +155,12 @@
   </div>
 </section><!--FOOTER END-->
 
-
-
-<script defer src="{{ STATIC_URL }}jquery-1.11.3.min.js"></script>
-<script defer src="{{ STATIC_URL }}seo-base-scripts.js"></script>
-
+<script defer src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
+<script defer src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
+<script defer src="{% static "seo-base-scripts-181-27.js" %}"></script>
 <script defer src="{% static "utils.181-20.js" %}"></script>
 <script defer src="{% static "secure-blocks/secure-block.181-20.js" %}"></script>
-<script defer src="{% static 'search.181-20.js' %}"></script>
-
+<script defer src="{% static "pager.164-21.js" %}"></script>
 
 {% if site_config.use_secure_blocks %}
     <script defer>
@@ -186,8 +172,6 @@
     </script>
 {% endif %}
 
-<script defer src="{{ STATIC_URL }}pager.164-21.js"></script>
-
 {% if "network" in site_tags %}
     <script defer>
         var site_name = "{{ site_name }}";
@@ -195,8 +179,6 @@
             impersonating = {% if request.impersonator %}true{% else %}false{% endif %};
     </script>
 {% endif %}
-
-<script defer src="//d2e48ltfsb5exy.cloudfront.net/framework/v2/js/code/jquery-ui-1.8.17.custom.min.js"></script>
 
 {% block ga_js %}{% include "ga.html"%}{% endblock %}
 {% block scrollJS %}{% endblock %}

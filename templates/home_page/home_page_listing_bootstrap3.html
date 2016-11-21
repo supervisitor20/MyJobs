@@ -5,7 +5,6 @@
 {% cache 600 joblisting %}
 
 {% block direct_extraHeaderContent %}
-<link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
 
 {% endblock direct_extraHeaderContent %}
 
@@ -40,8 +39,11 @@
 {% endblock directseo_main_content %}
 
 {% block directseo_right_hand_column %}
+<section class="mobile-search-criteria">
+    <button id="mobile_search" class="mobile-search-btn">Filter Search Criteria</button>
+</section>
+<section class="mobile-search-facets">
 {% if default_jobs or featured_jobs %}
-<a name="filters"></a>
 <div id="direct_disambiguationDiv" class="facets direct_rightColBox">
   <div class="filter-box">
     {% for widget in widgets %}
@@ -52,21 +54,8 @@
   </div>
 </div>
 {% endif %}
+</section>
 {% endblock directseo_right_hand_column %}
-
-{% block directseo_mobile_facets %}
-{% if default_jobs or featured_jobs %}
-<div id="mobile_direct_disambiguationDiv" class="mobile-facets direct_rightColBox">
-  <div class="filter-box">
-    {% for widget in widgets %}
-    {% if widget.render %}
-    {{ widget.render }}
-    {% endif %}
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-{% endblock directseo_mobile_facets %}
 
 {% block directseo_off_site_links %}
     {% if site_config.show_home_social_footer %}

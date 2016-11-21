@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from secrets import MONGO_HOST
 
 from django.shortcuts import HttpResponse
+from django.http import HttpResponseNotAllowed
 
 from myjobs.decorators import requires
 
@@ -136,3 +137,64 @@ def campaign_percentages(request):
     records = filtered_analytics.aggregate(query)
 
     return HttpResponse(json.dumps([format_dict(r) for r in records]))
+
+
+# @requires("view_analytics")
+def dynamic_chart(request):
+    """
+    return charting data given a set of filters, date range, and drilldown
+    selection
+
+    request
+    {
+        date_range: ("01/01/2016 00:00:00", "01/08/2016 00:00:00"),
+        active_filters: [{type: "country", value: "USA"},
+                         {type: "state", value: "Indiana"}],
+        next_filter: "browser",
+    }
+
+    response
+    {
+        "column_names":
+            [
+                {"key": "browser", "label": "Browser"},
+                {"key": "job_views", "label": "Job Views"},
+                {"key": "visits", "label": "Visits"}
+             ],
+        "rows":
+            [
+                {"browser": "Chrome", "job_views": "101",  "visits": "1050"},
+                {"browser": "IE11", "job_views": "231", "visits": "841"},
+                {"browser": "IE8", "job_views": "23", "visits": "341"},
+                {"browser": "Firefox", "job_views": "21", "visits": "298"},
+                {"browser": "Netscape Navigator", "job_views": "1", "visits": "1"},
+                {"browser": "Dolphin", "job_views": "1", "visits": "1"}
+             ]
+    }
+
+
+    """
+
+    # if request.method != 'POST':
+    #     return HttpResponseNotAllowed(['POST'])
+
+    response = {
+        "column_names":
+            [
+                {"key": "browser", "label": "Browser"},
+                {"key": "job_views", "label": "Job Views"},
+                {"key": "visits", "label": "Visits"}
+             ],
+        "rows":
+            [
+                {"browser": "Chrome", "job_views": "101",  "visits": "1050"},
+                {"browser": "IE11", "job_views": "231", "visits": "841"},
+                {"browser": "IE8", "job_views": "23", "visits": "341"},
+                {"browser": "Firefox", "job_views": "21", "visits": "298"},
+                {"browser": "Netscape Navigator", "job_views": "1", "visits": "1"},
+                {"browser": "Dolphin", "job_views": "1", "visits": "1"}
+             ]
+    }
+
+
+    return HttpResponse(json.dumps(response))
