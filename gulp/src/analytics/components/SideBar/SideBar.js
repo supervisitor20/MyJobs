@@ -1,5 +1,5 @@
 import React from 'react';
-import { Component } from 'react';
+import {Component} from 'react';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {

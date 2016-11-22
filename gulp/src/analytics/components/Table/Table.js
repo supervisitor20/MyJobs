@@ -20,7 +20,9 @@ class Table extends Component {
 }
 
 Table.propTypes = {
-  children: React.PropTypes.element.isRequired,
+  children: React.PropTypes.arrayOf(
+    React.PropTypes.element.isRequired,
+  ),
 };
 
 export default Table;
