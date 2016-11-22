@@ -1,11 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {applyFilter} from '../../main';
+import {Component} from 'react';
 
-class TableRows extends React.Component {
-  render(){
-    const rowData = this.props.data.rows;
-    const columnData = this.props.data.column_names;
+class TableRows extends Component {
+  render() {
+    const {data} = this.props;
+    const rowData = data.rows;
+    const columnData = data.column_names;
     const originalHeader = [];
     const modHeader = [];
     columnData.map((colData) => {
@@ -15,25 +15,29 @@ class TableRows extends React.Component {
     originalHeader.shift();
     const mod = modHeader.splice(0, 1);
     const getHeaders = rowData.map((item, i) => {
-      const firstCell = mod.map((colData, i) => {
-        return(
-          <td key={i}><a onClick={this.props.applyFilter} href="#">{item[colData.key]}</a></td>
+      const firstCell = mod.map((colData, index) => {
+        return (
+          <td key={index}><a href="#">{item[colData.key]}</a></td>
         );
       });
-      const cell = originalHeader.map((colData, i) => {
-        return(
-          <td key={i}>{item[colData.key]}</td>
+      const cell = originalHeader.map((colData, ind) => {
+        return (
+          <td key={ind}>{item[colData.key]}</td>
         );
       });
 
       return <tr key={i}>{firstCell}{cell}</tr>;
     });
-    return(
+    return (
       <tbody>
         {getHeaders}
       </tbody>
     );
   }
 }
+
+TableRows.propTypes = {
+  data: React.PropTypes.object.isRequired,
+};
 
 export default TableRows;

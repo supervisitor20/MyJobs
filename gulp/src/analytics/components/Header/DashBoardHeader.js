@@ -1,13 +1,13 @@
 import React from 'react';
-import { Component } from 'react';
+import {Component} from 'react';
 import moment from 'moment';
-import { Row, Col } from 'react-bootstrap';
+import {Row, Col} from 'react-bootstrap';
 
 class DashBoardHeader extends Component {
   render() {
     const localizeTime = moment().format('LT');
     const localizeDate = moment().format('MMMM Do, YYYY');
-    return(
+    return (
         <div id="title_header">
           <Row>
             <Col md={8}>

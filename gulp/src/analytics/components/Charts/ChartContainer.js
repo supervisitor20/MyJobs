@@ -1,20 +1,20 @@
 import React from 'react';
-import { Component } from 'react';
-import { Row, Col } from 'react-bootstrap';
+import {Component} from 'react';
+import {Row, Col} from 'react-bootstrap';
 import SimpleBarChart from './SimpleBarChart';
 
 class ChartContainer extends Component {
-  constructor(props, context){
+  constructor(props, context) {
     super(props, context);
   }
-  render(){
+  render() {
     const {chartData} = this.props;
-    return(
+    return (
         <div id="charts">
           <Row>
             <Col md={12}>
               <div className="chart-title">
-                <h2>Location</h2>
+                <h2>Job Views By Browser</h2>
               </div>
             </Col>
           </Row>
@@ -28,5 +28,9 @@ class ChartContainer extends Component {
     );
   }
 }
+
+ChartContainer.propTypes = {
+  chartData: React.PropTypes.object.isRequired,
+};
 
 export default ChartContainer;

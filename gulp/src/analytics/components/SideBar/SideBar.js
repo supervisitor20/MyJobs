@@ -3,23 +3,23 @@ import { Component } from 'react';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
   }
   render() {
     const dimensions = [
-      {name: "Demographics"},
-      {name: "Geo"},
-      {name: "Technology"},
-      {name: "Mobile"},
+      {name: 'Demographics'},
+      {name: 'Geo'},
+      {name: 'Technology'},
+      {name: 'Mobile'},
     ];
     const dimension = dimensions.map((dim, i) => {
-      return(
+      return (
         <SideBarDimension key={i} dimension={dim} />
       );
     });
-    return(
-      <div id='menu'>
+    return (
+      <div id="menu">
         <ul className="sidebar-container">
           <li className="side-dimension-header">
             <p className="filter-header">Dimensions</p>

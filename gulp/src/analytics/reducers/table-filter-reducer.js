@@ -6,8 +6,8 @@ export const initialPageData = {
   fetched: false,
   navigation: [
     {
-      navId: navCount
-    }
+      navId: navCount,
+    },
   ],
   'PageLoadData': {},
 };
@@ -20,8 +20,11 @@ export default handleActions({
       fetched: true,
       navigation: [
         {
-          navId: navCount++
-        }
+          navId: navCount++,
+        },
+        {
+          navId: navCount++,
+        },
       ],
       'PageLoadData': action.payload,
     };

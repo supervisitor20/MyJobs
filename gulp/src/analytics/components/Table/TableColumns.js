@@ -1,21 +1,25 @@
 import React from 'react';
+import {Component} from 'react';
 
-class TableColumns extends React.Component {
-  render(){
-    const { data } = this.props;
+class TableColumns extends Component {
+  render() {
+    const {data} = this.props;
     const col = data.column_names;
-    const colHeaders = col.map((colData, i) => {
-        return(
-          <th key={colData.key}>{colData.label}</th>
-        );
-      return colHeaders;
+    const colHeaders = col.map((colData) => {
+      return (
+        <th key={colData.key}>{colData.label}</th>
+      );
     });
-    return(
+    return (
       <thead>
         <tr>{colHeaders}</tr>
       </thead>
     );
   }
 }
+
+TableColumns.propTypes = {
+  data: React.PropTypes.object.isRequired,
+};
 
 export default TableColumns;

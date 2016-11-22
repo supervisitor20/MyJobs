@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, Route, IndexRoute, browserHistory} from 'react-router';
+import {Router, Route, browserHistory} from 'react-router';
 
 import 'babel/polyfill';
 import createReduxStore from '../common/create-redux-store';
@@ -9,6 +9,7 @@ import {combineReducers} from 'redux';
 import {installPolyfills} from '../common/polyfills';
 
 import AnalyticsApp from './components/AnalyticsApp';
+
 import filterReducer, {initialPageData} from './reducers/table-filter-reducer';
 
 import Api from './api';
@@ -18,30 +19,33 @@ import {getCsrf} from 'common/cookie';
 // cross-browser support
 installPolyfills();
 
+// Grabbing API class to use for data
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
 
+// Combining the reducers to make a root reducer
 const rootReducer = combineReducers({
   pageLoadData: filterReducer,
 });
 
-// state to pass to our reducer when the app starts
+// Getting the initial state to load into the application
 export const initialState = {
   pageLoadData: initialPageData,
 };
 
+// Adding thunk for async actions
 const thunkExtra = {
   api,
 };
 
-
+// creating the store
 const store = createReduxStore(rootReducer, initialState, thunkExtra);
 
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path="/" component={AnalyticsApp}></Route>
+      <Route path="/(:filter)" component={AnalyticsApp}/>
     </Router>
   </Provider>
-  ,document.getElementById('content')
+  , document.getElementById('content')
 );

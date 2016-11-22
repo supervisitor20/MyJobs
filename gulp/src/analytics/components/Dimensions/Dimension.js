@@ -2,10 +2,21 @@ import React from 'react';
 import { Component } from 'react';
 
 class DimensionList extends Component {
- render(){
-   return(
-     <div className="dimension_list">
-       <span className="dimension-title">
+  constructor() {
+    super();
+    this.state = {
+      activeList: false,
+    };
+  }
+  toggleDimensionList() {
+    this.setState({
+      activeList: !this.state.activeList,
+    });
+  }
+ render() {
+   return (
+     <div onClick={this.toggleDimensionList.bind(this)} className={this.state.activeList ? 'dimension_list open' : 'dimension_list'}>
+       <span className={this.state.activeList ? 'dimension-title exit' : 'dimension-title'}>
          <span className="add-dimension">Add Dimension</span>
          <span className="dimension-icon"></span>
          <span className="dimension-icon"></span>
