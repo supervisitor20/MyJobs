@@ -6,7 +6,10 @@ from pymongo import MongoClient
 from secrets import MONGO_HOST
 
 from django.shortcuts import HttpResponse
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, Http404
+from django.views.decorators.csrf import csrf_exempt
+
+from dateutil import parser as dateparser
 
 from myjobs.decorators import requires
 
@@ -140,6 +143,7 @@ def campaign_percentages(request):
 
 
 # @requires("view_analytics")
+@csrf_exempt
 def dynamic_chart(request):
     """
     return charting data given a set of filters, date range, and drilldown
@@ -147,10 +151,11 @@ def dynamic_chart(request):
 
     request
     {
-        date_range: ("01/01/2016 00:00:00", "01/08/2016 00:00:00"),
-        active_filters: [{type: "country", value: "USA"},
-                         {type: "state", value: "Indiana"}],
-        next_filter: "browser",
+        "date_start": "01/01/2016 00:00:00",
+        "date_end": "01/08/2016 00:00:00",
+        "active_filters": [{"type": "country", "value": "USA"},
+                         {"type": "state", "value": "Indiana"}],
+        "next_filter": "browser",
     }
 
     response
@@ -159,7 +164,6 @@ def dynamic_chart(request):
             [
                 {"key": "browser", "label": "Browser"},
                 {"key": "job_views", "label": "Job Views"},
-                {"key": "visits", "label": "Visits"}
              ],
         "rows":
             [
@@ -174,52 +178,97 @@ def dynamic_chart(request):
 
 
     """
+    def format_dict(input_dict, next_filter):
+        aggregation_key = input_dict['_id']
+        return {
+            next_filter: aggregation_key,
+            'job_views': input_dict['count']
+        }
 
-    # if request.method != 'POST':
-    #     return HttpResponseNotAllowed(['POST'])
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
 
     client = MongoClient(MONGO_HOST)
     job_views = client.analytics.job_views
+    query_data = json.loads(request.POST.get('request', '{}'))
+
+    if not query_data:
+
+
+    try:
+        date_start = dateparser.parse(query_data['date_start'])
+    except ValueError:
+        raise Http404('Invalid date start: ' + query_data['date_start'])
+
+    try:
+        date_end = dateparser.parse(query_data['date_end'])
+    except ValueError:
+        raise Http404('Invalid date end: ' + query_data['date_end'])
+
+    next_filter = query_data['next_filter']
 
     query = [
-        {'$match': {'time_first_viewed': {'$type': 'date'}}},
-        {'$match': {'time_first_viewed': {'$gte': datetime.today() -
-                                                  timedelta(days=7)}}},
-        {'$match': {'time_first_viewed': {'$lte': datetime.today()}}},
+        {'$match': {'time_first_viewed': {'$type': 'date', '$gte': date_start, '$lte': date_end}}},
+    ]
+
+    for filter in query_data['active_filters']:
+        query.append({
+            '$match': {filter['type']: filter['value']}
+        })
+
+    query = query + [
         {
             "$group" :
                 {
-                    "_id":
-                        {
-                            "month": {"$month": "$time_first_viewed"},
-                            "day": {"$dayOfMonth": "$time_first_viewed"},
-                            "year": {"$year": "$time_first_viewed"}
-                        },
-                    "count": {"$sum": '$view_count'}
+                    "_id": "$" + next_filter,
+                    "count": {"$sum": 1}
                 }
-        },
-        {'$sort': {'_id': 1}}
+            },
+        {'$sort': {'_id': 1}},
+        {'$limit': 10},
     ]
 
+    records = [
+        {"count": 1509, "_id": "USA"},
+        {"count": 501, "_id": "ENG"},
+        {"count": 376, "_id": "GER"},
+        {"count": 229, "_id": "AUS"},
+        {"count": 173, "_id": "FRA"},
+       ]
+
     records = job_views.aggregate(query)
+    # hardcoded until mongo can be made less... slow as hell
+
 
     response = {
         "column_names":
             [
-                {"key": "browser", "label": "Browser"},
+                {"key": "found_on", "label": "Found On"},
                 {"key": "job_views", "label": "Job Views"},
-                {"key": "visits", "label": "Visits"}
              ],
         "rows":
-            [
-                {"browser": "Chrome", "job_views": "101",  "visits": "1050"},
-                {"browser": "IE11", "job_views": "231", "visits": "841"},
-                {"browser": "IE8", "job_views": "23", "visits": "341"},
-                {"browser": "Firefox", "job_views": "21", "visits": "298"},
-                {"browser": "Netscape Navigator", "job_views": "1", "visits": "1"},
-                {"browser": "Dolphin", "job_views": "1", "visits": "1"}
-             ]
+            [format_dict(r, next_filter) for r in records],
     }
 
+    return HttpResponse(json.dumps(response))
+
+def get_drilldown_categories(request):
+    """
+    return a list of possible drilldown categories. this is currently
+    hard-coded, but will eventually be loaded via the DB and thus be
+    dynamic
+
+    :param request: GET
+    :return: list of possible drilldown categories
+
+    """
+    response = [
+        {"key": "country", "label": "Country"},
+        {"key": "state", "label": "State"},
+        {"key": "city", "label": "City"},
+        {"key": "job_source_name", "label": "Job Source"},
+        {"key": "time_found", "label": "Time Found"},
+        {"key": "found_on", "label": "Site Found"},
+    ]
 
     return HttpResponse(json.dumps(response))
