@@ -182,7 +182,8 @@ def dynamic_chart(request):
         aggregation_key = input_dict['_id']
         return {
             next_filter: aggregation_key,
-            'job_views': input_dict['count']
+            'visitors': input_dict['visitors'],
+            'job_views': input_dict['view_count']
         }
 
     if request.method != 'POST':
@@ -193,7 +194,25 @@ def dynamic_chart(request):
     query_data = json.loads(request.POST.get('request', '{}'))
 
     if not query_data:
-
+        # Temporary code: Remove before production
+        response = {
+            "column_names":
+                [
+                    {"key": "browser", "label": "Browser"},
+                    {"key": "visitors", "label": "Visitors"},
+                    {"key": "job_views", "label": "Job Views"}
+                 ],
+            "rows":
+                [
+                    {"browser": "Chrome", "visitors": "101",  "job_views": "1050"},
+                    {"browser": "IE11", "visitors": "231", "job_views": "841"},
+                    {"browser": "IE8", "visitors": "23", "job_views": "341"},
+                    {"browser": "Firefox", "visitors": "21", "job_views": "298"},
+                    {"browser": "Netscape Navigator", "visitors": "1", "job_views": "1"},
+                    {"browser": "Dolphin", "visitors": "1", "job_views": "1"}
+                 ]
+        }
+        return HttpResponse(json.dumps(response))
 
     try:
         date_start = dateparser.parse(query_data['date_start'])
@@ -221,13 +240,15 @@ def dynamic_chart(request):
             "$group" :
                 {
                     "_id": "$" + next_filter,
-                    "count": {"$sum": 1}
+                    "visitors": {"$sum": 1},
+                    "view_count": {"$sum": '$view_count'}
                 }
             },
         {'$sort': {'_id': 1}},
         {'$limit': 10},
     ]
 
+    # hardcoded until mongo can be made less... slow as hell
     records = [
         {"count": 1509, "_id": "USA"},
         {"count": 501, "_id": "ENG"},
@@ -237,7 +258,6 @@ def dynamic_chart(request):
        ]
 
     records = job_views.aggregate(query)
-    # hardcoded until mongo can be made less... slow as hell
 
 
     response = {
