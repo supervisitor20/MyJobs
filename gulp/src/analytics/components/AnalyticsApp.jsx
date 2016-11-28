@@ -29,7 +29,8 @@ class AnalyticsApp extends React.Component {
 {          // <DashBoardHeader />
           // <ChartContainer chartData=analytics/>
           // <TableContainer tableData=analytics/>
-}        </div>
+}
+        </div>
         <div className="clearfix"></div>
       </div>
     );

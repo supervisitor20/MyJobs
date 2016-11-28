@@ -1,12 +1,9 @@
 import React from 'react';
-import { Component } from 'react';
+import {Component} from 'react';
 
-import TableContainer from '../Table/TableContainer';
-
-class TabsPanel extends Component{
-  render(){
-    const {id} = this.props;
-    return(
+class TabsPanel extends Component {
+  render() {
+    return (
       <div className="tab-content">
         <div>
           {this.props.children}
@@ -15,5 +12,11 @@ class TabsPanel extends Component{
     );
   }
 }
+
+TabsPanel.propTypes = {
+  children: React.PropTypes.arrayOf(
+    React.PropTypes.element.isRequired,
+  ),
+};
 
 export default TabsPanel;

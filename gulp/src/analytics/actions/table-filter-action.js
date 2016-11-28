@@ -10,27 +10,9 @@ export function doGetPageData() {
   };
 }
 
-// export function doMongoQuery() {
-//   return async ()
-// }
-
-// export const applyFilter = () => {
-//   return{
-//     type: "APPLY_FILTER",
-//     payload: {
-//       "rows": [
-//         {"job_views": "748", "visits": "1050", "browser": "Lorem Ipsum"},
-//         {"job_views": "2637", "visits": "841", "browser": "Lorem Ipsum"},
-//         {"job_views": "364", "visits": "341", "browser": "Lorem Ipsum"},
-//         {"job_views": "1675", "visits": "298", "browser": "Lorem Ipsum"},
-//         {"job_views": "123", "visits": "1", "browser": "Lorem Ipsum"},
-//         {"job_views": "647", "visits": "1", "browser": "Lorem Ipsum"}
-//       ],
-//       "column_names": [
-//         {"key": "browser", "label": "Lorem Ipsum"},
-//         {"key": "job_views", "label": "Lorem Ipsum"},
-//         {"key": "visits", "label": "Lorem Ipsum"}
-//       ]
-//     }
-//   }
-// }
+export function doMongoQuery() {
+  return async (dispatch, _, {api}) => {
+    const query = await api.addFilters();
+    dispatch(queryMongo(query));
+  };
+}

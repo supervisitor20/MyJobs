@@ -7,15 +7,14 @@ import ChartContainer from '../Charts/ChartContainer';
 import DashBoardHeader from '../Header/DashBoardHeader';
 
 class TabsContainer extends Component {
-  constructor(props, context){
+  constructor(props) {
     super(props);
   }
-  render(){
+  render() {
     const {tabData} = this.props;
-    console.log("THIS IS TAB DATA: ", tabData);
     const tabs = tabData.navigation.map((tab, i) => {
-      return(
-        <Tab key={i} tabData={tabData}  id={i}>
+      return (
+        <Tab key={i} tabData={tabData} id={i}>
           <TabsPanel panelData={tabData} id={i}>
             <DashBoardHeader/>
             <ChartContainer chartData={tabData} />
@@ -24,12 +23,16 @@ class TabsContainer extends Component {
         </Tab>
       );
     });
-    return(
+    return (
       <div id="tabbed">
         {tabs}
       </div>
     );
   }
 }
+
+TabsContainer.propTypes = {
+  tabData: React.PropTypes.object.isRequired,
+};
 
 export default TabsContainer;
