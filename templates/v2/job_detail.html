@@ -91,11 +91,13 @@
 {% endblock %}
 
 {% block directseo_right_hand_column %}
+<section class="mobile-search-facets">
 {% if company %}
 <div id="direct_companyModule" class="direct_rightColBox" role="menu">
   {% include 'v2/includes/company_module.html'%}
 </div>
 {% endif %}
+</section>
 {% endblock %}
 {% block extra-js %}
     <script>
