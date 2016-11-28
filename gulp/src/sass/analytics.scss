@@ -95,12 +95,123 @@ a{
 .nav.navbar-right.right-options {
   margin-right: 0;
 }
+.nav.navbar-nav.navbar-right.right-options li a:hover{
+  background-color: #f7f8f9;
+}
+
+/*CSS FOR THE TABS*/
+#tabbed{
+  float : left;
+  width : 100%;
+  margin-top: -44px;
+}
+
+.tab-input{
+  display : none;
+}
+
+.tab{
+  float       : left;
+  box-sizing  : border-box;
+  margin      : 0;
+  padding     : 0.5em 0.5em 0;
+  overflow    : hidden;
+  font-size   : 1em;
+  font-weight : normal;
+}
+.tab{
+  display: block;
+  margin: 0;
+  text-align: center;
+  color: #5a6d81;
+  -webkit-transform: perspective(100px) rotateX(30deg);
+  -moz-transform: perspective(100px) rotateX(30deg);
+  transform: perspective(100px) rotateX(30deg);
+  padding: 0 15px 0 15px;
+  cursor: pointer;
+  line-height: 45px;
+  height: 45px;
+  max-height: 45px;
+  border-left: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  background: #ddd;
+  position: relative;
+  width: 100px;
+  max-width: 100px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  }
+
+.tab-input:checked + .tab{
+  z-index: 2;
+  background: #f7f8f9;
+}
+
+.tab-input:checked + .tab:before{
+  border-color : transparent #f7f8f9 transparent transparent;
+}
+
+
+.tab-input:checked + .tab:after{
+  border-color : transparent transparent transparent #f7f8f9;
+}
+.tab:before, .tab:after{
+  content : '';
+  background : transparent;
+  height: 20px;
+  width: 20px;
+  border-radius: 100%;
+  border-width: 10px;
+  top: 0px;
+  border-style : solid;
+  position : absolute;
+}
+.tab:before{
+  border-color : transparent #ddd transparent transparent;
+  -webkit-transform : rotate(48deg);
+  left: -23px;
+}
+
+.tab:after{
+  border-color : transparent transparent transparent #ddd;
+  -webkit-transform : rotate(-48deg);
+  right: -17px;
+}
+
+.tab-input + .tab + div{
+  position      : relative;
+  z-index       : 1;
+  float         : right;
+  box-sizing    : border-box;
+  width         : 100%;
+  margin        : 2.5em 0 0 -100%;
+  padding       : 0.5em 0.75em;
+}
+
+.tab-input:checked + .tab{
+  position : relative;
+  z-index  : 2;
+}
+
+.tab-input:not(:checked) + .tab + div{
+  display : none;
+}
+.close-tab{
+  position: absolute;
+  top: -10px;
+  right: 5px;
+  height: 25px;
+  font-size: 12px;
+}
+
 
 
 /*CSS FOR THE DASHBOARD HEADER*/
 
 #title_header{
-  margin-bottom: 50px;
+  margin: 25px 0px 50px 0px;
 
   .dashboard-title{
     font-weight: 100;
@@ -240,6 +351,9 @@ box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
 .rwd-table th, .rwd-table td:before {
   color: #5a6d81;
   font-size: 16px;
+}
+.rwd-table th:not(:nth-child(1)){
+  width: 25%;
 }
 #dimension_filter{
   float: left;
@@ -395,7 +509,6 @@ color: #5a6d81;
   text-decoration: none;
   font-size: 20px;
   color: #5a6d81;
-  font-weight: bold;
   -moz-transition: color 0.3s ease;
   // -o-transition: color 0.3s ease;
   -webkit-transition: color 0.3s ease;

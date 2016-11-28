@@ -5,4 +5,7 @@ export default class Api {
   async getInitialPageData() {
     return await this.api.get('/analytics/api/dynamic');
   }
+  // async queryMongo(){
+  //   return await this.api.get
+  // }
 }

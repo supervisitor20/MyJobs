@@ -56,7 +56,6 @@
     "react-dom": "^0.14.3",
     "react-filtered-multiselect": "^0.4.2",
     "react-fontawesome": "^1.2.0",
-    "react-loading-indicator": "^1.0.2",
     "react-onclickout": "^2.0.4",
     "react-redux": "^4.4.5",
     "react-router": "^1.0.0",

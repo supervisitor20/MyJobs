@@ -3,9 +3,10 @@ import {connect} from 'react-redux';
 import {doGetPageData} from '../actions/table-filter-action';
 import SideBar from './SideBar/SideBar';
 import Header from './Header/Header';
-import DashBoardHeader from './Header/DashBoardHeader';
-import ChartContainer from './Charts/ChartContainer';
-import TableContainer from './Table/TableContainer';
+// import DashBoardHeader from './Header/DashBoardHeader';
+// import ChartContainer from './Charts/ChartContainer';
+// import TableContainer from './Table/TableContainer';
+import TabsContainer from './Tabs/TabsContainer';
 
 class AnalyticsApp extends React.Component {
   componentDidMount() {
@@ -24,10 +25,12 @@ class AnalyticsApp extends React.Component {
           <SideBar sideData={analytics}/>
           <Header headerData={analytics}/>
         <div id="page_content">
-          <DashBoardHeader />
-          <ChartContainer chartData={analytics}/>
-          <TableContainer tableData={analytics}/>
-        </div>
+          <TabsContainer tabData={analytics}/>
+{          // <DashBoardHeader />
+          // <ChartContainer chartData=analytics/>
+          // <TableContainer tableData=analytics/>
+}        </div>
+        <div className="clearfix"></div>
       </div>
     );
   }

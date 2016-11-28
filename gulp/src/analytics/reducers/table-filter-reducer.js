@@ -25,6 +25,9 @@ export default handleActions({
         {
           navId: navCount++,
         },
+        {
+          navId: navCount++,
+        },
       ],
       'PageLoadData': action.payload,
     };
