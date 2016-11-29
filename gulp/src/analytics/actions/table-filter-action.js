@@ -10,6 +10,18 @@ export function doGetPageData() {
   };
 }
 
+// export function doTableFilter(filterName, tabId) {
+//   return async (dispatch, _, {api}) => {
+//     dispatch(markPageLoadingAction(true));
+//     const filterRequest = {
+//       filterName: filterName,
+//     };
+//     const tableFilterData = await.api.getSelectedFilterData(filterRequest);
+//     dispatch(setPageData(tableFilterData));
+//     dispatch(markPageLoadingAction(false));
+//   };
+// }
+
 export function doMongoQuery() {
   return async (dispatch, _, {api}) => {
     const query = await api.addFilters();

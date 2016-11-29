@@ -6,6 +6,7 @@ class SideBar extends Component {
   constructor(props) {
     super(props);
   }
+
   render() {
     const dimensions = [
       {name: 'Demographics'},

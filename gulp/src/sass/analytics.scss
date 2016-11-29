@@ -251,6 +251,30 @@ a{
   font-weight: 100;
   color: #5a6d81;
 }
+.chart-legend{
+  font-size: 20px;
+  font-weight: 100;
+  text-anchor: middle;
+}
+path.domain{
+  fill: none;
+  stroke: #000000;
+}
+.chart-container{
+  width: 100%;
+}
+.chart{
+  width: 100%;
+  min-width: 250px;
+  height: auto;
+}
+.tick line{
+  stroke: #666666;
+  stroke-dasharray: 4, 4;
+}
+.tick text{
+  font-size: 18px;
+}
 
 /*CSS FOR THE DATA TABLE*/
 
@@ -343,9 +367,13 @@ box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
     border-bottom-width: 3px;
   }
 .rwd-table td {
-    padding: 1em !important;
     border: 1px solid #ddd;
     font-weight: 100;
+  }
+  .rwd-table td a{
+    color: #0000FF;
+    display: block;
+    padding: 15px;
   }
 }
 .rwd-table th, .rwd-table td:before {
