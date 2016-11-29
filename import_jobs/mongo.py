@@ -33,7 +33,7 @@ def jobsfs_to_mongo(guid, buid, name, mongo=settings.MONGO_HOST):
     jobs = filter_current_jobs(jobs, bu)
     jobs = (hr_xml_to_json(job, bu) for job in jobs)
     jobs = list(jobs)
-    for job in list(jobs):
+    for job in jobs:
         job['guid'] = job['guid'].lower()
 
     if len(jobs) > 0:
