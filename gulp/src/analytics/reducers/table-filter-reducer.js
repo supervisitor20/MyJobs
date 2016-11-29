@@ -26,4 +26,29 @@ export default handleActions({
       'PageLoadData': action.payload,
     };
   },
+  'CHANGE_ACTIVE_DIMENSION': (state, action) => {
+    return {
+      ...state,
+      fetching: false,
+      fetched: true,
+      navigation: [
+        {
+          navId: navCount,
+        },
+      ],
+      'PageLoadData': action.payload,
+    };
+  },
+  'APPLY_TABLE_FILTER': (state, action) => {
+    return {
+      ...state,
+      navigation: [
+        ...state.navigation,
+        {
+          navId: navCount++,
+        },
+      ],
+      'PageLoadData': action.payload,
+    };
+  },
 }, initialPageData);

@@ -27,6 +27,8 @@ class Calendar extends Component {
     });
   }
   render(){
+    const localizeTime = moment().format('LT');
+    const localizeDate = moment().format('MMMM Do, YYYY');
     var start = this.state.startDate.format('MM-DD-YYYY');
     var end = this.state.endDate.format('MM-DD-YYYY');
     var label = start + ' - ' + end;
@@ -37,9 +39,7 @@ class Calendar extends Component {
       <div>
         <DateRangePicker startDate={this.state.startDate} endDate={this.state.endDate} ranges={this.state.ranges} onEvent={this.handleEvent.bind(this)}>
           <Button className="selected-date-range-btn">
-              <span>
-                {label}
-              </span>
+              <span className="dashboard-date">{localizeDate} {localizeTime}</span>
           </Button>
         </DateRangePicker>
       </div>

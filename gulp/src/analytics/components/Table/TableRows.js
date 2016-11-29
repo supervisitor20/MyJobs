@@ -1,7 +1,16 @@
 import React from 'react';
 import {Component} from 'react';
+import {connect} from 'react-redux';
+import {doApplyTableFilter} from '../../actions/table-filter-action';
 
 class TableRows extends Component {
+  constructor(props){
+    super(props);
+  }
+  applyFilterResults(){
+    const {dispatch} = this.props;
+    dispatch(doApplyTableFilter());
+  }
   render() {
     const {data} = this.props;
     const rowData = data.rows;
@@ -17,7 +26,7 @@ class TableRows extends Component {
     const getHeaders = rowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
         return (
-          <td key={index}><a href="#">{item[colData.key]}</a></td>
+          <td key={index}><a onClick={this.applyFilterResults.bind(this)} href="#">{item[colData.key]}</a></td>
         );
       });
       const cell = originalHeader.map((colData, ind) => {
@@ -40,4 +49,6 @@ TableRows.propTypes = {
   data: React.PropTypes.object.isRequired,
 };
 
-export default TableRows;
+export default connect(state => ({
+
+}))(TableRows);

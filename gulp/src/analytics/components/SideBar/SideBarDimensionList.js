@@ -6,9 +6,9 @@ class SideBarDimension extends Component {
     super(props);
   }
   render() {
-    const {dimension} = this.props;
+    const {dimension,active} = this.props;
     return (
-      <li className="side-dimension">
+      <li onClick={active} className="side-dimension">
         <span>{dimension.name}</span>
       </li>
     );

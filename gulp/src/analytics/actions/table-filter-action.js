@@ -1,6 +1,9 @@
 import {createAction} from 'redux-actions';
 
 export const setPageData = createAction('SET_PAGE_DATA');
+export const changeActiveDimension = createAction('CHANGE_ACTIVE_DIMENSION');
+export const applyTableFilter = createAction('APPLY_TABLE_FILTER');
+export const markPageLoadingAction = createAction('MARK_PAGE_LOADING');
 export const queryMongo = createAction('QUERY_MONGO');
 
 export function doGetPageData() {
@@ -9,6 +12,22 @@ export function doGetPageData() {
     dispatch(setPageData(rawPageData));
   };
 }
+
+export function doGetActiveFilterData(){
+  return async (dispatch, _, {api}) => {
+    const activeFilterData = await api.getInitialPageData();
+    dispatch(changeActiveDimension(activeFilterData));
+  }
+}
+
+
+export function doApplyTableFilter(){
+  return async (dispatch, _, {api}) => {
+    const applyTableFilterData = await api.getInitialPageData();
+    dispatch(applyTableFilter(applyTableFilterData));
+  }
+}
+
 
 // export function doTableFilter(filterName, tabId) {
 //   return async (dispatch, _, {api}) => {

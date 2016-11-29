@@ -1,5 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
+import TableSearch from './TableSearch';
 import DimensionList from '../Dimensions/Dimension';
 
 class Table extends Component {
@@ -7,8 +8,9 @@ class Table extends Component {
     return (
       <div id="table_data">
         <div id="table_search">
-          <DimensionList/>
-              <input type="text" id="search_table" placeholder="Search..." title="Type Search" />
+          {// <DimensionList/>
+          }
+              <TableSearch/>
             </div>
             <div className="clearfix"></div>
         <table id="data_table" className="title-data rwd-table">

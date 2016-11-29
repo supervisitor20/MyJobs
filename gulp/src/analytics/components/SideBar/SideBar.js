@@ -1,12 +1,17 @@
 import React from 'react';
 import {Component} from 'react';
+import {connect} from 'react-redux';
 import SideBarDimension from './SideBarDimensionList';
+import {doGetActiveFilterData} from '../../actions/table-filter-action';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-
+  activeDimension(){
+    const {dispatch} = this.props;
+    dispatch(doGetActiveFilterData());
+  }
   render() {
     const dimensions = [
       {name: 'Demographics'},
@@ -16,7 +21,7 @@ class SideBar extends Component {
     ];
     const dimension = dimensions.map((dim, i) => {
       return (
-        <SideBarDimension key={i} dimension={dim} />
+        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={dim} />
       );
     });
     return (
@@ -33,4 +38,6 @@ class SideBar extends Component {
   }
 }
 
-export default SideBar;
+export default connect(state => ({
+
+}))(SideBar);
