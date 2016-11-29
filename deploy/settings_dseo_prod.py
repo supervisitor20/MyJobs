@@ -42,10 +42,10 @@ CACHES = {
         # the cache for multiple deployments per day.
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime(__file__))),
         'LOCATION': [
-            'prod-microsites.qksjst.0001.use1.cache.amazonaws.com:11211',
-            'prod-microsites.qksjst.0002.use1.cache.amazonaws.com:11211',
-            'prod-microsites.qksjst.0003.use1.cache.amazonaws.com:11211',
-            'prod-microsites.qksjst.0004.use1.cache.amazonaws.com:11211'
+            'prod-microsites-vpc.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'prod-microsites-vpc.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'prod-microsites-vpc.qksjst.0003.use1.cache.amazonaws.com:11211',
+            'prod-microsites-vpc.qksjst.0004.use1.cache.amazonaws.com:11211'
         ]
     },
     'sessions': {
@@ -63,8 +63,8 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime(__file__))),
         'LOCATION': [
-            'blocks.qksjst.0001.use1.cache.amazonaws.com:11211',
-            'blocks.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'blocks-vpc.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'blocks-vpc.qksjst.0002.use1.cache.amazonaws.com:11211',
         ]
     }
 }
