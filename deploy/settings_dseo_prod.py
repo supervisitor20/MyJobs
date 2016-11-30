@@ -6,7 +6,7 @@ from secrets import SOLR_AUTH, REDIRECT_PROD, ARCHIVE_PROD, REDIRECT_QC
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/dseo_static/"
 
 ALLOWED_HOSTS = ['*', ]
 
