@@ -1,4 +1,4 @@
-import json
+import json, math, csv
 
 from datetime import datetime, timedelta
 
@@ -179,15 +179,26 @@ def dynamic_chart(request):
 
     """
     def format_dict(input_dict, next_filter):
+        # TODO: Add real handling for job_views
         aggregation_key = input_dict['_id']
+        adjusted_count, error = std_error_with_count(input_dict['visitors'])
         return {
             next_filter: aggregation_key,
-            'visitors': input_dict['visitors'],
-            'job_views': input_dict['view_count']
+            'visitors': adjusted_count,
+            'job_views': adjusted_count,
         }
+
+    def calculate_error_and_count(total_count, sample_count, row_count):
+        proportion = float(row_count) / float(sample_count)
+        inner = proportion * (1.0-proportion) / sample_count
+        error = 3 * math.sqrt(inner) * total_count
+        adjusted_count = total_count * proportion
+        return int(adjusted_count), int(error)
 
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
+
+    # user_company = get_company_or_404(request)
 
     client = MongoClient(MONGO_HOST)
     job_views = client.analytics.job_views
@@ -226,16 +237,34 @@ def dynamic_chart(request):
 
     next_filter = query_data['next_filter']
 
+    top_query = {
+        # buid script to be added once it's available in records
+        # 'buid': {'$in': company_buids}
+        'time_first_viewed': {
+            '$gte': date_start,
+            '$lte': date_end
+        }
+    }
+    print top_query
+    count = job_views.find(top_query).count()
+    print count
+
+    sample_script = []
+    std_error_with_count = lambda x: calculate_error_and_count(count, count, x)
+    if count > 10000:
+        std_error_with_count = lambda x: calculate_error_and_count(count,
+                                                                   10000,
+                                                                   x)
+        sample_script = [{'$sample': {'size': 10000}}]
+
+    for a_filter in query_data['active_filters']:
+        top_query[a_filter['type']] = a_filter['value']
+
     query = [
-        {'$match': {'time_first_viewed': {'$type': 'date', '$gte': date_start, '$lte': date_end}}},
+        {'$match': top_query},
     ]
 
-    for filter in query_data['active_filters']:
-        query.append({
-            '$match': {filter['type']: filter['value']}
-        })
-
-    query = query + [
+    query = query + sample_script + [
         {
             "$group" :
                 {
@@ -244,21 +273,22 @@ def dynamic_chart(request):
                     "view_count": {"$sum": '$view_count'}
                 }
             },
-        {'$sort': {'_id': 1}},
+        {'$sort': {'visitors': -1}},
         {'$limit': 10},
     ]
 
+    print query
+
     # hardcoded until mongo can be made less... slow as hell
     records = [
-        {"count": 1509, "_id": "USA"},
-        {"count": 501, "_id": "ENG"},
-        {"count": 376, "_id": "GER"},
-        {"count": 229, "_id": "AUS"},
-        {"count": 173, "_id": "FRA"},
+        {"visitors": 1509, "view_count": 1509, "_id": "USA"},
+        {"visitors": 501, "view_count": 1509, "_id": "ENG"},
+        {"visitors": 376, "view_count": 1509, "_id": "GER"},
+        {"visitors": 229, "view_count": 1509, "_id": "AUS"},
+        {"visitors": 173, "view_count": 1509, "_id": "FRA"},
        ]
 
     records = job_views.aggregate(query)
-
 
     response = {
         "column_names":
