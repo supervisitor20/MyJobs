@@ -43,15 +43,6 @@ const thunkExtra = {
 // creating the store
 const store = createReduxStore(rootReducer, initialState, thunkExtra);
 
-setTimeout(() => {
-  console.log("NORMAL STATE: ", store.getState());
-}, 1000);
-
-setTimeout(() => {
-  console.log("TABLE STATE CHANGE: ", store.getState());
-}, 5000);
-
-
 store.dispatch(doMongoQuery());
 
 ReactDOM.render(

@@ -8,7 +8,7 @@ class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension(){
+  activeDimension() {
     const {dispatch} = this.props;
     dispatch(doGetActiveFilterData());
   }
@@ -38,6 +38,10 @@ class SideBar extends Component {
   }
 }
 
-export default connect(state => ({
+SideBar.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
+};
 
+export default connect(state => ({
+  analytics: state.pageLoadData,
 }))(SideBar);

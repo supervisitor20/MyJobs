@@ -4,7 +4,6 @@ import Tab from './Tab';
 import TabsPanel from './TabsPanel';
 import TableContainer from '../Table/TableContainer';
 import ChartContainer from '../Charts/ChartContainer';
-import DashBoardHeader from '../Header/DashBoardHeader';
 
 class TabsContainer extends Component {
   constructor(props) {

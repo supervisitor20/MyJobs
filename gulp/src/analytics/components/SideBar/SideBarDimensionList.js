@@ -6,7 +6,7 @@ class SideBarDimension extends Component {
     super(props);
   }
   render() {
-    const {dimension,active} = this.props;
+    const {dimension, active} = this.props;
     return (
       <li onClick={active} className="side-dimension">
         <span>{dimension.name}</span>
@@ -17,6 +17,7 @@ class SideBarDimension extends Component {
 
 SideBarDimension.propTypes = {
   dimension: React.PropTypes.object.isRequired,
+  active: React.PropTypes.func.isRequired,
 };
 
 export default SideBarDimension;

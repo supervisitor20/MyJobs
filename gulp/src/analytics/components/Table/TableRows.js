@@ -4,10 +4,10 @@ import {connect} from 'react-redux';
 import {doApplyTableFilter} from '../../actions/table-filter-action';
 
 class TableRows extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
   }
-  applyFilterResults(){
+  applyFilterResults() {
     const {dispatch} = this.props;
     dispatch(doApplyTableFilter());
   }
@@ -47,8 +47,9 @@ class TableRows extends Component {
 
 TableRows.propTypes = {
   data: React.PropTypes.object.isRequired,
+  dispatch: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
-
+  analytics: state.pageLoadData,
 }))(TableRows);

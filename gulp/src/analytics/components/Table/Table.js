@@ -1,7 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import TableSearch from './TableSearch';
-import DimensionList from '../Dimensions/Dimension';
+// import DimensionList from '../Dimensions/Dimension';
 
 class Table extends Component {
   render() {

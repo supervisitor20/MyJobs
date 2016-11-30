@@ -22,7 +22,6 @@ class SimpleBarChart extends Component {
             chartSeries={chartSeries}
             x = {x}
             data={axisData}
-            yTicks={[5]}
             xScale="ordinal"
             xLabel="Browser" />
         </div>

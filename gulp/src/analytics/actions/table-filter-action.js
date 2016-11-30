@@ -13,19 +13,19 @@ export function doGetPageData() {
   };
 }
 
-export function doGetActiveFilterData(){
+export function doGetActiveFilterData() {
   return async (dispatch, _, {api}) => {
     const activeFilterData = await api.getInitialPageData();
     dispatch(changeActiveDimension(activeFilterData));
-  }
+  };
 }
 
 
-export function doApplyTableFilter(){
+export function doApplyTableFilter() {
   return async (dispatch, _, {api}) => {
     const applyTableFilterData = await api.getInitialPageData();
     dispatch(applyTableFilter(applyTableFilterData));
-  }
+  };
 }
 
 
