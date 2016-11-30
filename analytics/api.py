@@ -193,7 +193,7 @@ def dynamic_chart(request):
         inner = proportion * (1.0-proportion) / sample_count
         error = 3 * math.sqrt(inner) * total_count
         adjusted_count = total_count * proportion
-        return adjusted_count, error
+        return int(adjusted_count), int(error)
 
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -251,9 +251,7 @@ def dynamic_chart(request):
 
     sample_script = []
     std_error_with_count = lambda x: calculate_error_and_count(count, count, x)
-    # sampled_unsampled = "Unsampled " + str(count)
     if count > 10000:
-        # sampled_unsampled = "Sample 10000"
         std_error_with_count = lambda x: calculate_error_and_count(count, 10000, x)
         sample_script = [{'$sample': {'size': 10000}}]
 
@@ -289,16 +287,6 @@ def dynamic_chart(request):
        ]
 
     records = job_views.aggregate(query)
-
-    # with open('results.csv', 'a') as file:
-    #     csv_writer = csv.writer(file)
-    #     csv_writer.writerow([])
-    #     csv_writer.writerow([sampled_unsampled])
-    #     csv_writer.writerow([])
-    #     csv_writer.writerow(['Title', 'Count', 'Std Dev'])
-    #     for r in records:
-    #         csv_writer.writerow([r['_id'], r['visitors'], std_error_with_count(r['visitors'])])
-
 
     response = {
         "column_names":
