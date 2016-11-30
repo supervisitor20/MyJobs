@@ -252,7 +252,9 @@ def dynamic_chart(request):
     sample_script = []
     std_error_with_count = lambda x: calculate_error_and_count(count, count, x)
     if count > 10000:
-        std_error_with_count = lambda x: calculate_error_and_count(count, 10000, x)
+        std_error_with_count = lambda x: calculate_error_and_count(count,
+                                                                   10000,
+                                                                   x)
         sample_script = [{'$sample': {'size': 10000}}]
 
     for a_filter in query_data['active_filters']:
