@@ -37,8 +37,9 @@ class Calendar extends Component {
     }
     return(
       <div>
-        <DateRangePicker startDate={this.state.startDate} endDate={this.state.endDate} ranges={this.state.ranges} onEvent={this.handleEvent.bind(this)}>
+        <DateRangePicker opens="left" startDate={this.state.startDate} endDate={this.state.endDate} ranges={this.state.ranges} onEvent={this.handleEvent.bind(this)}>
           <Button className="selected-date-range-btn">
+              <i className="head-icon fa fa-calendar" aria-hidden="true"></i>
               <span className="dashboard-date">{localizeDate} {localizeTime}</span>
           </Button>
         </DateRangePicker>

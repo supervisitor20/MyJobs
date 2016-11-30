@@ -13,10 +13,10 @@ class TableColumns extends Component {
     return (
       <thead>
         <tr>{colHeaders}</tr>
-{        // <tr class="warning no-result">
-        //   <td colSpan="8"><i className="fa fa-warning"></i>No Results Found</td>
-        // </tr>
-}      </thead>
+        <tr className="warning no-result">
+          <td colSpan="8"><i className="fa fa-warning"></i>No Results Found</td>
+        </tr>
+      </thead>
     );
   }
 }

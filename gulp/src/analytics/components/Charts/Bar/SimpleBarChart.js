@@ -1,8 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
-import {
-  BarChart,
-} from 'react-d3-basic';
+import {BarChart} from 'react-d3-basic';
 
 class SimpleBarChart extends Component {
     render() {
@@ -17,15 +15,14 @@ class SimpleBarChart extends Component {
       const x = d => d.browser;
       return (
         <div id="bar_chart" style={{
-          width: '100%',
-          maxHeight: '400px',
-          height: '400px'}}>
+          width: '100%'}}>
           <BarChart
-            width={1200}
-            height={400}
+            width={1600}
+            height={500}
             chartSeries={chartSeries}
             x = {x}
             data={axisData}
+            yTicks={[5]}
             xScale="ordinal"
             xLabel="Browser" />
         </div>

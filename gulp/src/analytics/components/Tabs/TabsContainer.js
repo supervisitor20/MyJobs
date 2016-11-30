@@ -16,7 +16,6 @@ class TabsContainer extends Component {
       return (
         <Tab key={i} tabData={tabData} id={i}>
           <TabsPanel panelData={tabData} id={i}>
-            <DashBoardHeader/>
             <ChartContainer chartData={tabData} />
             <TableContainer tableData={tabData} />
           </TabsPanel>

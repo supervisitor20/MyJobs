@@ -93,6 +93,7 @@ a{
   color: #5a6d81;
   font-weight: 100;
   margin-top: 0px;
+  padding-left: 10px;
 }
 
 .tabs-header .nav .head-icon {
@@ -204,7 +205,7 @@ a{
   box-sizing    : border-box;
   width         : 100%;
   margin        : 2em 0 0 -100%;
-  padding       : 0.5em 0.75em;
+  padding       : 5.5em 0.75em;
 }
 
 .tab-input:checked + .tab{
@@ -274,6 +275,11 @@ path.domain{
 .tick text{
   font-size: 18px;
 }
+.react-d3-core__label.label{
+  font-weight: 100;
+  font-size: 18px;
+}
+
 
 /*CSS FOR THE DATA TABLE*/
 

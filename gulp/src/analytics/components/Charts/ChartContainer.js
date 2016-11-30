@@ -1,7 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
-import SimpleBarChart from './SimpleBarChart';
+import SimpleBarChart from './Bar/SimpleBarChart';
 
 class ChartContainer extends Component {
   constructor(props, context) {
