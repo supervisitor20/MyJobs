@@ -1,5 +1,5 @@
 /* global $ */
-
+/* eslint-disable */
 /**
  * Legacy es5.1 functions used in seo_base_bootstrap3.html template,
  * relocated to the gulp directory to utilize es6, webpack, et al, during Sprint 24.
