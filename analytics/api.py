@@ -201,6 +201,9 @@ def dynamic_chart(request):
 
     # user_company = get_company_or_404(request)
     sample_size = 10000 # TODO: Add sample size to request object
+    import ssl
+    conn_string = "mongodb://production-consumers:iwWoRX8skE1PTNFr@de-analytics-production-shard-00-00-gg0it.mongodb.net:27017,de-analytics-production-shard-00-01-gg0it.mongodb.net:27017,de-analytics-production-shard-00-02-gg0it.mongodb.net:27017/admin?ssl=true&replicaSet=de-analytics-production-shard-0&authSource=admin"
+    # client = MongoClient(conn_string, ssl_cert_reqs=ssl.CERT_NONE)
     client = MongoClient(MONGO_HOST)
     job_views = client.analytics.job_views
     query_data = json.loads(request.POST.get('request', '{}'))
@@ -247,9 +250,6 @@ def dynamic_chart(request):
         }
     }
 
-    for a_filter in query_data['active_filters']:
-        top_query[a_filter['type']] = a_filter['value']
-
     print top_query
     count = job_views.find(top_query).count()
     print count
@@ -268,7 +268,11 @@ def dynamic_chart(request):
         {'$match': top_query},
     ]
 
-    query = query + sample_script + [
+    filter_match = {}
+    for a_filter in query_data['active_filters']:
+        filter_match.setdefault('$match', {})[a_filter['type']] = a_filter['value']
+
+    query = query + sample_script + [filter_match] + [
         {
             "$group" :
                 {
