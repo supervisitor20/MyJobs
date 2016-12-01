@@ -17,6 +17,7 @@ module.exports = {
     analytics: './src/analytics/main',
     custom: './src/sass/custom.scss',
     seo_base_styles: './src/sass/seo_base_styles.scss',
+    seo_base_scripts: './src/v2/seo-base-scripts',
   },
   resolve: {
     root: path.resolve('src'),

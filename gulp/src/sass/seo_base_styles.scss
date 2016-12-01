@@ -587,9 +587,6 @@ margin-bottom: 50px;
     @extend .global-btn;
     text-align: center;
   }
-  .share-social.search-submit-moc {
-    min-width: 7rem;
-  }
   .search-show-all {
     font-size: 12px;
     position: relative;
@@ -1221,12 +1218,6 @@ margin-bottom: 50px;
     .search-submit-moc {
       width: 94%;
     }
-    .share-social.search-submit {
-      display: none;
-    }
-    .share-social.search-submit-moc {
-      display: none;
-    }
     .breadcrumb-row {
       display: none;
     }
@@ -1548,12 +1539,6 @@ margin-bottom: 50px;
     }
     .submit-section {
       padding: 0;
-    }
-    .share-social.search-submit {
-      display: inline-block;
-    }
-    .share-social.search-submit-moc {
-      display: inline-block;
     }
   }
   #direct_listingDiv {
