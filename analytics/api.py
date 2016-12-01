@@ -156,6 +156,7 @@ def dynamic_chart(request):
         "active_filters": [{"type": "country", "value": "USA"},
                          {"type": "state", "value": "Indiana"}],
         "next_filter": "browser",
+        "sample_size": "10000"
     }
 
     response
@@ -199,7 +200,7 @@ def dynamic_chart(request):
         return HttpResponseNotAllowed(['POST'])
 
     # user_company = get_company_or_404(request)
-
+    sample_size = 10000 # TODO: Add sample size to request object
     client = MongoClient(MONGO_HOST)
     job_views = client.analytics.job_views
     query_data = json.loads(request.POST.get('request', '{}'))
@@ -245,20 +246,23 @@ def dynamic_chart(request):
             '$lte': date_end
         }
     }
+
+    for a_filter in query_data['active_filters']:
+        top_query[a_filter['type']] = a_filter['value']
+
     print top_query
     count = job_views.find(top_query).count()
     print count
 
     sample_script = []
     std_error_with_count = lambda x: calculate_error_and_count(count, count, x)
-    if count > 10000:
+    if count > sample_size:
         std_error_with_count = lambda x: calculate_error_and_count(count,
-                                                                   10000,
+                                                                   sample_size,
                                                                    x)
-        sample_script = [{'$sample': {'size': 10000}}]
+        sample_script = [{'$sample': {'size': sample_size}}]
 
-    for a_filter in query_data['active_filters']:
-        top_query[a_filter['type']] = a_filter['value']
+
 
     query = [
         {'$match': top_query},
