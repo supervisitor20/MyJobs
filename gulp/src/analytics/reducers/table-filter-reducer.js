@@ -3,12 +3,30 @@ import {handleActions} from 'redux-actions';
 let navCount = 1;
 export const initialPageData = {
   fetching: true,
-  fetched: false,
   navigation: [],
 };
 
 export default handleActions({
+  'FETCH_PAGE_DATA': (state, action) => {
+    const pageLoad = action.payload;
+    return {
+      ...state,
+      fetching: pageLoad,
+    };
+  },
   'SET_PAGE_DATA': (state, action) => {
+    return {
+      ...state,
+      navigation: [
+        ...state.navigation,
+        {
+          navId: navCount++,
+          PageLoadData: action.payload,
+        },
+      ],
+    };
+  },
+  'SET_SELECTED_FILTER_DATA': (state, action) => {
     return {
       ...state,
       fetching: false,
@@ -20,31 +38,6 @@ export default handleActions({
           PageLoadData: action.payload,
         },
       ],
-    };
-  },
-  'CHANGE_ACTIVE_DIMENSION': (state, action) => {
-    return {
-      ...state,
-      fetching: false,
-      fetched: true,
-      navigation: [
-        {
-          navId: navCount,
-        },
-      ],
-      'PageLoadData': action.payload,
-    };
-  },
-  'APPLY_TABLE_FILTER': (state, action) => {
-    return {
-      ...state,
-      navigation: [
-        ...state.navigation,
-        {
-          navId: navCount++,
-        },
-      ],
-      'PageLoadData': action.payload,
     };
   },
 }, initialPageData);

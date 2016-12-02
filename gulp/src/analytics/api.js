@@ -20,10 +20,18 @@ export default class Api {
   //   };
   //   const filterResults = this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(request)});
   // }
-  // async getSelectedFilterData(){
+  // async getSelectedFilterData() {
   //   const filterRequest = {
-  //
-  //   }
+  //     'date_start': '11/30/2016 00:00:00',
+  //     'date_end': '12/02/2016 00:00:00',
+  //     'active_filters': [
+  //       {
+  //         type: 'country',
+  //         value: 'USA',
+  //       },
+  //     ],
+  //     'next_filter': 'time_found',
+  //   };
   //   return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(filterRequest)});
   // }
 }
