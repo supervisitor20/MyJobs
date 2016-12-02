@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from dateutil import parser as dateparser
 
 from myjobs.decorators import requires
-
+from universal.helpers import get_company_or_404
 
 @requires("view analytics")
 def views_last_7_days(request):
@@ -223,11 +223,19 @@ def build_top_query(query_data, buids=None):
     except ValueError:
         raise Http404('Invalid date end: ' + query_data['date_end'])
 
-    top_query = {'buid': {'$in': buids}} if buids else {}
+    top_query = {}
+    if buids:
+        if len(buids) > 1:
+            buid_inner = {'$in': buids}
+        else:
+            buid_inner = buids[0]
+        top_query = {'buid': buid_inner}
+
     top_query['time_first_viewed'] = {'$gte': date_start,
                                       '$lte': date_end
                                      }
 
+    print top_query
     return top_query
 
 
@@ -258,7 +266,7 @@ def determine_data_group_by_column(query_data):
 
     """
     # TODO: Add DB handling / "filter chain" logic
-    next_filter = query_data['filter_overwrite']
+    next_filter = query_data['next_filter']
     return next_filter
 
 
@@ -274,17 +282,7 @@ def retrieve_sampling_query_and_count(collection, top_query, sample_size):
 
 
     """
-
-    # sample_script = []
-    # std_error_with_count = lambda x: calculate_error_and_count(count, count, x)
-    # if count > sample_size:
-    #     std_error_with_count = lambda x: calculate_error_and_count(count,
-    #                                                                sample_size,
-    #                                                                x)
-    #     sample_script = [{'$sample': {'size': sample_size}}]
-
     count = collection.find(top_query).count()
-
     sample_script = []
     if count > sample_size:
         sample_script = [{'$sample': {'size': sample_size}}]
@@ -331,10 +329,24 @@ def get_mongo_client():
                   "27017,de-analytics-production-shard-00-02-gg0it.mongodb." \
                   "net:27017/admin?ssl=true&replicaSet=de-analytics-" \
                   "production-shard-0&authSource=admin"
-    client = MongoClient(conn_string, ssl_cert_reqs=ssl.CERT_NONE)
-    # client = MongoClient(MONGO_HOST)
+    # client = MongoClient(conn_string, ssl_cert_reqs=ssl.CERT_NONE)
+    client = MongoClient(MONGO_HOST)
 
     return client
+
+
+def get_company_buids(request):
+    """
+    retrieve a list of buids for a given company
+
+    :param request:
+    :return: buids (list)
+
+
+    """
+    user_company = get_company_or_404(request)
+    job_sources = user_company.job_source_ids.all()
+    return [job_source.id for job_source in job_sources]
 
 
 # @requires("view_analytics")
@@ -378,18 +390,22 @@ def dynamic_chart(request):
         return HttpResponseNotAllowed(['POST'])
 
     sample_size = 50000 # TODO: Add sample size to request object
-    query_data = json.loads(request.POST.get('request', '{}'))
 
+    query_data = json.loads(request.POST.get('request', '{}'))
     if not query_data:
         raise Http404('No data provided')
 
     job_views = get_mongo_client().analytics.job_views
 
-    top_query = build_top_query(query_data)
+    buids = []
+    buids = get_company_buids(request)
+
+    top_query = build_top_query(query_data, buids)
 
     sample_query, total_count = retrieve_sampling_query_and_count(job_views,
                                                                   top_query,
                                                                   sample_size)
+
     if not sample_query:
         sample_size = total_count
 
@@ -402,6 +418,8 @@ def dynamic_chart(request):
     query = [
         {'$match': top_query},
     ] + sample_query + active_filter_query + group_query
+
+    print query
 
     records = job_views.aggregate(query, allowDiskUse=True)
 
