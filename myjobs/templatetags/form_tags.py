@@ -1,6 +1,7 @@
 from django import template
 from django.forms.fields import BooleanField, CheckboxInput
 from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -32,4 +33,4 @@ def add_required_label(field, *classes):
     if field.field.required:
         field.label = u"{label} *".format(label=unicode(field.label))
     label = field.label_tag(attrs={'class': ' '.join(classes)})
-    return label.replace(":", "")
+    return mark_safe(label.replace(":", ""))
