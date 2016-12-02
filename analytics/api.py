@@ -349,7 +349,7 @@ def get_company_buids(request):
     return [job_source.id for job_source in job_sources]
 
 
-# @requires("view_analytics")
+@requires("view_analytics")
 @csrf_exempt
 def dynamic_chart(request):
     """
