@@ -422,7 +422,8 @@ def select_data_type_api(request):
     ]
 
     # Weird hard coded thing for analytics right now:
-    if request.user.can(company, "view analytics"):
+    if ('Analytics' in company.enabled_access and
+            request.user.can(company, "view analytics")):
         reporting_type_list.append(
             {'value': -1, 'display': 'Web Analytics', 'link': 'analytics'})
 
