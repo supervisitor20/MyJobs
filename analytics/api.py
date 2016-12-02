@@ -305,7 +305,7 @@ def build_group_by_query(group_by):
                 {
                     "_id": "$" + group_by,
                     "visitors": {"$sum": 1},
-                    "view_count": {"$sum": '$view_count'}
+                    "job_views": {"$sum": '$view_count'}
                 }
             },
         {'$sort': {'visitors': -1}},
@@ -434,8 +434,8 @@ def dynamic_chart(request):
         "column_names":
             [
                 {"key": "found_on", "label": "Found On"},
+                {"key": "job_views", "label": "Job Views"},
                 {"key": "visitors", "label": "Visitors"},
-                {"key": "job_views", "label": "Job Views"}
              ],
         "rows":
             [format_return_dict(r, group_by) for r in records],
