@@ -309,6 +309,7 @@ def build_group_by_query(group_by):
                 }
             },
         {'$sort': {'visitors': -1}},
+        {'$limit': 10}
     ]
 
     return group_query
@@ -349,7 +350,7 @@ def get_company_buids(request):
     return [job_source.id for job_source in job_sources]
 
 
-@requires("view_analytics")
+@requires("view analytics")
 @csrf_exempt
 def dynamic_chart(request):
     """
