@@ -177,9 +177,9 @@ a{
   margin: 0;
   text-align: center;
   color: #5a6d81;
-  -webkit-transform: perspective(100px) rotateX(30deg);
-  -moz-transform: perspective(100px) rotateX(30deg);
-  transform: perspective(100px) rotateX(30deg);
+  -webkit-transform: perspective(100px) rotateX(0deg);
+  -moz-transform: perspective(100px) rotateX(0deg);
+  transform: perspective(100px) rotateX(0deg);
   padding: 0 15px 0 15px;
   cursor: pointer;
   line-height: 45px;
@@ -277,6 +277,14 @@ a{
 }
 
 /*CSS FOR THE CHARTS SECTION*/
+svg{
+  margin-bottom: -180px;
+  height: 600px;
+}
+rect.react-d3-basic__bar.bar{
+  fill: #5a6d81;
+}
+
 #charts {
   background: #ffffff;
   margin-bottom: 50px;
@@ -308,11 +316,13 @@ path.domain{
   stroke-dasharray: 4, 4;
 }
 .tick text{
-  font-size: 18px;
+  font-size: 12px;
+  font-weight: 100;
 }
 .react-d3-core__label.label{
   font-weight: 100;
   font-size: 18px;
+  dominant-baseline: hanging;
 }
 
 

@@ -14,7 +14,7 @@ class ChartContainer extends Component {
           <Row>
             <Col md={12}>
               <div className="chart-title">
-                <h2>Job Views By Browser</h2>
+                <h2>Domain Job Views</h2>
               </div>
             </Col>
           </Row>

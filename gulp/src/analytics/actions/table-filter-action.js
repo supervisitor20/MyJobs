@@ -15,12 +15,12 @@ export function doGetPageData(start, end) {
   };
 }
 
-export function doGetActiveFilterData() {
-  return async (dispatch, _, {api}) => {
-    const activeFilterData = await api.getInitialPageData();
-    dispatch(changeActiveDimension(activeFilterData));
-  };
-}
+// export function doGetActiveFilterData() {
+//   return async (dispatch, _, {api}) => {
+//     const activeFilterData = await api.getInitialPageData();
+//     dispatch(changeActiveDimension(activeFilterData));
+//   };
+// }
 
 // export function doChangeMainDimension(dimensionName){
 //     return asyn (dispatch, _, {api}) => {
@@ -59,9 +59,9 @@ export function doGetActiveFilterData() {
 //   }
 // }
 
-export function doMongoQuery() {
-  return async (dispatch, _, {api}) => {
-    const query = await api.addFilters();
-    dispatch(queryMongo(query));
-  };
-}
+// export function doMongoQuery() {
+//   return async (dispatch, _, {api}) => {
+//     const query = await api.addFilters();
+//     dispatch(queryMongo(query));
+//   };
+// }

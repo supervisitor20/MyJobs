@@ -12,8 +12,6 @@ import AnalyticsApp from './components/AnalyticsApp';
 
 import filterReducer, {initialPageData} from './reducers/table-filter-reducer';
 
-import {doMongoQuery} from './actions/table-filter-action';
-
 import Api from './api';
 import {MyJobsApi} from '../common/myjobs-api';
 import {getCsrf} from 'common/cookie';
@@ -42,8 +40,6 @@ const thunkExtra = {
 
 // creating the store
 const store = createReduxStore(rootReducer, initialState, thunkExtra);
-
-store.dispatch(doMongoQuery());
 
 ReactDOM.render(
   <Provider store={store}>
