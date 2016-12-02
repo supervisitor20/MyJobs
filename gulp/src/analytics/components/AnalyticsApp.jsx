@@ -3,21 +3,24 @@ import {connect} from 'react-redux';
 import {doGetPageData} from '../actions/table-filter-action';
 import SideBar from './SideBar/SideBar';
 import Header from './Header/Header';
-// import DashBoardHeader from './Header/DashBoardHeader';
-// import ChartContainer from './Charts/ChartContainer';
-// import TableContainer from './Table/TableContainer';
 import TabsContainer from './Tabs/TabsContainer';
+import LoadingSpinner from './Loading';
+import moment from 'moment';
 
 class AnalyticsApp extends React.Component {
   componentDidMount() {
+    let startDate = moment();
+    const endDate = moment().format('MM/DD/YYYY');
+    startDate = startDate.subtract(1, 'days');
+    startDate = startDate.format('MM/DD/YYYY');
     const {dispatch} = this.props;
-    dispatch(doGetPageData());
+    dispatch(doGetPageData(startDate, endDate));
   }
   render() {
     const {analytics} = this.props;
     if (analytics.fetching) {
       return (
-        <div></div>
+        <LoadingSpinner/>
       );
     }
     return (
@@ -26,10 +29,6 @@ class AnalyticsApp extends React.Component {
           <Header headerData={analytics}/>
         <div id="page_content">
           <TabsContainer tabData={analytics}/>
-{          // <DashBoardHeader />
-          // <ChartContainer chartData=analytics/>
-          // <TableContainer tableData=analytics/>
-}
         </div>
         <div className="clearfix"></div>
       </div>

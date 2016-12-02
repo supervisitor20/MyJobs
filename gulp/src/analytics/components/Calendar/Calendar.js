@@ -29,8 +29,6 @@ class Calendar extends Component {
   render() {
     const localizeTime = moment().format('LT');
     const localizeDate = moment().format('MMMM Do, YYYY');
-    // let start = this.state.startDate.format('MM-DD-YYYY');
-    // let end = this.state.endDate.format('MM-DD-YYYY');
     return (
       <div>
         <DateRangePicker opens="left" startDate={this.state.startDate} endDate={this.state.endDate} ranges={this.state.ranges} onEvent={this.handleEvent.bind(this)}>

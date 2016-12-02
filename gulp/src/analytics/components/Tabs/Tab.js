@@ -1,9 +1,15 @@
 import React from 'react';
 import {Component} from 'react';
+// import {Link} from 'react-router';
 
 class Tab extends Component {
   render() {
     const {id} = this.props;
+    // const links = this.props.data.map((link) => {
+    //   return(
+    //     <Link to={"/" + link.name}>{link.name}</Link>
+    //   );
+    // });
     return (
       <div>
           <input className="tab-input" name="tabbed" id={'tabbed' + id} type="radio" defaultChecked/>

@@ -6,17 +6,14 @@ import TableContainer from '../Table/TableContainer';
 import ChartContainer from '../Charts/ChartContainer';
 
 class TabsContainer extends Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     const {tabData} = this.props;
     const tabs = tabData.navigation.map((tab, i) => {
       return (
-        <Tab key={i} tabData={tabData} id={i}>
-          <TabsPanel panelData={tabData} id={i}>
-            <ChartContainer chartData={tabData} />
-            <TableContainer tableData={tabData} />
+        <Tab key={i} tabData={tab} id={i}>
+          <TabsPanel panelData={tab} id={i}>
+            <ChartContainer chartData={tab} />
+            <TableContainer tableData={tab} />
           </TabsPanel>
         </Tab>
       );

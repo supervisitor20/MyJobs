@@ -4,12 +4,7 @@ let navCount = 1;
 export const initialPageData = {
   fetching: true,
   fetched: false,
-  navigation: [
-    {
-      navId: navCount,
-    },
-  ],
-  'PageLoadData': {},
+  navigation: [],
 };
 
 export default handleActions({
@@ -19,11 +14,16 @@ export default handleActions({
       fetching: false,
       fetched: true,
       navigation: [
+        ...state.navigation,
         {
           navId: navCount++,
+          PageLoadData: action.payload,
+        },
+        {
+          navId: navCount++,
+          PageLoadData: action.payload,
         },
       ],
-      'PageLoadData': action.payload,
     };
   },
   'CHANGE_ACTIVE_DIMENSION': (state, action) => {
