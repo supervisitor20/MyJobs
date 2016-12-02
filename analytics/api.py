@@ -105,6 +105,7 @@ def activity_last_7_days(request):
 
     return HttpResponse(json.dumps([format_dict(r) for r in records]))
 
+
 @requires("view analytics")
 def campaign_percentages(request):
     """
@@ -142,16 +143,39 @@ def campaign_percentages(request):
     return HttpResponse(json.dumps([format_dict(r) for r in records]))
 
 
-def format_return_dict(query_dict, group_label):
-    group_value = query_dict.pop('_id')
-    return {group_label: group_value}.update(query_dict)
+def format_return_dict(record, group_label):
+    """
+    format return dict to have meaningful group by title rather than _id
+    could be expanded to include other formatting as needed
+
+    :param record: individual document retrieved from mongo
+    :param group_label: the current group by column
+    :return: formatted record
 
 
-def calculate_error_and_count(total_count, sample_count, row_count):
+    """
+    group_value = record.pop('_id')
+    return_dict = {group_label: group_value}
+    return_dict.update(record)
+    return return_dict
+
+
+def calculate_error_and_count(population, sample_count, row_count):
+    """
+    take a set of inputs and calculate the standard error and total count
+    for a given row
+
+    :param population: total number of rows matching top query
+    :param sample_count: number of rows we are sampling
+    :param row_count: the count for a given row
+    :return: standard error and population-adjusted count (tuple)
+
+
+    """
     proportion = float(row_count) / float(sample_count)
     inner = proportion * (1.0-proportion) / sample_count
-    error = 3 * math.sqrt(inner) * total_count
-    adjusted_count = total_count * proportion
+    error = 3 * math.sqrt(inner) * population
+    adjusted_count = population * proportion
     return error, int(adjusted_count)
 
 
@@ -166,12 +190,17 @@ def adjust_records_for_sampling(records, error_and_count):
 
 
     """
+    return_list = []
     for record in records:
+        new_record = {}
         for key, value in record.iteritems():
-            if key != '_id':
-                record[key] = error_and_count(value)[1]
+            if key == '_id':
+                new_record[key] = value
+            else:
+                new_record[key] = error_and_count(value)[1]
+        return_list.append(new_record)
 
-    return records
+    return return_list
 
 
 def build_top_query(query_data, buids=None):
@@ -194,15 +223,23 @@ def build_top_query(query_data, buids=None):
     except ValueError:
         raise Http404('Invalid date end: ' + query_data['date_end'])
 
-    buid_query = {'buid': {'$in': buids}} if buids else {}
-    top_query = buid_query['time_first_viewed'] = {'$gte': date_start,
-                                                   '$lte': date_end
-                                                   }
+    top_query = {'buid': {'$in': buids}} if buids else {}
+    top_query['time_first_viewed'] = {'$gte': date_start,
+                                      '$lte': date_end
+                                     }
 
     return top_query
 
 
 def build_active_filter_query(query_data):
+    """
+    build active query filters based on what is provided
+
+    :param query_data: query data from request
+    :return: active filter queries
+
+
+    """
     filter_match = {'$match': {}}
     for a_filter in query_data['active_filters']:
         filter_match['$match'][a_filter['type']] = a_filter['value']
@@ -220,7 +257,7 @@ def determine_data_group_by_column(query_data):
 
 
     """
-    # TODO: Add DB handling
+    # TODO: Add DB handling / "filter chain" logic
     next_filter = query_data['filter_overwrite']
     return next_filter
 
@@ -282,7 +319,8 @@ def build_group_by_query(group_by):
 def get_mongo_client():
     """
     retrieve mongo client for queries
-    :return:
+
+    :return: a mongo client
 
 
     """
@@ -359,7 +397,7 @@ def dynamic_chart(request):
 
     group_by = determine_data_group_by_column(query_data)
 
-    group_query = build_group_by_query(query_data, group_by)
+    group_query = build_group_by_query(group_by)
 
     query = [
         {'$match': top_query},
@@ -369,7 +407,7 @@ def dynamic_chart(request):
 
     if sample_query:
         def curried_query(count):
-            calculate_error_and_count(total_count, sample_size, count)
+            return calculate_error_and_count(total_count, sample_size, count)
 
         records = adjust_records_for_sampling(records, curried_query)
 
@@ -383,30 +421,5 @@ def dynamic_chart(request):
         "rows":
             [format_return_dict(r, group_by) for r in records],
     }
-
-    return HttpResponse(json.dumps(response))
-
-
-
-
-
-def get_drilldown_categories(request):
-    """
-    return a list of possible drilldown categories. this is currently
-    hard-coded, but will eventually be loaded via the DB and thus be
-    dynamic
-
-    :param request: GET
-    :return: list of possible drilldown categories
-
-    """
-    response = [
-        {"key": "country", "label": "Country"},
-        {"key": "state", "label": "State"},
-        {"key": "city", "label": "City"},
-        {"key": "job_source_name", "label": "Job Source"},
-        {"key": "time_found", "label": "Time Found"},
-        {"key": "found_on", "label": "Site Found"},
-    ]
 
     return HttpResponse(json.dumps(response))
