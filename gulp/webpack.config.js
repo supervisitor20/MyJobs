@@ -19,6 +19,7 @@ module.exports = {
     customanalytics: './src/sass/analytics.scss',
     bootstrapdaterange: './src/sass/vendor/bootstrap-daterange.scss',
     seo_base_styles: './src/sass/seo_base_styles.scss',
+    seo_base_scripts: './src/v2/seo-base-scripts',
   },
   resolve: {
     root: path.resolve('src'),
