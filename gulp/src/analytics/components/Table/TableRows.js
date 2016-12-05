@@ -1,15 +1,13 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {doApplyTableFilter} from '../../actions/table-filter-action';
 
 class TableRows extends Component {
   constructor(props) {
     super(props);
   }
-  applyFilterResults() {
-    const {dispatch} = this.props;
-    dispatch(doApplyTableFilter());
+  applyFilterResults(filterName) {
+    console.log(filterName);
   }
   render() {
     const {data} = this.props;
@@ -26,7 +24,7 @@ class TableRows extends Component {
     const getHeaders = rowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
         return (
-          <td key={index}><a onClick={this.applyFilterResults.bind(this)} href="#">{item[colData.key]}</a></td>
+          <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key])} href="#">{item[colData.key]}</a></td>
         );
       });
       const cell = originalHeader.map((colData, ind) => {

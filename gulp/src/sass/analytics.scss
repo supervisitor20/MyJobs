@@ -97,7 +97,7 @@ a{
 
         span{
           font-size: 14px;
-          font-weight: 100;
+          font-weight: 400;
         }
 
         &:hover{
@@ -154,109 +154,108 @@ a{
 
 /*CSS FOR THE TABS*/
 #tabbed{
-  float : left;
-  width : 100%;
+  float: left;
+  width: 100%;
   margin-top: -44px;
 }
 
-.tab-input{
-  display : none;
+.tab-input {
+  display: none;
 }
 
-.tab{
-  float       : left;
-  box-sizing  : border-box;
-  margin      : 0;
-  padding     : 0.5em 0.5em 0;
-  overflow    : hidden;
-  font-size   : 1em;
-  font-weight : normal;
-}
-.tab{
-  display: block;
-  margin: 0;
-  text-align: center;
-  color: #5a6d81;
-  -webkit-transform: perspective(100px) rotateX(0deg);
-  -moz-transform: perspective(100px) rotateX(0deg);
-  transform: perspective(100px) rotateX(0deg);
-  padding: 0 15px 0 15px;
-  cursor: pointer;
-  line-height: 45px;
-  height: 45px;
-  max-height: 45px;
-  border-left: 1px solid #ccc;
-  border-top: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  background: #ddd;
+.tab {
+  float: left;
+  display: inline-block;
   position: relative;
-  width: 100px;
-  max-width: 100px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  }
-
+  padding: 10px;
+  color: #666;
+  font-size: 13px;
+  text-decoration: none;
+  border-top: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 6px 10px 0px 5px;
+  background-color: #eee;
+  cursor: pointer;
+}
+.tab:hover, .tab-input:checked + .tab {
+  background-color: #f7f7f7;
+  border-bottom: none;
+}
+.tab-input:checked + .tab {
+  border-bottom: 1px solid #f7f7f7;
+}
+.tab:hover:before, .tab-input:checked + .tab:before, .tab:hover:after, .tab-input:checked + .tab:after {
+  border-bottom-color: #bbb;
+  background-color: #f7f7f7;
+}
+.tab-input:checked + .tab:before, .tab-input:checked + .tab:after {
+  padding-bottom: 1px;
+}
+.tab:before, .tab:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -1px;
+  z-index: 0;
+  height: 100%;
+  width: 15px;
+  background-color: #eee;
+  border: 1px solid #ddd;
+  border-bottom: none;
+}
+.tab:before {
+  right: -7px;
+  border-left: none;
+  -moz-transform: skew(27deg, 0deg);
+  -ms-transform: skew(27deg, 0deg);
+  -webkit-transform: skew(27deg, 0deg);
+  transform: skew(27deg, 0deg);
+  border-radius: 0 5px 0 0;
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
+}
+.tab:after {
+  left: -7px;
+  border-right: none;
+  -moz-transform: skew(-27deg, 0deg);
+  -ms-transform: skew(-27deg, 0deg);
+  -webkit-transform: skew(-27deg, 0deg);
+  transform: skew(-27deg, 0deg);
+  border-radius: 5px 0 0 0;
+  box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
+}
 .tab-input:checked + .tab{
   z-index: 2;
   background: #f7f8f9;
 }
 
-.tab-input:checked + .tab:before{
-  border-color : transparent #f7f8f9 transparent transparent;
-}
-
-
-.tab-input:checked + .tab:after{
-  border-color : transparent transparent transparent #f7f8f9;
-}
-.tab:before, .tab:after{
-  content : '';
-  background : transparent;
-  height: 20px;
-  width: 20px;
-  border-radius: 100%;
-  border-width: 10px;
-  top: 0px;
-  border-style : solid;
-  position : absolute;
-}
-.tab:before{
-  border-color : transparent #ddd transparent transparent;
-  -webkit-transform : rotate(48deg);
-  left: -23px;
-}
-
-.tab:after{
-  border-color : transparent transparent transparent #ddd;
-  -webkit-transform : rotate(-48deg);
-  right: -17px;
-}
 
 .tab-input + .tab + div{
-  position      : relative;
-  z-index       : 1;
-  float         : right;
-  box-sizing    : border-box;
-  width         : 100%;
-  margin        : 2em 0 0 -100%;
-  padding       : 5.5em 0.75em;
+  position: relative;
+  z-index: 1;
+  float: right;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 2em 0 0 -100%;
+  padding: 5.5em 0.75em;
 }
 
 .tab-input:checked + .tab{
-  position : relative;
-  z-index  : 2;
+  position: relative;
+  z-index: 2;
 }
 
 .tab-input:not(:checked) + .tab + div{
-  display : none;
+  display: none;
+}
+.tab-label{
+  padding: 10px;
 }
 .close-tab{
   position: absolute;
-  top: -10px;
   right: 5px;
+  top: 0px;
   height: 25px;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 /*CSS FOR THE DASHBOARD HEADER*/
@@ -395,7 +394,7 @@ box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
 @media (min-width: 480px) {
   .rwd-table th, .rwd-table td {
     display: table-cell;
-    padding: .25em .5em;
+    padding: .25em 1.5em;
   }
   .rwd-table th:first-child, .rwd-table td:first-child {
     padding-left: 0;
@@ -427,7 +426,7 @@ box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
   }
 .rwd-table td {
     border: 1px solid #ddd;
-    font-weight: 100;
+    font-size: 16px;
   }
   .rwd-table td a{
     color: #0000FF;
@@ -437,7 +436,7 @@ box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
 }
 .rwd-table th, .rwd-table td:before {
   color: #5a6d81;
-  font-size: 16px;
+  font-size: 18px;
 }
 .rwd-table th:not(:nth-child(1)){
   width: 25%;
