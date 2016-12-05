@@ -303,11 +303,23 @@ a.direct_optionsLess {
       box-shadow: 0 0px 5px rgba(0,0,0,0.15);
     }
   }
+
+  .jobs-logo{
+    a, a:visited, a:hover, a:active {
+        text-decoration:none;
+    }
+  }
+
   .my-jobs-logo {
     font-size: 24px;
     font-weight: bold;
     color: $white;
+    img {
+      height: 2.5rem;
+
+    }
   }
+
   .navbar-nav.navbar-right.right-nav {
     a {
       font-weight: 200;
@@ -357,10 +369,6 @@ a.direct_optionsLess {
   }
   .logo-text {
     position: relative;
-  }
-  .header-logo-text {
-    position: relative;
-    right: 5px;
   }
 }
 
