@@ -17,20 +17,19 @@
         {% block meta %}
             {% include "includes/meta.html" %}
         {% endblock %}
-
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         {% block meta-extra %}{% endblock %}
         {% if wp_base_url %}
             <link rel="stylesheet" href="{{wp_base_url}}/custom.css" rel="stylesheet" type="text/css">
             <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
             <link rel="stylesheet" href="{{wp_base_url}}/bootstrapdaterange.css" rel="stylesheet" type="text/css">
-            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
             <link rel="stylesheet" href="{{wp_base_url}}/customanalytics.css" rel="stylesheet" type="text/css">
-            <!-- <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css"> -->
         {% else %}
             {% compress css %}
                 <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
                 <link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
-                <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css">
+                <link rel="stylesheet" href="{% static "bundle/bootstrapdaterange.css" %}" rel="stylesheet" type="text/css">
+                <link rel="stylesheet" href="{% static "bundle/customanalytics.css" %}" rel="stylesheet" type="text/css">
             {% endcompress %}
         {% endif %}
         <!--[if IE]>
