@@ -16,6 +16,8 @@ module.exports = {
     myprofile: './src/myprofile/main',
     analytics: './src/analytics/main',
     custom: './src/sass/custom.scss',
+    customanalytics: './src/sass/analytics.scss',
+    bootstrapdaterange: './src/sass/vendor/bootstrap-daterange.scss',
     seo_base_styles: './src/sass/seo_base_styles.scss',
   },
   resolve: {
