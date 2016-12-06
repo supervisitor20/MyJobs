@@ -323,14 +323,6 @@ def get_mongo_client():
 
 
     """
-    import ssl
-    conn_string = "mongodb://production-consumers:iwWoRX8skE1PTNFr@de-" \
-                  "analytics-production-shard-00-00-gg0it.mongodb.net:27017" \
-                  ",de-analytics-production-shard-00-01-gg0it.mongodb.net:" \
-                  "27017,de-analytics-production-shard-00-02-gg0it.mongodb." \
-                  "net:27017/admin?ssl=true&replicaSet=de-analytics-" \
-                  "production-shard-0&authSource=admin"
-    # client = MongoClient(conn_string, ssl_cert_reqs=ssl.CERT_NONE)
     client = MongoClient(MONGO_HOST)
 
     return client
