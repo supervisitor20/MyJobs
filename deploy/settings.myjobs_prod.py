@@ -15,7 +15,7 @@ DATABASES = {
     'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     }, **REDIRECT_PROD),
     'qc-redirect': dict({
@@ -27,7 +27,7 @@ DATABASES = {
     'archive': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     }, **ARCHIVE_PROD)
 }
