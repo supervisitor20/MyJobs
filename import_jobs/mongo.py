@@ -68,5 +68,6 @@ def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=settings.MONGO_HOST):
     collection = client.analytics.jobs
     bulk = collection.initialize_unordered_bulk_op()
     for job in jobs:
+        job['guid'] = job['guid'].lower()
         bulk.find({'guid': job['guid']}).upsert().replace_one(job)
     bulk.execute()
