@@ -612,9 +612,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -629,7 +629,7 @@ margin-bottom: 50px;
     #q{
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -652,9 +652,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -669,7 +669,7 @@ margin-bottom: 50px;
     #location {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -692,9 +692,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -709,7 +709,7 @@ margin-bottom: 50px;
     #moc {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 2.9rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -1018,7 +1018,7 @@ margin-bottom: 50px;
 
 /* Custom, iPhone Retina */
 @media only screen and (min-width: 320px) and (max-width: 480px) {
-    /** Be default iOS devices hides scroll bar,
+    /** Be default iOS devices hides scroll bar,                                                                              g
   this makes all devices show scrollbar for nested sub menus **/
   ::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -1308,6 +1308,9 @@ margin-bottom: 50px;
       }
     }
 
+  ::-webkit-input-placeholder {
+    font-size: 1.2rem;
+  }
 }
 
 @media only screen and (min-width: 769px) {
@@ -1584,16 +1587,6 @@ margin-bottom: 50px;
           width: 35%;
       }
   }
-}
-
-/* The M.O.C. place holder text is long,
-    this makes it easier to read at certain screen sizes. */
-@media only screen and (min-width : 769px) and (max-width: 1290px){
-
-  #moc::-webkit-input-placeholder {
-    font-size: 1.1rem;
-  }
-
 }
 
 /* Large Devices, Wide Screens */
