@@ -44,7 +44,7 @@ const store = createReduxStore(rootReducer, initialState, thunkExtra);
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}>
-      <Route path="/(:filter)" component={AnalyticsApp}/>
+      <Route path="/" component={AnalyticsApp}/>
     </Router>
   </Provider>
   , document.getElementById('content')

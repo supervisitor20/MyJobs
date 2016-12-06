@@ -3,15 +3,17 @@ import {createAction} from 'redux-actions';
 export const setPageData = createAction('SET_PAGE_DATA');
 export const setTableData = createAction('SET_TABLE_DATA');
 export const setMainDimension = createAction('SET_MAIN_DIMENSION');
+export const setSelectedFilterData = createAction('SET_SELECTED_FILTER_DATA');
 export const changeActiveDimension = createAction('CHANGE_ACTIVE_DIMENSION');
-export const markPageLoadingAction = createAction('MARK_PAGE_LOADING');
+export const markPageLoadingAction = createAction('FETCH_PAGE_DATA');
 export const queryMongo = createAction('QUERY_MONGO');
 
 export function doGetPageData(start, end) {
   return async (dispatch, _, {api}) => {
-    // dispatch(markPageLoadingAction(true));
+    dispatch(markPageLoadingAction(true));
     const rawPageData = await api.getInitialPageData(start, end);
     dispatch(setPageData(rawPageData));
+    dispatch(markPageLoadingAction(false));
   };
 }
 
@@ -21,6 +23,15 @@ export function doGetPageData(start, end) {
 //     dispatch(changeActiveDimension(activeFilterData));
 //   };
 // }
+
+export function doGetSelectedFilterData() {
+  return async (dispatch, _, {api}) => {
+    dispatch(markPageLoadingAction(true));
+    const selectedFilterData = await api.getSelectedFilterData();
+    dispatch(setSelectedFilterData(selectedFilterData));
+    dispatch(markPageLoadingAction(false));
+  };
+}
 
 // export function doChangeMainDimension(dimensionName){
 //     return asyn (dispatch, _, {api}) => {
