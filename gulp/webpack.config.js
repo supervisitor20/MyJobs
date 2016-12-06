@@ -70,14 +70,6 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"',
     }),
-    // Factor common code in to vendor.js.
-    // This also establishes the parent relationship between the vendor
-    // and app chunks.
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-      minChunks: 2,
-    }),
     // Dedupe slightly decreases output size.
     new webpack.optimize.DedupePlugin(),
     // Webpack docs recommend using this plugin.
