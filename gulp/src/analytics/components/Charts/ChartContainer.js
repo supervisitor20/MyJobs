@@ -2,6 +2,9 @@ import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
 import SimpleBarChart from './Bar/SimpleBarChart';
+import BarChart from './Bar/BarChart';
+import WorldMap from './Map/WorldMap';
+import LineChart from './Line/LineChart';
 
 class ChartContainer extends Component {
   constructor(props, context) {
@@ -21,7 +24,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                <SimpleBarChart chartData={chartData}/>
+                <LineChart/>
               </Col>
             </Row>
         </div>

@@ -6,6 +6,7 @@ import d3 from 'd3';
 class SimpleBarChart extends Component {
     render() {
       const {chartData} = this.props;
+      console.log(chartData);
       const axisData = chartData.PageLoadData.rows;
       const chartSeries = [
         {

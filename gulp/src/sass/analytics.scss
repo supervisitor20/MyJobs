@@ -276,13 +276,6 @@ a{
 }
 
 /*CSS FOR THE CHARTS SECTION*/
-svg{
-  margin-bottom: -180px;
-  height: 600px;
-}
-rect.react-d3-basic__bar.bar{
-  fill: #5a6d81;
-}
 
 #charts {
   background: #ffffff;
@@ -318,12 +311,24 @@ path.domain{
   font-size: 12px;
   font-weight: 100;
 }
-.react-d3-core__label.label{
-  font-weight: 100;
-  font-size: 18px;
-  dominant-baseline: hanging;
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
 }
-
+.y-grid .tick path,
+.y-grid .tick line {
+  fill: none;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+.path {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
 
 /*CSS FOR THE DATA TABLE*/
 
