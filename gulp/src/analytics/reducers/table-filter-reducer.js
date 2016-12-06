@@ -27,10 +27,6 @@ export default handleActions({
           navId: navCount++,
           PageLoadData: action.payload,
         },
-        {
-          navId: navCount++,
-          PageLoadData: action.payload,
-        },
       ],
     };
   },

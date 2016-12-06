@@ -5,6 +5,7 @@ import SimpleBarChart from './Bar/SimpleBarChart';
 import BarChart from './Bar/BarChart';
 import WorldMap from './Map/WorldMap';
 import LineChart from './Line/LineChart';
+import PieChart from './Pie/PieChart';
 
 class ChartContainer extends Component {
   constructor(props, context) {
@@ -25,6 +26,7 @@ class ChartContainer extends Component {
             <Row>
               <Col md={12}>
                 <LineChart/>
+                <WorldMap/>
               </Col>
             </Row>
         </div>

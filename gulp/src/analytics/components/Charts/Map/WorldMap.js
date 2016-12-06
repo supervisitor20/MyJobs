@@ -11,7 +11,7 @@ class WorldMap extends Component {
       svgHeight = height + margin.top + margin.bottom,
       svgWidth = width + margin.left + margin.right,
       transform = "translate(" + margin.left + "," + margin.top + ")",
-      projection = d3.geo.mercator().translate([width / 2, 735]).scale(265);
+      projection = d3.geo.mercator().translate([width / 2, 735]).scale(265),
       path = d3.geo.path().projection(projection),
       groups = mapData.features.map((group, i) => {
         return(

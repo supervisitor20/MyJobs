@@ -4,12 +4,12 @@
   padding: 0;
   box-sizing: border-box;
 
-  &:before{
+  &:before {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
-  &:after{
+  &:after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -21,10 +21,10 @@ body {
   overflow-x: hidden;
   position: relative;
 }
-li{
+li {
   list-style-type: none;
 }
-a{
+a {
   text-decoration: none;
 }
 
@@ -41,7 +41,7 @@ a{
     left: 43%;
     z-index: 2;
 }
-.loading-overlay{
+.loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -75,32 +75,32 @@ a{
     height: 100%;
     background-color: #5a6d81;
 
-    .sidebar-container{
+    .sidebar-container {
       margin: 0;
       padding: 0;
 
-      .side-dimension-header{
+      .side-dimension-header {
         border-bottom: 1px solid #FFFFFF;
         padding: 25px 0px 0px 5px;
       }
 
-      .filter-header{
+      .filter-header {
         color: #FFFFFF;
         font-size: 18px;
         padding-left: 5px;
       }
 
-      .side-dimension{
+      .side-dimension {
         color: #FFFFFF;
         border-bottom: 1px solid #FFFFFF;
         padding: 25px 10px;
 
-        span{
+        span {
           font-size: 14px;
           font-weight: 400;
         }
 
-        &:hover{
+        &:hover {
           cursor: pointer;
         }
       }
@@ -110,168 +110,148 @@ a{
 
 
 /*CSS FOR THE TABS HEADER*/
-.tabs-header{
+.tabs-header {
   background: #e6e6e6;
   height: 60px;
   max-height: 60px;
   width: 100%;
-}
-.tabs-header .nav .dashboard-date {
-  font-size: 24px;
-  color: #5a6d81;
-  font-weight: 100;
-  margin-top: 0px;
-  padding-left: 10px;
-}
 
-.tabs-header .nav .head-icon {
-  font-size: 27px;
-  color: #5a6d81;
-}
-
-.nav.navbar-right.right-options {
-  margin-right: 0;
-}
-.nav.navbar-nav.navbar-right.right-options li a:hover{
-  background-color: #f7f8f9;
-}
-.selected-date-range-btn{
-  background: transparent;
-  border: none;
-  outline: 0;
-  padding: 13px 12px;
-}
-.selected-date-range-btn:hover{
-  background: #f7f8f9;
-}
-
-.selected-date-range-btn:focus{
-  outline: 0;
-}
-.applyBtn.btn.btn-sm.btn-success{
-  background-color: #5a6d81;
+  .dashboard-date {
+    font-size: 24px;
+    color: #5a6d81;
+    font-weight: 100;
+    margin-top: 0px;
+    padding-left: 10px;
+  }
+  .head-icon {
+    font-size: 27px;
+    color: #5a6d81;
+  }
+  .nav.navbar-right.right-options {
+    margin-right: 0;
+  }
+  .nav.navbar-nav.navbar-right.right-options li a:hover {
+    background-color: #f7f8f9;
+  }
+  .selected-date-range-btn {
+    background: transparent;
+    border: none;
+    outline: 0;
+    padding: 13px 12px;
+  }
+  .selected-date-range-btn:hover {
+    background: #f7f8f9;
+  }
+  .selected-date-range-btn:focus {
+    outline: 0;
+  }
+  .applyBtn.btn.btn-sm.btn-success {
+    background-color: #5a6d81;
+  }
 }
 
 /*CSS FOR THE TABS*/
-#tabbed{
+#tabbed {
   float: left;
   width: 100%;
   margin-top: -44px;
-}
 
-.tab-input {
-  display: none;
-}
-
-.tab {
-  float: left;
-  display: inline-block;
-  position: relative;
-  padding: 10px;
-  color: #666;
-  font-size: 13px;
-  text-decoration: none;
-  border-top: 1px solid #ddd;
-  border-radius: 5px;
-  margin: 6px 10px 0px 5px;
-  background-color: #eee;
-  cursor: pointer;
-}
-.tab:hover, .tab-input:checked + .tab {
-  background-color: #f7f7f7;
-  border-bottom: none;
-}
-.tab-input:checked + .tab {
-  border-bottom: 1px solid #f7f7f7;
-}
-.tab:hover:before, .tab-input:checked + .tab:before, .tab:hover:after, .tab-input:checked + .tab:after {
-  border-bottom-color: #bbb;
-  background-color: #f7f7f7;
-}
-.tab-input:checked + .tab:before, .tab-input:checked + .tab:after {
-  padding-bottom: 1px;
-}
-.tab:before, .tab:after {
-  content: '';
-  display: block;
-  position: absolute;
-  top: -1px;
-  z-index: 0;
-  height: 100%;
-  width: 15px;
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-bottom: none;
-}
-.tab:before {
-  right: -7px;
-  border-left: none;
-  -moz-transform: skew(27deg, 0deg);
-  -ms-transform: skew(27deg, 0deg);
-  -webkit-transform: skew(27deg, 0deg);
-  transform: skew(27deg, 0deg);
-  border-radius: 0 5px 0 0;
-  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
-}
-.tab:after {
-  left: -7px;
-  border-right: none;
-  -moz-transform: skew(-27deg, 0deg);
-  -ms-transform: skew(-27deg, 0deg);
-  -webkit-transform: skew(-27deg, 0deg);
-  transform: skew(-27deg, 0deg);
-  border-radius: 5px 0 0 0;
-  box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
-}
-.tab-input:checked + .tab{
-  z-index: 2;
-  background: #f7f8f9;
-}
-
-
-.tab-input + .tab + div{
-  position: relative;
-  z-index: 1;
-  float: right;
-  box-sizing: border-box;
-  width: 100%;
-  margin: 2em 0 0 -100%;
-  padding: 5.5em 0.75em;
-}
-
-.tab-input:checked + .tab{
-  position: relative;
-  z-index: 2;
-}
-
-.tab-input:not(:checked) + .tab + div{
-  display: none;
-}
-.tab-label{
-  padding: 10px;
-}
-.close-tab{
-  position: absolute;
-  right: 5px;
-  top: 0px;
-  height: 25px;
-  font-size: 10px;
-}
-
-/*CSS FOR THE DASHBOARD HEADER*/
-
-#title_header{
-  margin: 5px 0px 5px 0px;
-
-  .dashboard-title{
-    font-weight: 100;
-    font-size: 4em;
-    color: #5a6d81;
+  .tab-input {
+    display: none;
   }
-  .dashboard-sub-title{
-    font-weight: 100;
-    font-size: 1.8em;
-    color: #5a6d81;
+
+  .tab {
+    float: left;
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    color: #666;
+    font-size: 13px;
+    text-decoration: none;
+    border-top: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 6px -15px 0px 30px;
+    background-color: #eee;
+    cursor: pointer;
+    text-align: center;
+
+    &:before, &:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: -1px;
+      z-index: 0;
+      height: 100%;
+      width: 15px;
+      background-color: #eee;
+      border: 1px solid #ddd;
+      border-bottom: none;
+    }
+
+    &:before {
+      right: -7px;
+      border-left: none;
+      -moz-transform: skew(27deg, 0deg);
+      -ms-transform: skew(27deg, 0deg);
+      -webkit-transform: skew(27deg, 0deg);
+      transform: skew(27deg, 0deg);
+      border-radius: 0 5px 0 0;
+      box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
+    }
+    &:after {
+      left: -7px;
+      border-right: none;
+      -moz-transform: skew(-27deg, 0deg);
+      -ms-transform: skew(-27deg, 0deg);
+      -webkit-transform: skew(-27deg, 0deg);
+      transform: skew(-27deg, 0deg);
+      border-radius: 5px 0 0 0;
+      box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
+    }
+    .tab-label {
+      padding: 10px;
+    }
+    .close-tab{
+      position: absolute;
+      right: 5px;
+      top: 0px;
+      height: 25px;
+      font-size: 10px;
+    }
+  }
+  .tab:hover, .tab-input:checked + .tab {
+    background-color: #f7f7f7;
+    border-bottom: none;
+  }
+  .tab-input:checked + .tab {
+    border-bottom: 1px solid #f7f7f7;
+  }
+  .tab:hover:before, .tab-input:checked + .tab:before, .tab:hover:after, .tab-input:checked + .tab:after {
+    border-bottom-color: #bbb;
+    background-color: #f7f7f7;
+  }
+  .tab-input:checked + .tab:before, .tab-input:checked + .tab:after {
+    padding-bottom: 1px;
+  }
+  .tab-input:checked + .tab{
+    z-index: 2;
+    background: #f7f8f9;
+  }
+  .tab-input + .tab + div {
+    position: relative;
+    z-index: 1;
+    float: right;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 2em 0 0 -100%;
+    padding: 5.5em 0.75em;
+  }
+  .tab-input:checked + .tab {
+    position: relative;
+    z-index: 2;
+  }
+  .tab-input:not(:checked) + .tab + div {
+    display: none;
   }
 }
 
@@ -281,65 +261,57 @@ a{
   background: #ffffff;
   margin-bottom: 50px;
   padding: 10px;
-}
-.chart-title h2 {
-  font-weight: 100;
-  color: #5a6d81;
-}
-.chart-legend{
-  font-size: 20px;
-  font-weight: 100;
-  text-anchor: middle;
-}
-path.domain{
-  fill: none;
-  stroke: #000000;
-}
-.chart-container{
-  width: 100%;
-}
-.chart{
-  width: 100%;
-  min-width: 250px;
-  height: auto;
-}
-.tick line{
-  stroke: #666666;
-  stroke-dasharray: 4, 4;
-}
-.tick text{
-  font-size: 12px;
-  font-weight: 100;
-}
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-.y-grid .tick path,
-.y-grid .tick line {
-  fill: none;
-  stroke: #ccc;
-  shape-rendering: crispEdges;
-}
-.path {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1px;
-  shape-rendering: crispEdges;
+
+  .chart-title h2 {
+    font-weight: 100;
+    color: #5a6d81;
+  }
+  .chart-legend {
+    font-size: 20px;
+    font-weight: 100;
+    text-anchor: middle;
+  }
+  path.domain {
+    fill: none;
+    stroke: #000000;
+  }
+  .chart-container {
+    width: 100%;
+  }
+  .chart {
+    width: 100%;
+    min-width: 250px;
+    height: auto;
+  }
+  .tick line {
+    stroke: #666666;
+    stroke-dasharray: 4, 4;
+  }
+  .tick text {
+    font-size: 12px;
+    font-weight: 100;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+  .y-grid .tick path,
+  .y-grid .tick line {
+    fill: none;
+    stroke: #ccc;
+    shape-rendering: crispEdges;
+  }
+  .path {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+  }
 }
 
 /*CSS FOR THE DATA TABLE*/
-
-#table_data.rwd-table tr[display='none'],
-.no-result{
-  display:none;
-}
-
-#table_data.rwd-table tr[display='table-row']{
-  display:table-row;
-}
 
 #table_data {
   padding: 10px;
@@ -349,9 +321,9 @@ path.domain{
 }
 .search-bar {
   border-bottom-width: 0;
-border-right: 1px solid rgba(0,0,0,0.3);
--webkit-box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
-box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
+  border-right: 1px solid rgba(0,0,0,0.3);
+  -webkit-box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
+  box-shadow: -1px 0 0 rgba(255,255,255,0.05) inset;
 }
 .search-bar .main-search input {
   background-color: transparent;
@@ -677,5 +649,95 @@ color: #5a6d81;
   // -o-transform: rotate(45deg);
   transform: rotate(45deg);
 }
+
+/*RESPONSIVE MEDIA QUERIES FOR ANALYTICS PAGE*/
+
+/*==========  Mobile First Method  ==========*/
+
+   /* Custom, iPhone Retina */
+   @media only screen and (min-width : 320px) {
+     .analytics-loader {
+        left: 30%;
+     }
+     #page_wrapper {
+       margin-top: 40px;
+       padding-left: 0px;
+
+       #menu {
+         left: -202px;
+         z-index: 99;
+       }
+       #menu.active{
+         left: 0;
+         width: 100%;
+       }
+       #page_content {
+         padding-left: 0;
+         padding-right: 0;
+       }
+       .right-options {
+         display: none;
+       }
+       .open-mobile {
+          font-size: 40px;
+          margin-top: 10px;
+          margin-left: 10px;
+          color: #5a6d81;
+          cursor: pointer;
+       }
+     }
+     #tabbed {
+       .tab {
+         margin: 6px -55px 0px 75px;
+       }
+     }
+   }
+
+   /* Extra Small Devices, Phones */
+   @media only screen and (min-width : 480px) {
+
+   }
+
+   /* Small Devices, Tablets */
+   @media only screen and (min-width : 768px) {
+
+   }
+
+   /* Medium Devices, Desktops */
+   @media only screen and (min-width : 992px) {
+     .analytics-loader {
+        left: 43%;
+     }
+     #page_wrapper {
+       margin-top: 0px;
+       padding-left: 200px;
+
+       #menu {
+         left: 0px;
+         z-index: 0;
+       }
+       #page_content {
+         padding-left: 50px;
+         padding-right: 50px;
+       }
+       .right-options {
+         display: block;
+       }
+       .open-mobile {
+         display: none;
+       }
+     }
+     #tabbed {
+       .tab {
+         margin: 6px -15px 0px 30px;
+       }
+     }
+   }
+
+   /* Large Devices, Wide Screens */
+   @media only screen and (min-width : 1200px) {
+
+   }
+
 
 /*****************************ENDING OF NEW ANALYTICS PAGE CSS*****************/
