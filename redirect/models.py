@@ -21,7 +21,7 @@ CHOICE_LIST = tuple((choice, choice) for choice in CHOICES)
 
 def make_yesno_image(view_source):
     tag = '<img src="{img}" alt="{alt}">'
-    img_string = 'admin/img/icon-%s.gif'
+    img_string = 'admin/img/icon-%s.svg'
     options = {'img': img_string % 'no',
                'alt': 'False'}
     if view_source in settings.EXCLUDED_VIEW_SOURCES:
