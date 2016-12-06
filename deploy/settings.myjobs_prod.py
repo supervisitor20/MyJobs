@@ -3,7 +3,7 @@ from default_settings import *
 import datetime
 import os
 
-from secrets import REDIRECT_PROD, REDIRECT_QC, ARCHIVE_PROD
+from secrets import SOLR_AUTH, REDIRECT_PROD, REDIRECT_STAGING, ARCHIVE_PROD, ARCHIVE_STAGING, REDIRECT_QC
 
 DEBUG = False
 
@@ -17,7 +17,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }, **REDIRECT_PROD),
+    }, **REDIRECT_STAGING),
     'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
@@ -29,10 +29,10 @@ DATABASES = {
         'NAME': 'redirect',
         'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }, **ARCHIVE_PROD)
+    }, **ARCHIVE_STAGING)
 }
 
-ALLOWED_HOSTS = ['secure.my.jobs', 'my.jobs', 'localhost', 'testing.my.jobs']
+ALLOWED_HOSTS = ['secure.my.jobs', 'my.jobs', 'localhost', 'testing.my.jobs', '54.234.128.94']
 
 # Add newrelic here since it shouldn't be used on non-production servers
 MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('middleware.NewRelic',)
