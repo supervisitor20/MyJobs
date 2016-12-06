@@ -1,9 +1,8 @@
-import json, math, csv
+import json, math
 
 from datetime import datetime, timedelta
 
-from pymongo import MongoClient
-from secrets import MONGO_HOST
+from pymongoenv import connect_db
 
 from django.shortcuts import HttpResponse
 from django.http import HttpResponseNotAllowed, Http404
@@ -32,7 +31,7 @@ def views_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
+    client = connect_db().client
     job_views = client.analytics.job_views
 
     query = [
@@ -78,7 +77,7 @@ def activity_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
+    client = connect_db().client
     filtered_analytics = client.analytics.analytics
 
     query = [
@@ -119,13 +118,13 @@ def campaign_percentages(request):
         record_date = input_dict['_id']
         return input_dict
 
-    client = MongoClient(MONGO_HOST)
+    client = connect_db().client
     filtered_analytics = client.analytics.analytics
 
     query = [
         {'$match': {'dn': {'$type': 'string'}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -323,7 +322,7 @@ def get_mongo_client():
 
 
     """
-    client = MongoClient(MONGO_HOST)
+    client = connect_db().client
 
     return client
 

@@ -6,11 +6,11 @@ import sys
 
 from dateutil import parser
 import boto
-from pymongo import MongoClient
+from pymongoenv import connect_db
 
 sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
 
-from secrets import MONGO_HOST, AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
+from secrets import AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
 
 
 def get_log_lines(file_name):
@@ -32,7 +32,7 @@ def to_mongo(file_name):
     Inserts the constituent lines of the file pointed to by "file_name" into
     a Mongo database.
     """
-    client = MongoClient(MONGO_HOST, w="majority")
+    client = connect_db().client
 
     base_name = os.path.basename(file_name)
 
