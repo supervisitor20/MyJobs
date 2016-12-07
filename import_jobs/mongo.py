@@ -36,8 +36,7 @@ def jobsfs_to_mongo(guid, buid, name):
         job['guid'] = job['guid'].lower()
 
     if len(jobs) > 0:
-        client = connect_db().client
-        collection = client.analytics.jobs
+        collection = connect_db().db.jobs
         bulk = collection.initialize_unordered_bulk_op()
         for job in jobs:
             bulk.find({'guid': job['guid']}).upsert().replace_one(job)
@@ -62,8 +61,7 @@ def seoxml_to_mongo(buid, data_dir=DATA_DIR):
     jobfeed.jobparse()
     jobs = jobfeed.solr_jobs()
 
-    client = connect_db().client
-    collection = client.analytics.jobs
+    collection = connect_db().db.jobs
     bulk = collection.initialize_unordered_bulk_op()
     for job in jobs:
         bulk.find({'guid': job['guid']}).upsert().replace_one(job)

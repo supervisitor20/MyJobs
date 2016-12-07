@@ -13,6 +13,7 @@ from dateutil import parser as dateparser
 from myjobs.decorators import requires
 from universal.helpers import get_company_or_404
 
+
 @requires("view analytics")
 def views_last_7_days(request):
     """
@@ -31,8 +32,7 @@ def views_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = connect_db().client
-    job_views = client.analytics.job_views
+    job_views = get_mongo_db().job_views
 
     query = [
         {'$match': {'time_first_viewed': {'$type': 'date'}}},
@@ -40,7 +40,7 @@ def views_last_7_days(request):
                                                   timedelta(days=7)}}},
         {'$match': {'time_first_viewed': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -77,8 +77,7 @@ def activity_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = connect_db().client
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'time': {'$type': 'date'}}},
@@ -86,7 +85,7 @@ def activity_last_7_days(request):
                                      timedelta(days=7)}}},
         {'$match': {'time': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -118,8 +117,7 @@ def campaign_percentages(request):
         record_date = input_dict['_id']
         return input_dict
 
-    client = connect_db().client
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'dn': {'$type': 'string'}}},
@@ -300,7 +298,7 @@ def build_group_by_query(group_by):
     """
     group_query = [
         {
-            "$group" :
+            "$group":
                 {
                     "_id": "$" + group_by,
                     "visitors": {"$sum": 1},
@@ -314,17 +312,14 @@ def build_group_by_query(group_by):
     return group_query
 
 
-def get_mongo_client():
+def get_mongo_db():
     """
-    retrieve mongo client for queries
+    Retrieve the current mongo database (defined in settings.MONGO_DBNAME).
 
-    :return: a mongo client
-
+    :return: a mongo database
 
     """
-    client = connect_db().client
-
-    return client
+    return connect_db().db
 
 
 def get_company_buids(request):
@@ -387,7 +382,7 @@ def dynamic_chart(request):
     if not query_data:
         raise Http404('No data provided')
 
-    job_views = get_mongo_client().analytics.job_views
+    job_views = get_mongo_db().job_views
 
     buids = []
     buids = get_company_buids(request)
