@@ -3,13 +3,13 @@ import {Component} from 'react';
 import {connect} from 'react-redux';
 import {switchActiveTab} from '../../actions/tab-action';
 import {removeSelectedTab} from '../../actions/tab-action';
+import {Link} from 'react-router';
 
 class Tab extends Component {
   constructor() {
     super();
   }
-  activeTab(tabId, event) {
-    event.preventDefault();
+  activeTab(tabId) {
     const {dispatch} = this.props;
     dispatch(switchActiveTab(tabId));
   }
@@ -20,9 +20,10 @@ class Tab extends Component {
   }
   render() {
     const {tabData} = this.props;
+              // <a onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} href={'/' + tabData.navId}>{tabData.PageLoadData.column_names[0].label}<span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span></a>
     return (
       <div>
-          <a onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} href="#/">{tabData.PageLoadData.column_names[0].label}<span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span></a>
+          <Link onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} to={'/' + tabData.navId}>{tabData.PageLoadData.column_names[0].label}<span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span></Link>
           {this.props.children}
       </div>
       );
