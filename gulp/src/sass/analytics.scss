@@ -156,15 +156,11 @@ a {
   width: 100%;
   margin-top: -44px;
 
-  .tab-input {
-    display: none;
-  }
-
   .tab {
     float: left;
     display: inline-block;
     position: relative;
-    padding: 10px;
+    padding: 10px 20px;
     color: #666;
     font-size: 13px;
     text-decoration: none;
@@ -219,25 +215,25 @@ a {
       font-size: 10px;
     }
   }
-  .tab:hover, .tab-input:checked + .tab {
+  .tab:hover {
     background-color: #f7f7f7;
     border-bottom: none;
   }
-  .tab-input:checked + .tab {
+  .tab.active-tab {
     border-bottom: 1px solid #f7f7f7;
   }
-  .tab:hover:before, .tab-input:checked + .tab:before, .tab:hover:after, .tab-input:checked + .tab:after {
+  .tab:hover:before, .tab:hover:after, .tab.active-tab:before, .tab.active-tab:after {
     border-bottom-color: #bbb;
     background-color: #f7f7f7;
   }
-  .tab-input:checked + .tab:before, .tab-input:checked + .tab:after {
+  .tab.active-tab:before, .tab.active-tab:after {
     padding-bottom: 1px;
   }
-  .tab-input:checked + .tab{
+  .tab.active-tab{
     z-index: 2;
     background: #f7f8f9;
   }
-  .tab-input + .tab + div {
+  .tab + div {
     position: relative;
     z-index: 1;
     float: right;
@@ -246,12 +242,15 @@ a {
     margin: 2em 0 0 -100%;
     padding: 5.5em 0.75em;
   }
-  .tab-input:checked + .tab {
+  .tab.active-tab {
     position: relative;
     z-index: 2;
   }
-  .tab-input:not(:checked) + .tab + div {
+  .tab + .tab-content {
     display: none;
+  }
+  .tab.active-tab + .tab-content {
+    display: block;
   }
 }
 
@@ -271,10 +270,6 @@ a {
     font-weight: 100;
     text-anchor: middle;
   }
-  path.domain {
-    fill: none;
-    stroke: #000000;
-  }
   .chart-container {
     width: 100%;
   }
@@ -283,13 +278,9 @@ a {
     min-width: 250px;
     height: auto;
   }
-  .tick line {
-    stroke: #666666;
-    stroke-dasharray: 4, 4;
-  }
   .tick text {
-    font-size: 12px;
-    font-weight: 100;
+    font-size: 18px;
+    fill: #5a6d81;
   }
   .axis path,
   .axis line {

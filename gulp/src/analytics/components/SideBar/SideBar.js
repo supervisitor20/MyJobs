@@ -1,14 +1,16 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
+import {switchMainDimension} from '../../actions/sidebar-action';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension(primaryName) {
-    console.log(primaryName);
+  activeDimension() {
+    const {dispatch} = this.props;
+    dispatch(switchMainDimension());
   }
   render() {
     const dimensions = [
@@ -19,7 +21,7 @@ class SideBar extends Component {
     ];
     const dimension = dimensions.map((dim, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this, dim.name)} key={i} dimension={dim} />
+        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={dim} />
       );
     });
     return (

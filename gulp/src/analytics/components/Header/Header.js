@@ -1,5 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
+import {connect} from 'react-redux';
 import Calendar from '../Calendar/Calendar';
 
 class Header extends Component {
@@ -20,8 +21,10 @@ class Header extends Component {
   }
 }
 
-Header.propTypes = {
-  headerData: React.PropTypes.object.isRequired,
-};
+// Header.propTypes = {
+//   headerData: React.PropTypes.object.isRequired,
+// };
 
-export default Header;
+export default connect(state => ({
+  analytics: state.pageLoadData,
+}))(Header);

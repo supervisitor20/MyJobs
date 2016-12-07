@@ -25,10 +25,10 @@ class AnalyticsApp extends React.Component {
     }
     return (
       <div id="page_wrapper">
-          <SideBar sideData={analytics}/>
-          <Header headerData={analytics}/>
+          <SideBar/>
+          <Header/>
         <div id="page_content">
-          <TabsContainer tabData={analytics}/>
+          <TabsContainer/>
         </div>
         <div className="clearfix"></div>
       </div>

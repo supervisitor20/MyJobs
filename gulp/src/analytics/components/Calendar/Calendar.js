@@ -26,12 +26,12 @@ class Calendar extends Component {
       endDate: picker.endDate,
     });
   }
-  applyDateRange(startDate, endDate){
-    console.log("APPLY");
-    console.log("START: " + this.state.startDate, "END: " + this.state.endDate);
+  applyDateRange() {
+    console.log('APPLY');
+    console.log('START: ' + this.state.startDate, 'END: ' + this.state.endDate);
   }
-  cancelDateRange(){
-    console.log("CANCELED");
+  cancelDateRange() {
+    console.log('CANCELED');
   }
   render() {
     const localizeTime = moment().format('LT');

@@ -1,16 +1,10 @@
 import d3 from 'd3';
 import React from 'react';
+import {Component} from 'react';
 import Axis from '../Common/Axis';
 import Grid from '../Common/Grid';
 
-const BarChart = React.createClass({
-  getDefaultProps() {
-    return {
-      svgHeight: 600,
-      svgWidth: 1920,
-      svgId: 'bar_svg',
-    };
-  },
+class BarChart extends Component {
   render() {
     const {chartData} = this.props;
     const chartingData = chartData.PageLoadData.rows;
@@ -18,23 +12,11 @@ const BarChart = React.createClass({
     const height = this.props.svgHeight - margin.top - margin.bottom;
     const width = this.props.svgWidth - margin.left - margin.right;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-    // const dayHits = [
-    //   {'day': 'Mon', 'hits': 325},
-    //   {'day': 'Tue', 'hits': 678},
-    //   {'day': 'Wed', 'hits': 125},
-    //   {'day': 'Thur', 'hits': 425},
-    //   {'day': 'Fri', 'hits': 520},
-    //   {'day': 'Sat', 'hits': 1285},
-    //   {'day': 'Sun', 'hits': 978},
-    // ];
-    const colorPicker = () => {
-      return '#' + Math.floor(Math.random() * 16777215).toString(16);
-    };
     const xScale = d3.scale.ordinal()
     .domain(chartingData.map((d) => {
       return d.found_on;
     }))
-    .rangeBands([0, width]);
+    .rangeBands([0, width], 0, 0.2);
     const yScale = d3.scale.linear()
     .domain([0, d3.max(chartingData, (d) => {
       return d.job_views;
@@ -52,10 +34,8 @@ const BarChart = React.createClass({
     .orient('left')
     .ticks(8)
     .tickSize(-width, 10, 0)
+    .tickPadding(10)
     .tickFormat('');
-    const rectColor = (d) => {
-      return colorPicker(d.job_views);
-    };
     const rectHeight = (d) => {
       return height - yScale(d.job_views);
     };
@@ -101,7 +81,20 @@ const BarChart = React.createClass({
         </svg>
       </div>
     );
-  },
-});
+  }
+}
+
+BarChart.propTypes = {
+  chartData: React.PropTypes.object.isRequired,
+  svgHeight: React.PropTypes.number.isRequired,
+  svgWidth: React.PropTypes.number.isRequired,
+  svgId: React.PropTypes.string,
+};
+
+BarChart.defaultProps = {
+  svgHeight: 600,
+  svgWidth: 1920,
+  svgId: 'bar_svg',
+};
 
 export default BarChart;
