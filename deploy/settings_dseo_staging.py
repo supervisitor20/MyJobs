@@ -9,7 +9,7 @@ ALLOWED_HOSTS = ['*', ]
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
+STATIC_URL = "//dkv7oddwwyma8.cloudfront.net/Microsites/"
 
 DATABASES = {
     'default': dict({
