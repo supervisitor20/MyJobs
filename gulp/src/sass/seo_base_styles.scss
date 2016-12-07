@@ -397,7 +397,6 @@ a.direct_optionsLess {
     border-radius: 3px;
     box-sizing: border-box;
     box-shadow: 2px 2px 3px #bbb;
-    margin-top: 75px;
     padding: 0px 10px;
   }
   .search-sent-text {
@@ -444,6 +443,7 @@ a.direct_optionsLess {
   padding: 10px 20px;
   border: none;
   border-radius: 2px;
+  font-weight: 900;
 }
 
 .filter-box {
@@ -772,7 +772,6 @@ margin-bottom: 50px;
     .email-box {
       @extend .gray-section-boxes;
       padding: 10px;
-      margin-top: 75px;
 
       #mobile_enter_email {
         position: relative;
