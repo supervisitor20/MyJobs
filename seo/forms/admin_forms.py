@@ -34,13 +34,11 @@ class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
     validation on value. -- Ashley 8/19/13
 
     """
-    def __init__(self, queryset, cache_choices=False, required=True,
-                 widget=None, label=None, initial=None,
-                 help_text=None, *args, **kwargs):
+    def __init__(self, queryset, required=True, widget=None, label=None,
+                 initial=None, help_text='', *args, **kwargs):
         self.my_model = kwargs.pop('my_model', None)
-        super(forms.ModelMultipleChoiceField, self).__init__(
-            queryset, None, cache_choices, required, widget, label, initial,
-            help_text, *args, **kwargs)
+        super(forms.ModelMultipleChoiceField, self).__init__(queryset,
+             required, widget, label, initial, help_text, *args, **kwargs)
 
     def clean(self, value):
         if self.required and not value:
