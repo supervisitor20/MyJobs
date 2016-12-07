@@ -14,9 +14,6 @@ process.on('SIGINT', function() {
 
 // This build produces several javascript bundles.
 //
-//     In production this bundle also contains whatever code webpack deemed
-//     as common to all app bundles.
-//
 // * reporting.js, [other-apps].js, etc. - These contain mostly only code
 //     used in a specific application. There should be one for each "app"
 //     in our site.
