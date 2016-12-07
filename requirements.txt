@@ -27,7 +27,7 @@ django-cors-headers==1.1.0
 django-debug-toolbar==1.6
 django-el-pagination==3.0.1
 django-extensions==1.7.4
-git+git://github.com/DirectEmployers/django-fsm-widget.git@00f571d6d38bcb16a1f40395a02b37b909f39992
+git+git://github.com/DirectEmployers/django-fsm-widget.git@db554cfd24be1c414cc1594737fa24d4a39cdcc0
 django-haystack==2.5.0
 django-impersonate==1.0.1
 django-jenkins==0.110.0
