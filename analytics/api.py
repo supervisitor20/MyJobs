@@ -1,9 +1,8 @@
-import json, math, csv
+import json, math
 
 from datetime import datetime, timedelta
 
-from pymongo import MongoClient
-from secrets import MONGO_HOST
+from pymongoenv import connect_db
 
 from django.shortcuts import HttpResponse
 from django.http import HttpResponseNotAllowed, Http404
@@ -18,6 +17,7 @@ from universal.helpers import get_company_or_404
 from myreports.models import (
     ReportingType, ReportType, DataType,
     ReportTypeDataTypes)
+
 
 @requires("view analytics")
 def views_last_7_days(request):
@@ -37,8 +37,7 @@ def views_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
-    job_views = client.analytics.job_views
+    job_views = get_mongo_db().job_views
 
     query = [
         {'$match': {'time_first_viewed': {'$type': 'date'}}},
@@ -46,7 +45,7 @@ def views_last_7_days(request):
                                                   timedelta(days=7)}}},
         {'$match': {'time_first_viewed': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -83,8 +82,7 @@ def activity_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'time': {'$type': 'date'}}},
@@ -92,7 +90,7 @@ def activity_last_7_days(request):
                                      timedelta(days=7)}}},
         {'$match': {'time': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -124,13 +122,12 @@ def campaign_percentages(request):
         record_date = input_dict['_id']
         return input_dict
 
-    client = MongoClient(MONGO_HOST)
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'dn': {'$type': 'string'}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -306,7 +303,7 @@ def build_group_by_query(group_by):
     """
     group_query = [
         {
-            "$group" :
+            "$group":
                 {
                     "_id": "$" + group_by,
                     "visitors": {"$sum": 1},
@@ -320,17 +317,14 @@ def build_group_by_query(group_by):
     return group_query
 
 
-def get_mongo_client():
+def get_mongo_db():
     """
-    retrieve mongo client for queries
+    Retrieve the current mongo database (defined in settings.MONGO_DBNAME).
 
-    :return: a mongo client
-
+    :return: a mongo database
 
     """
-    client = MongoClient(MONGO_HOST)
-
-    return client
+    return connect_db().db
 
 
 def get_company_buids(request):
@@ -393,7 +387,7 @@ def dynamic_chart(request):
     if not query_data:
         raise Http404('No data provided')
 
-    job_views = get_mongo_client().analytics.job_views
+    job_views = get_mongo_db().job_views
 
     buids = []
     buids = get_company_buids(request)
