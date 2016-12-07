@@ -9,10 +9,15 @@ from django.shortcuts import HttpResponse
 from django.http import HttpResponseNotAllowed, Http404
 from django.views.decorators.csrf import csrf_exempt
 
+from universal.api_validation import ApiValidator
+
 from dateutil import parser as dateparser
 
 from myjobs.decorators import requires
 from universal.helpers import get_company_or_404
+from myreports.models import (
+    ReportingType, ReportType, DataType,
+    ReportTypeDataTypes)
 
 @requires("view analytics")
 def views_last_7_days(request):
@@ -434,3 +439,111 @@ def dynamic_chart(request):
     }
 
     return HttpResponse(json.dumps(response))
+
+
+@requires("view analytics")
+def get_available_analytics(request):
+    """Get a list of available analytics reports.
+
+    {
+        'reports': [
+            {
+                'value': 'job-locations',
+                'display': 'Job Locations',
+            },
+            {
+                'value': 'job-titles',
+                'display': 'Job Titles',
+            },
+            {
+                'value': 'job-found-on',
+                'display': 'Site Found On',
+            },
+        ],
+    }
+    """
+    # This and lines like it below should eventually be replaced by some kind
+    # of general filter based on ReportingType and permissions.
+    rit_analytics = ReportingType.objects.get(reporting_type="web-analytics")
+    report_types = (
+        ReportType.objects.active_for_reporting_type(rit_analytics)
+        .order_by('description'))
+
+    result = {
+        'reports': [
+            {
+                'value': r.report_type,
+                'display': r.description,
+            }
+            for r in report_types
+        ],
+    }
+
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+@requires("view analytics")
+def get_report_info(request):
+    """Get information about an analytics report.
+
+    analytics_report_id: string id obtained from get_available_analytics
+        under 'value'
+
+    {
+        'dimensions': [
+            {
+                'value': 'country',
+                'display': 'Country',
+                'interface_type': 'map:world',
+            },
+            {
+                'value': 'title',
+                'display': 'Job Title',
+                'interface_type': 'string',
+            },
+            ...
+        ]
+    }
+    """
+    validator = ApiValidator()
+
+    analytics_report_id = request.GET.get('analytics_report_id', '')
+    if not analytics_report_id:
+        validator.note_field_error(
+            "analytics_report_id", "Value required.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    rit_analytics = ReportingType.objects.get(reporting_type="web-analytics")
+
+    report_type = (
+        ReportType.objects.active_for_reporting_type(rit_analytics)
+        .filter(report_type=analytics_report_id))
+    report_data = (
+        ReportTypeDataTypes.objects.first_active_for_report_type_data_type(
+            report_type=report_type,
+            data_type=DataType.objects.filter(data_type='unaggregated')))
+
+    if not report_data:
+        validator.note_field_error(
+            "analytics_report_id", "No analytics report found.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    config = report_data.configuration
+
+    result = {
+        'dimensions': [
+            {
+                'value': r.column_name,
+                'display': r.filter_interface_display,
+                'interface_type': r.filter_interface_type,
+            }
+            for r in config.configurationcolumn_set.all().order_by('order')
+        ],
+    }
+
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
