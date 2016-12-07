@@ -18,6 +18,7 @@ class AnalyticsApp extends React.Component {
   }
   render() {
     const {analytics} = this.props;
+    console.log('ANALYTICS DATA: ', analytics);
     if (analytics.fetching) {
       return (
         <LoadingSpinner/>

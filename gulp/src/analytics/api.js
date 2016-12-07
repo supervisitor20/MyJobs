@@ -11,6 +11,15 @@ export default class Api {
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(initialPageRequest)});
   }
+  // async getDarrinData() {
+  //   const initialPageRequest = {
+  //     'date_start': start + ' 00:00:00',
+  //     'date_end': end + ' 00:00:00',
+  //     'active_filters': [],
+  //     'next_filter': 'found_on',
+  //   };
+  //   console.log(await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(initialPageRequest)}));
+  // }
   // async addFilters() {
   //   const request = {
   //     'date_start': '11/29/2016 00:00:00',
