@@ -4,6 +4,7 @@ let navCount = 1;
 export const initialPageData = {
   fetching: true,
   navigation: [],
+  primaryDimensions: {},
 };
 
 // DUMBIE DATA THAT NEEDS TO BE DELETED BEFORE PRODUCTION
@@ -42,11 +43,19 @@ export const initialPageData = {
 // }
 
 export default handleActions({
-  'FETCH_PAGE_DATA': (state, action) => {
+  'MARK_PAGE_LOADING': (state, action) => {
     const pageLoad = action.payload;
     return {
       ...state,
       fetching: pageLoad,
+    };
+  },
+  'SET_PRIMARY_DIMENSIONS': (state, action) => {
+    return {
+      ...state,
+      primaryDimensions: {
+        dimensionList: action.payload,
+      },
     };
   },
   'SET_PAGE_DATA': (state, action) => {

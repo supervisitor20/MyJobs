@@ -1,8 +1,8 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {switchActiveTab} from '../../actions/tab-action';
-import {removeSelectedTab} from '../../actions/tab-action';
+import {switchActiveTab} from '../../actions/tab-actions';
+import {removeSelectedTab} from '../../actions/tab-actions';
 import {Link} from 'react-router';
 
 class Tab extends Component {

@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {doGetPageData} from '../actions/table-filter-action';
+import {doGetPageData} from '../actions/table-filter-actions';
 import SideBar from './SideBar/SideBar';
 import Header from './Header/Header';
 import TabsContainer from './Tabs/TabsContainer';
@@ -18,7 +18,6 @@ class AnalyticsApp extends React.Component {
   }
   render() {
     const {analytics} = this.props;
-    console.log('ANALYTICS DATA: ', analytics);
     if (analytics.fetching) {
       return (
         <LoadingSpinner/>

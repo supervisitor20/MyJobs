@@ -1,7 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {switchMainDimension} from '../../actions/sidebar-action';
+import {switchMainDimension} from '../../actions/sidebar-actions';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
@@ -13,15 +13,10 @@ class SideBar extends Component {
     dispatch(switchMainDimension());
   }
   render() {
-    const dimensions = [
-      {name: 'Demographics'},
-      {name: 'Geo'},
-      {name: 'Technology'},
-      {name: 'Mobile'},
-    ];
-    const dimension = dimensions.map((dim, i) => {
+    const {analytics} = this.props;
+    const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={dim} />
+        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={report} />
       );
     });
     return (
@@ -31,7 +26,7 @@ class SideBar extends Component {
             <p className="filter-header">Primary Dimensions</p>
             <div className="clearfix"></div>
            </li>
-          {dimension}
+          {primaryDimensions}
         </ul>
       </div>
     );
@@ -40,6 +35,7 @@ class SideBar extends Component {
 
 SideBar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  analytics: React.PropTypes.object.isRequired,
 };
 
 export default connect(state => ({
