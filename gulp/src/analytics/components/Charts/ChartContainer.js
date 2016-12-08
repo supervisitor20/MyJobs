@@ -1,11 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
-// import SimpleBarChart from './Bar/SimpleBarChart';
 import BarChart from './Bar/BarChart';
-// import WorldMap from './Map/WorldMap';
-// import LineChart from './Line/LineChart';
-// import PieChart from './Pie/PieChart';
 
 class ChartContainer extends Component {
   constructor(props, context) {
