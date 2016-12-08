@@ -14,6 +14,12 @@ export default class Api {
   async getPrimaryDimensions() {
     return await this.api.get('/analytics/api/available-reports');
   }
+  // async setInitialPageData() {
+  //   const startingId = {
+  //
+  //   }
+  //   console.log(await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(initialPageRequest)}));
+  // }
   // async addFilters() {
   //   const request = {
   //     'date_start': '11/29/2016 00:00:00',

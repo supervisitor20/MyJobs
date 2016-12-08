@@ -1,4 +1,10 @@
 /*GLOBAL CSS*/
+$primary-blue: #5A6D81;
+$white: #FFFFFF;
+$black: #000000;
+$dark-gray: #E6E6E6;
+$light-gray: #F7F8F9;
+
 * {
   margin: 0;
   padding: 0;
@@ -31,7 +37,7 @@ a {
 /*PAGE LOADING SPINNER CSS*/
 .analytics-loader {
     border: 16px solid #f3f3f3;
-    border-top: 16px solid #5a6d81;
+    border-top: 16px solid $primary-blue;
     border-radius: 50%;
     width: 200px;
     height: 200px;
@@ -73,27 +79,29 @@ a {
     left: 0;
     width: 200px;
     height: 100%;
-    background-color: #5a6d81;
+    background-color: $primary-blue;
 
     .sidebar-container {
       margin: 0;
       padding: 0;
 
       .side-dimension-header {
-        border-bottom: 1px solid #FFFFFF;
+        border-bottom: 1px solid $white;
         padding: 25px 0px 0px 5px;
       }
 
       .filter-header {
-        color: #FFFFFF;
+        color: $white;
         font-size: 18px;
         padding-left: 5px;
       }
 
       .side-dimension {
-        color: #FFFFFF;
-        border-bottom: 1px solid #FFFFFF;
+        color: $white;
+        border-bottom: 1px solid $white;
+        border-left: 5px solid transparent;
         padding: 25px 10px;
+        transition: all 300ms;
 
         span {
           font-size: 14px;
@@ -102,7 +110,14 @@ a {
 
         &:hover {
           cursor: pointer;
+          border-left: 5px solid $white;
+          padding: 25px 50px;
+          transition: all 300ms;
         }
+      }
+      .side-dimension.active{
+        border-left: 5px solid $white;
+        padding: 25px 50px;
       }
     }
   }
@@ -118,14 +133,14 @@ a {
 
   .dashboard-date {
     font-size: 24px;
-    color: #5a6d81;
+    color: $primary-blue;
     font-weight: 100;
     margin-top: 0px;
     padding-left: 10px;
   }
   .head-icon {
     font-size: 27px;
-    color: #5a6d81;
+    color: $primary-blue;
   }
   .nav.navbar-right.right-options {
     margin-right: 0;
@@ -146,7 +161,7 @@ a {
     outline: 0;
   }
   .applyBtn.btn.btn-sm.btn-success {
-    background-color: #5a6d81;
+    background-color: $primary-blue;
   }
 }
 
@@ -257,13 +272,13 @@ a {
 /*CSS FOR THE CHARTS SECTION*/
 
 #charts {
-  background: #ffffff;
+  background: $white;
   margin-bottom: 50px;
   padding: 10px;
 
   .chart-title h2 {
     font-weight: 100;
-    color: #5a6d81;
+    color: $primary-blue;
   }
   .chart-legend {
     font-size: 20px;
@@ -280,12 +295,12 @@ a {
   }
   .tick text {
     font-size: 18px;
-    fill: #5a6d81;
+    fill: $primary-blue;
   }
   .axis path,
   .axis line {
     fill: none;
-    stroke: #000;
+    stroke: $black;
     shape-rendering: crispEdges;
   }
   .y-grid .tick path,
@@ -306,7 +321,7 @@ a {
 
 #table_data {
   padding: 10px;
-  background: #ffffff;
+  background: $white;
   position: relative;
   margin-bottom: 50px;
 }
@@ -373,8 +388,8 @@ a {
 }
 
 .rwd-table {
-  background: #ffffff;
-  color: #5a6d81;
+  background: $white;
+  color: $primary-blue;
   overflow: hidden;
 }
 .rwd-table tr {
@@ -397,13 +412,13 @@ a {
     font-size: 16px;
   }
   .rwd-table td a{
-    color: #0000FF;
+    color: #334FFF;
     display: block;
     padding: 15px;
   }
 }
 .rwd-table th, .rwd-table td:before {
-  color: #5a6d81;
+  color: $primary-blue;
   font-size: 18px;
 }
 .rwd-table th:not(:nth-child(1)){
@@ -420,7 +435,7 @@ a {
    -webkit-padding-end: 20px;
    -webkit-padding-start: 2px;
    -webkit-user-select: none;
-   background: #5a6d81;
+   background: $primary-blue;
    color: white;
    font-size: inherit;
    margin: 20px 20px 20px 0px;
@@ -450,19 +465,19 @@ a {
 }
 
 #search_table::-webkit-input-placeholder {
-color: #5a6d81;
+color: $primary-blue;
 }
 
 #search_table:-moz-placeholder {
-   color: #5a6d81;
+   color: $primary-blue;
 }
 
 #search_table::-moz-placeholder {
-   color: #5a6d81;
+   color: $primary-blue;
 }
 
 #search_table:-ms-input-placeholder {
-   color: #5a6d81;
+   color: $primary-blue;
 }
 
 /*CSS FOR THE DIMENSIN LIST*/
@@ -500,7 +515,7 @@ color: #5a6d81;
   padding: 10px;
   position: absolute;
   z-index: 999;
-  background: #FFFFFF;
+  background: $white;
   overflow: hidden;
   -moz-transition: border 0.3s ease;
   // -o-transition: border 0.3s ease;
@@ -513,7 +528,7 @@ color: #5a6d81;
   font-size: 1.5em;
   line-height: 32px;
   font-weight: 100;
-  color: #5a6d81;
+  color: $primary-blue;
   padding: 0 5px;
   -moz-transition: color 0.3s ease;
   // -o-transition: color 0.3s ease;
@@ -562,7 +577,7 @@ color: #5a6d81;
 .dimension_list ul a {
   text-decoration: none;
   font-size: 20px;
-  color: #5a6d81;
+  color: $primary-blue;
   -moz-transition: color 0.3s ease;
   // -o-transition: color 0.3s ease;
   -webkit-transition: color 0.3s ease;
@@ -580,7 +595,7 @@ color: #5a6d81;
   position: absolute;
   height: 2px;
   width: 20px;
-  background: #5a6d81;
+  background: $primary-blue;
   border-radius: 9px;
   opacity: 1;
   right: 20px;
@@ -593,7 +608,7 @@ color: #5a6d81;
     position: absolute;
     height: 2px;
     width: 20px;
-    background: #5a6d81;
+    background: $primary-blue;
     border-radius: 9px;
     opacity: 1;
     -webkit-transform: rotate(0deg);
@@ -611,7 +626,7 @@ color: #5a6d81;
     position: absolute;
     height: 2px;
     width: 20px;
-    background: #5a6d81;
+    background: $primary-blue;
     border-radius: 9px;
     opacity: 1;
         -ms-transform: rotate(90deg);
@@ -673,7 +688,7 @@ color: #5a6d81;
           font-size: 40px;
           margin-top: 10px;
           margin-left: 10px;
-          color: #5a6d81;
+          color: $primary-blue;
           cursor: pointer;
        }
      }
