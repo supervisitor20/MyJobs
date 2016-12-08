@@ -8,6 +8,7 @@ module.exports = {
     port: process.env.DEVSERVER_PORT || "8080",
     config: "webpack.dev.config.js",
     https: process.env.DEVSERVER_HTTPS ? true : false,
+    stats: 'minimal',
   },
   entry: {
     reporting: './src/reporting/main',
