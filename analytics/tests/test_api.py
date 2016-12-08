@@ -5,12 +5,13 @@ import myreports.models as myreports_models
 
 from django.core.urlresolvers import reverse
 
-from analytics.api import get_available_analytics, get_report_info
+from analytics.api import (get_available_analytics, get_report_info,
+                           dynamic_chart)
 
 
-class TestApi(MyJobsBase):
+class TestStartingPointApi(MyJobsBase):
     def setUp(self):
-        super(TestApi, self).setUp()
+        super(TestStartingPointApi, self).setUp()
         self.maxDiff = 10000
         self.role.add_activity("view analytics")
         self.rit_analytics = myreports_models.ReportingType.objects.create(
@@ -301,3 +302,39 @@ class TestApi(MyJobsBase):
         result = json.loads(response.content)
         fields = [i['field'] for i in result]
         self.assertIn('analytics_report_id', fields)
+
+
+class TestDynamicChartingApi(MyJobsBase):
+    def setUp(self):
+        super(TestDynamicChartingApi, self).setUp()
+        self.role.add_activity("view analytics")
+
+    def test_valid_request(self):
+        request_data = {"date_start": "10/18/2012 00:00:00",
+                        "date_end": "10/18/2012 00:00:00",
+                        "active_filters": [],
+                        "next_filter": "found_on"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+
+        result = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(['rows', 'column_names'] in result)
+
+    def test_report_info_missing_date(self):
+        request_data = {"date_end": "11/28/2016 00:00:00"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+        self.assertEqual(400, response.status_code)
+        result = json.loads(response.content)
+        fields = [i['field'] for i in result]
+        self.assertIn('date_start', fields)
+
+    def test_report_info_no_data(self):
+        request_data = {}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+        result = json.loads(response.content)
+        self.assertEqual(400, response.status_code)
+        message = result[0]['message']
+        self.assertEqual(message, 'No data provided.')

@@ -205,7 +205,7 @@ def adjust_records_for_sampling(records, error_and_count):
     return return_list
 
 
-def build_top_query(query_data, buids=None):
+def build_top_query(date_start, date_end, buids=None):
     """
     build the highest level query from the data provided
 
@@ -215,15 +215,6 @@ def build_top_query(query_data, buids=None):
 
 
     """
-    try:
-        date_start = dateparser.parse(query_data['date_start'])
-    except ValueError:
-        raise Http404('Invalid date start: ' + query_data['date_start'])
-
-    try:
-        date_end = dateparser.parse(query_data['date_end'])
-    except ValueError:
-        raise Http404('Invalid date end: ' + query_data['date_end'])
 
     top_query = {}
     if buids:
@@ -237,7 +228,6 @@ def build_top_query(query_data, buids=None):
                                       '$lte': date_end
                                      }
 
-    print top_query
     return top_query
 
 
@@ -381,18 +371,48 @@ def dynamic_chart(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    sample_size = 50000 # TODO: Add sample size to request object
+    validator = ApiValidator()
 
     query_data = json.loads(request.POST.get('request', '{}'))
     if not query_data:
-        raise Http404('No data provided')
+        validator.note_error("No data provided.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    if not query_data.get('date_end'):
+        validator.note_field_error('date_end', 'No end date provided')
+
+    if not query_data.get('date_start'):
+        validator.note_field_error('date_start', 'No start date provided')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    try:
+        date_start = dateparser.parse(query_data['date_start'])
+    except ValueError:
+        validator.note_field_error('date_start',
+                                   'Invalid date start: ' +
+                                    query_data['date_end'])
+
+    try:
+        date_end = dateparser.parse(query_data['date_end'])
+    except ValueError:
+        validator.note_field_error('date_end',
+                                   'Invalid date end: ' +
+                                   query_data['date_end'])
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    sample_size = 50000 # TODO: Add sample size to request object
 
     job_views = get_mongo_db().job_views
 
-    buids = []
     buids = get_company_buids(request)
 
-    top_query = build_top_query(query_data, buids)
+    top_query = build_top_query(date_start, date_end, buids)
 
     sample_query, total_count = retrieve_sampling_query_and_count(job_views,
                                                                   top_query,
@@ -410,8 +430,6 @@ def dynamic_chart(request):
     query = [
         {'$match': top_query},
     ] + sample_query + active_filter_query + group_query
-
-    print query
 
     records = job_views.aggregate(query, allowDiskUse=True)
 
