@@ -6,8 +6,8 @@ class TableRows extends Component {
   constructor(props) {
     super(props);
   }
-  applyFilterResults(filterName) {
-    console.log(filterName);
+  applyFilterResults() {
+
   }
   render() {
     const {data} = this.props;

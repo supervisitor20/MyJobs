@@ -27,11 +27,10 @@ class Calendar extends Component {
     });
   }
   applyDateRange() {
-    console.log('APPLY');
-    console.log('START: ' + this.state.startDate, 'END: ' + this.state.endDate);
+
   }
   cancelDateRange() {
-    console.log('CANCELED');
+
   }
   render() {
     const localizeTime = moment().format('LT');
