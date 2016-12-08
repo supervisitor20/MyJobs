@@ -7,41 +7,6 @@ export const initialPageData = {
   primaryDimensions: {},
 };
 
-// DUMBIE DATA THAT NEEDS TO BE DELETED BEFORE PRODUCTION
-// {
-//   column_names: [
-//     {key: 'tab2', label: 'Tab 2 Content'},
-//     {key: 'tab_2', label: 'Tab 2 Content Again'},
-//   ],
-//   rows: [
-//     {tab2: 'content', tab_2: 45815},
-//     {tab2: 'content', tab_2: 14253},
-//     {tab2: 'content', tab_2: 1245},
-//     {tab2: 'content', tab_2: 54623},
-//     {tab2: 'content', tab_2: 8459},
-//     {tab2: 'content', tab_2: 7842},
-//     {tab2: 'content', tab_2: 15423},
-//     {tab2: 'content', tab_2: 25643},
-//   ],
-// }
-//
-// {
-//   column_names: [
-//     {key: 'tab3', label: 'Tab 3 Content'},
-//     {key: 'tab_3', label: 'Tab 3 Content Again'},
-//   ],
-//   rows: [
-//     {tab3: 'content', tab_3: 1245},
-//     {tab3: 'content', tab_3: 5623},
-//     {tab3: 'content', tab_3: 9458},
-//     {tab3: 'content', tab_3: 4851},
-//     {tab3: 'content', tab_3: 3265},
-//     {tab3: 'content', tab_3: 758},
-//     {tab3: 'content', tab_3: 6253},
-//     {tab3: 'content', tab_3: 5426},
-//   ],
-// }
-
 export default handleActions({
   'MARK_PAGE_LOADING': (state, action) => {
     const pageLoad = action.payload;
@@ -68,46 +33,6 @@ export default handleActions({
           active: true,
           PageLoadData: action.payload,
         },
-        // {
-        //   navId: navCount++,
-        //   active: false,
-        //   PageLoadData: {
-        //     column_names: [
-        //       {key: 'tab2', label: 'Tab 2 Content'},
-        //       {key: 'tab_2', label: 'Tab 2 Content Again'},
-        //     ],
-        //     rows: [
-        //       {tab2: 'content', tab_2: 45815},
-        //       {tab2: 'content', tab_2: 14253},
-        //       {tab2: 'content', tab_2: 1245},
-        //       {tab2: 'content', tab_2: 54623},
-        //       {tab2: 'content', tab_2: 8459},
-        //       {tab2: 'content', tab_2: 7842},
-        //       {tab2: 'content', tab_2: 15423},
-        //       {tab2: 'content', tab_2: 25643},
-        //     ],
-        //   },
-        // },
-        // {
-        //   navId: navCount++,
-        //   active: false,
-        //   PageLoadData: {
-        //     column_names: [
-        //       {key: 'tab3', label: 'Tab 3 Content'},
-        //       {key: 'tab_3', label: 'Tab 3 Content Again'},
-        //     ],
-        //     rows: [
-        //       {tab3: 'content', tab_3: 1245},
-        //       {tab3: 'content', tab_3: 5623},
-        //       {tab3: 'content', tab_3: 9458},
-        //       {tab3: 'content', tab_3: 4851},
-        //       {tab3: 'content', tab_3: 3265},
-        //       {tab3: 'content', tab_3: 758},
-        //       {tab3: 'content', tab_3: 6253},
-        //       {tab3: 'content', tab_3: 5426},
-        //     ],
-        //   },
-        // },
       ],
     };
   },

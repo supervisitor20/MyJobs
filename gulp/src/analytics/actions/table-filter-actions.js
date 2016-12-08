@@ -26,16 +26,3 @@ export function doGetSelectedFilterData() {
     dispatch(markPageLoadingAction(false));
   };
 }
-
-//
-// export function doTableFilter(filterName) {
-//   return async (dispatch, _, {api}) => {
-//     dispatch(markPageLoadingAction(true));
-//     const filterRequest = {
-//       filterName: filterName,
-//     };
-//     const tableFilterData = await.api.getSelectedTableFilterData(filterRequest);
-//     dispatch(setTableData(tableFilterData));
-//     dispatch(markPageLoadingAction(false));
-//   };
-// }

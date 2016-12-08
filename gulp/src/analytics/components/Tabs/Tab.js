@@ -20,8 +20,6 @@ class Tab extends Component {
   }
   render() {
     const {tabData} = this.props;
-              // <a onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} href={'/' + tabData.navId}>{tabData.PageLoadData.column_names[0].label}<span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span></a>
-    return (
       <div>
           <Link onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} to={'/' + tabData.navId}>{tabData.PageLoadData.column_names[0].label}<span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span></Link>
           {this.props.children}

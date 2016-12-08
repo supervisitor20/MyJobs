@@ -21,10 +21,6 @@ class Header extends Component {
   }
 }
 
-// Header.propTypes = {
-//   headerData: React.PropTypes.object.isRequired,
-// };
-
 export default connect(state => ({
   analytics: state.pageLoadData,
 }))(Header);
