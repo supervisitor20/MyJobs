@@ -49,13 +49,6 @@ module.exports = {
         loader: ExtractTextPlugin.extract('css!sass')
       }
     ],
-    // ie8 catchall. Some imported react components need this.
-    postLoaders: [
-      {
-        test: /\.js$/,
-        loaders: ['es3ify'],
-      },
-    ],
     sassLoader: {
       includePaths: [path.resolve(__dirname, "../static")]
     },

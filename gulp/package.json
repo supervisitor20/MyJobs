@@ -29,7 +29,6 @@
     "d3-scale": "^1.0.3",
     "d3-shape": "^1.0.3",
     "diff": "^2.2.3",
-    "es3ify-loader": "^0.2.0",
     "es6-promise": "^3.0.2",
     "eslint": "^1.10.2",
     "eslint-config-airbnb": "^1.0.0",
