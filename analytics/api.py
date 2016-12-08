@@ -247,7 +247,7 @@ def build_active_filter_query(query_data):
     return [filter_match] if filter_match['$match'] else []
 
 
-def determine_data_group_by_column(query_data):
+def determine_data_group_by_column(query_data, report):
     """
     determine what to group the data by. this can be retrieved from the db
     or provided in the request if a filter_overwrite is present
@@ -258,8 +258,12 @@ def determine_data_group_by_column(query_data):
 
     """
     # TODO: Add DB handling / "filter chain" logic
-    next_filter = query_data['next_filter']
-    return next_filter
+    group_by = query_data.get('group_overwrite')
+    if group_by:
+        return group_by
+
+    # active_filters = query_data.get('active_filters', [])
+    # report_dimensions =
 
 
 def retrieve_sampling_query_and_count(collection, top_query, sample_size):
@@ -380,11 +384,10 @@ def dynamic_chart(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    if not query_data.get('date_end'):
-        validator.note_field_error('date_end', 'No end date provided')
-
-    if not query_data.get('date_start'):
-        validator.note_field_error('date_start', 'No start date provided')
+    required_fields = ['date_end', 'date_start', 'report']
+    for field in required_fields:
+        if not query_data.get(field):
+            validator.note_field_error(field, '%s is required' % field)
 
     if validator.has_errors():
         return validator.build_error_response()
@@ -402,6 +405,13 @@ def dynamic_chart(request):
         validator.note_field_error('date_end',
                                    'Invalid date end: ' +
                                    query_data['date_end'])
+
+    try:
+        report = ReportType.objects.get(query_data['report'])
+    except ValueError:
+        validator.note_field_error('report',
+                                   'Invalid report: ' +
+                                   query_data['report'])
 
     if validator.has_errors():
         return validator.build_error_response()
@@ -423,7 +433,7 @@ def dynamic_chart(request):
 
     active_filter_query = build_active_filter_query(query_data)
 
-    group_by = determine_data_group_by_column(query_data)
+    group_by = determine_data_group_by_column(query_data, report)
 
     group_query = build_group_by_query(group_by)
 
