@@ -1,5 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
+import {connect} from 'react-redux';
 import Calendar from '../Calendar/Calendar';
 
 class Header extends Component {
@@ -7,6 +8,7 @@ class Header extends Component {
     return (
       <div className="tabs-header">
         <nav>
+          <i className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
           <ul className="nav navbar-nav navbar-right right-options">
             <li><Calendar/></li>
             <li><a href="#"><span className="head-icon fa fa-envelope-o"></span></a></li>
@@ -19,8 +21,6 @@ class Header extends Component {
   }
 }
 
-Header.propTypes = {
-  headerData: React.PropTypes.object.isRequired,
-};
-
-export default Header;
+export default connect(state => ({
+  analytics: state.pageLoadData,
+}))(Header);
