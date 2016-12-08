@@ -4,7 +4,7 @@ import {Component} from 'react';
 class TableSearch extends Component {
   render() {
     return (
-      <input onKeyUp={this.searchTableResults.bind(this)} type="text" id="search_table" placeholder="Search..." title="Type Search" />
+      <input type="text" id="search_table" placeholder="Search..." title="Type Search" />
     );
   }
 }
