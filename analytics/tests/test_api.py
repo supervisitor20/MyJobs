@@ -303,25 +303,20 @@ class TestStartingPointApi(MyJobsBase):
         fields = [i['field'] for i in result]
         self.assertIn('analytics_report_id', fields)
 
-
-class TestDynamicChartingApi(MyJobsBase):
-    def setUp(self):
-        super(TestDynamicChartingApi, self).setUp()
-        self.role.add_activity("view analytics")
-
-    def test_valid_request(self):
+    def test_valid_dynamic_charts_request(self):
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/18/2012 00:00:00",
                         "active_filters": [],
-                        "next_filter": "found_on"}
+                        "report": "job-found-on",
+                        "group_overwrite": "found_on"}
         response = self.client.post(reverse(dynamic_chart),
                                     {"request": json.dumps(request_data)})
 
         result = json.loads(response.content)
         self.assertEqual(200, response.status_code)
-        self.assertTrue(['rows', 'column_names'] in result)
+        self.assertTrue('rows' in result)
 
-    def test_report_info_missing_date(self):
+    def test_dynamic_charts_report_info_missing_date(self):
         request_data = {"date_end": "11/28/2016 00:00:00"}
         response = self.client.post(reverse(dynamic_chart),
                                     {"request": json.dumps(request_data)})
@@ -330,7 +325,7 @@ class TestDynamicChartingApi(MyJobsBase):
         fields = [i['field'] for i in result]
         self.assertIn('date_start', fields)
 
-    def test_report_info_no_data(self):
+    def test_dynamic_charts_report_info_no_data(self):
         request_data = {}
         response = self.client.post(reverse(dynamic_chart),
                                     {"request": json.dumps(request_data)})
