@@ -9,7 +9,6 @@ from tastypie.api import Api
 from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
-from myjobs.forms import MyJobsAdminAuthenticationForm
 
 # API Resources
 v1_api = Api(api_name='v1')
@@ -59,3 +58,10 @@ urlpatterns += patterns(
     'myblocks.views',
     url(r'^secure-blocks/$', 'secure_blocks', name='secure_blocks'),
 )
+
+if settings.DEBUG and 'debug_toolbar' in settings.INSTALLED_APPS:
+    import debug_toolbar
+    urlpatterns += patterns(
+        '',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )

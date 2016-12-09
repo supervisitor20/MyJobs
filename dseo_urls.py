@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.apps import apps as model_cache
@@ -133,3 +134,10 @@ urlpatterns += patterns(
 )
 
 urlpatterns += impersonate_patterns
+
+if settings.DEBUG and 'debug_toolbar' in settings.INSTALLED_APPS:
+    import debug_toolbar
+    urlpatterns += patterns(
+        '',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
