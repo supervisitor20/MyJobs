@@ -2,8 +2,7 @@
 {% load i18n admin_modify staticfiles %}
 
 {% block extrahead %}{{ block.super }}
-{% url "admin" jsi18n as jsi18nurl %}
-<script type="text/javascript" src="{{ jsi18nurl|default:"../../../jsi18n/" }}"></script>
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
 <style type="text/css">
 #id_description {
     width: 1000px;

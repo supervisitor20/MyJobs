@@ -3,8 +3,7 @@
 
 
 {% block extrahead %}{{ block.super }}
-{% url '"admin" jsi18n' as jsi18nurl %}
-<script type="text/javascript" src="{{ jsi18nurl|default:"../../../jsi18n/" }}"></script>
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}jscolor/jscolor.js"></script>
 {{ media }}
 {% endblock %}
@@ -56,27 +55,27 @@
     {% include "admin/seo/billboardimage/edit_inline/stacked.html" %}
 {% endfor %}
 <script type="text/javascript" src="{{ STATIC_URL }}group_perm.js"></script>
-<script type"text/javascript">
-(function($) {
-    $(document).ready(function(){
-        // this configObj varies for the type of admin site GroupPermission is being used for
-        // currently all models but MicrositeCarousel have a single site box, but MicrositeCarousel
-        // has both a "linked_sites" and "active_sites" field, so it is only admin site with
-        // a different configObj.
-        configObj = {
-            sites_container: "div.sites div div.selector",
-            sites_to_selector: "#id_sites_to",
-            sites_from_selector: "#id_sites_from",
-            addCacheToKeys: ["id_sites_to"],
-            addCacheFromKeys: ["id_sites_from"],
-            siteTypes: ['sites'],
-            originalData: {group: $('#id_group').val(), sites: $('#id_sites').val()}
-        }
-        GroupPermission.init(configObj);
-    {% include "includes/group_perm_handler.js" %}
-    });
-})(django.jQuery);
-</script>
+<script type=text/javascript">
+    (function($) {
+        $(document).ready(function(){
+            // this configObj varies for the type of admin site GroupPermission is being used for
+            // currently all models but MicrositeCarousel have a single site box, but MicrositeCarousel
+            // has both a "linked_sites" and "active_sites" field, so it is only admin site with
+            // a different configObj.
+            configObj = {
+                sites_container: "div.sites div div.selector",
+                sites_to_selector: "#id_sites_to",
+                sites_from_selector: "#id_sites_from",
+                addCacheToKeys: ["id_sites_to"],
+                addCacheFromKeys: ["id_sites_from"],
+                siteTypes: ['sites'],
+                originalData: {group: $('#id_group').val(), sites: $('#id_sites').val()}
+            };
+            GroupPermission.init(configObj);
+        {% include "includes/group_perm_handler.js" %}
+        });
+    })(django.jQuery);
+    </script>
 {% block after_related_objects %}{% endblock %}
 
 {% submit_row %}

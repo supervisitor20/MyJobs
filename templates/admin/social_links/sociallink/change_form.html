@@ -2,7 +2,7 @@
 {% load i18n admin_modify staticfiles %}
 
 {% block extrahead %}{{ block.super }}
-<script type="text/javascript" src="../../../jsi18n/"></script>
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}jscolor/jscolor.js"></script>
 {{ media }}
 {% endblock %}
@@ -66,7 +66,7 @@
     {% include "admin/seo/configuration/edit_inline/stacked.html" %}
 {% endfor %}
 <script type="text/javascript" src="{{ STATIC_URL }}group_perm.js"></script>
-<script type"text/javascript">
+<script type="text/javascript">
 (function($) {
     $(document).ready(function(){
     	// this configObj varies for the type of admin site GroupPermission is being used for
@@ -81,7 +81,7 @@
 			addCacheFromKeys: ["id_sites_from"],
 			siteTypes: ['sites'],
 			originalData: {group: $('#id_group').val(), sites: $('#id_sites').val()}
-    	}
+    	};
 		GroupPermission.init(configObj);
 	{% include "includes/group_perm_handler.js" %}
     });
