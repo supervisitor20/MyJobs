@@ -36,9 +36,13 @@ class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
     """
     def __init__(self, queryset, required=True, widget=None, label=None,
                  initial=None, help_text='', *args, **kwargs):
+
         self.my_model = kwargs.pop('my_model', None)
-        super(forms.ModelMultipleChoiceField, self).__init__(queryset,
-             required, widget, label, initial, help_text, *args, **kwargs)
+
+        super(MyModelMultipleChoiceField, self).__init__(
+            queryset, required, widget, label, initial, help_text,
+            *args, **kwargs
+        )
 
     def clean(self, value):
         if self.required and not value:
