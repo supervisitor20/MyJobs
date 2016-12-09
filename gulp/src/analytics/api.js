@@ -7,7 +7,7 @@ export default class Api {
       'date_start': start + ' 00:00:00',
       'date_end': end + ' 00:00:00',
       'active_filters': [],
-      'next_filter': 'found_on',
+      'report': 'job-locations',
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(initialPageRequest)});
   }
