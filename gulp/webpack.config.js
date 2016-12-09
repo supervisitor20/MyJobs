@@ -8,6 +8,7 @@ module.exports = {
     port: process.env.DEVSERVER_PORT || "8080",
     config: "webpack.dev.config.js",
     https: process.env.DEVSERVER_HTTPS ? true : false,
+    stats: 'minimal',
   },
   entry: {
     reporting: './src/reporting/main',
@@ -48,13 +49,6 @@ module.exports = {
         test: /\.scss$/,
         loader: ExtractTextPlugin.extract('css!sass')
       }
-    ],
-    // ie8 catchall. Some imported react components need this.
-    postLoaders: [
-      {
-        test: /\.js$/,
-        loaders: ['es3ify'],
-      },
     ],
     sassLoader: {
       includePaths: [path.resolve(__dirname, "../static")]
