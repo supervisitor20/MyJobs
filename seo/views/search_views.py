@@ -36,7 +36,6 @@ from slugify import slugify
 from moc_coding import models as moc_models
 from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
-from settings import DEFAULT_PAGE_SIZE
 from xmlparse import text_fields
 from import_jobs.init import add_jobs, delete_by_guid
 from transform import transform_for_postajob
@@ -141,7 +140,7 @@ def ajax_geolocation_facet(request):
 
     sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
 
-    num_items = int(request.GET.get('num_items', DEFAULT_PAGE_SIZE))
+    num_items = int(request.GET.get('num_items', settings.DEFAULT_PAGE_SIZE))
 
     facet_field_type = request.GET.get('facet', 'buid')
 
@@ -212,7 +211,7 @@ def ajax_get_facets(request, filter_path, facet_type):
     sqs = helpers.prepare_sqs_from_search_params(GET)
     sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
     offset = int(GET.get('offset', site_config.num_filter_items_to_show*2))
-    num_items = int(GET.get('num_items', DEFAULT_PAGE_SIZE))
+    num_items = int(GET.get('num_items', settings.DEFAULT_PAGE_SIZE))
     if _type == 'facet':
         # Standard facets are all already loaded on page load,
         # so there will never be anything to return here.
@@ -294,9 +293,9 @@ def ajax_get_jobs(request, filter_path):
     except ValueError:
         offset = 0
     try:
-        num_items = int(GET.get(u'num_items', DEFAULT_PAGE_SIZE))
+        num_items = int(GET.get(u'num_items', settings.DEFAULT_PAGE_SIZE))
     except ValueError:
-        num_items = DEFAULT_PAGE_SIZE
+        num_items = settings.DEFAULT_PAGE_SIZE
     custom_facets = settings.DEFAULT_FACET
     sqs = helpers.prepare_sqs_from_search_params(GET)
     sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
@@ -1830,6 +1829,7 @@ def get_analytics_info():
         }
     return json.dumps(analytics_info)
 
+
 class SearchResults(FallbackBlockView):
     page_type = Page.SEARCH_RESULTS
 
@@ -1944,6 +1944,7 @@ def test_markdown(request):
             data_dict = {
                 'the_job': TempJob(**job_json)
             }
+            site_config = get_site_config(request)
             return render_to_response(site_config.get_template('job_detail.html'),
                                       data_dict, context_instance=RequestContext(request))
     else:
