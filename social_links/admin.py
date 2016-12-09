@@ -2,14 +2,14 @@ import hashlib
 
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
-from django.forms import (ModelForm, ModelMultipleChoiceField, ValidationError,
-                          ChoiceField)
+from django.forms import ModelForm, ChoiceField
 from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.utils.http import urlquote
 
 from social_links.models import SocialLink, MicrositeCarousel, SocialLinkType
 from seo.models import SeoSite
+from seo.forms.admin_forms import MyModelMultipleChoiceField
 
 
 def invalidate_template_cache(fragment_name, *variables):
@@ -19,37 +19,12 @@ def invalidate_template_cache(fragment_name, *variables):
     cache.delete(cache_key)
 
 
-class MyModelMultipleChoiceField(ModelMultipleChoiceField):
-    def __init__(self, queryset, cache_choices=False, required=True,
-                 widget=None, label=None, initial=None,
-                 help_text=None, *args, **kwargs):
-        self.my_model = kwargs.pop('my_model', None)
-        super(ModelMultipleChoiceField, self).__init__(queryset, None,
-            cache_choices, required, widget, label, initial, help_text,
-            *args, **kwargs)
-
-    def clean(self, value):
-        if self.required and not value:
-            raise ValidationError(self.error_messages['required'])
-        elif not self.required and not value:
-            return []
-        if not isinstance(value, (list, tuple)):
-            raise ValidationError(self.error_messages['list'])
-        for pk in value:
-            try:
-                self.queryset.filter(pk=pk)
-            except ValueError:
-                raise ValidationError(self.error_messages['invalid_pk_value'] %
-                                      pk)
-        qs = self.my_model.objects.filter(pk__in=value)
-        return qs
-
-
 class SocialLinkForm(ModelForm):
-    sites = MyModelMultipleChoiceField(SeoSite.objects.all(), my_model=SeoSite,
-                                       required=False,
-                                       widget=admin.widgets\
-                                       .FilteredSelectMultiple('Sites', False))
+    sites = MyModelMultipleChoiceField(
+        SeoSite.objects.all(), my_model=SeoSite,
+        required=False,
+        widget=admin.widgets.FilteredSelectMultiple('Sites', False)
+    )
     link_icon = ChoiceField(choices=SocialLinkType.icon_choices())
 
     class Meta:
