@@ -2,7 +2,8 @@ import {handleActions} from 'redux-actions';
 
 let navCount = 1;
 export const initialPageData = {
-  fetching: true,
+  pageFetching: true,
+  navFetching: false,
   navigation: [],
   primaryDimensions: {},
 };
@@ -12,7 +13,14 @@ export default handleActions({
     const pageLoad = action.payload;
     return {
       ...state,
-      fetching: pageLoad,
+      pageFetching: pageLoad,
+    };
+  },
+  'MARK_NAV_LOADING': (state, action) => {
+    const navLoad = action.payload;
+    return {
+      ...state,
+      navFetching: navLoad,
     };
   },
   'SET_PRIMARY_DIMENSIONS': (state, action) => {
@@ -24,6 +32,19 @@ export default handleActions({
     };
   },
   'SET_PAGE_DATA': (state, action) => {
+    return {
+      ...state,
+      navigation: [
+        ...state.navigation,
+        {
+          navId: navCount++,
+          active: true,
+          PageLoadData: action.payload,
+        },
+      ],
+    };
+  },
+  'SET_SELECTED_FILTER_DATA': (state, action) => {
     return {
       ...state,
       navigation: [
