@@ -15,7 +15,7 @@ class ChartContainer extends Component {
     let chartType;
     switch (chartDisplay) {
     case 'country':
-      chartType = <WorldMap chartData={chartData} />;
+      chartType = <WorldMap width={1920} height={700} chartData={chartData} />;
       break;
     case 'state':
       chartType = <USAMap chartData={chartData} />;

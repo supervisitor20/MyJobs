@@ -1,6 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import d3 from 'd3';
+import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
 import mapData from 'common/resources/maps/countries';
 
@@ -28,11 +29,9 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData} = this.props;
-    const margin = {top: 50, left: 50, right: 50, bottom: 50};
-    const width = 3200 - margin.left - margin.right;
+    const {chartData, width, height, margin} = this.props;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-    const projection = d3.geo.mercator().translate([width / 2, 735]).scale(270);
+    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(135);
     const path = d3.geo.path().projection(projection);
     const fill = (countryData) => {
       const rowData = chartData.PageLoadData.rows;
@@ -45,17 +44,22 @@ class WorldMap extends Component {
     };
     const paths = mapData.features.map((country, i) => {
       return (
-        <path key={i} onMouseEnter={this.showToolTip.bind(this, country)} onMouseLeave={this.hideToolTip.bind(this)} d={path(country)} className="country" stroke="#5A6D81" fill={fill(country)}></path>
+        <Paths key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
     });
+    // const paths = mapData.features.map((country, i) => {
+    //   return (
+    //     <path key={i} onMouseEnter={this.showToolTip.bind(this, country)} onMouseLeave={this.hideToolTip.bind(this)} d={path(country)} className="country" stroke="#5A6D81" fill={fill(country)}></path>
+    //   );
+    // });
     return (
       <div id="chart-container" style={{width: '100%'}}>
         <svg
           className="chart"
           version="1.1"
-          height={1100}
-          width={3200}
-          viewBox="0 0 3200 1100"
+          height={height}
+          width={width}
+          viewBox={'0 0 ' + width + ' ' + height + ''}
           preserveAspectRatio="xMinYMin meet"
          >
          <g transform={transform}>
@@ -70,6 +74,15 @@ class WorldMap extends Component {
 
 WorldMap.propTypes = {
   chartData: React.PropTypes.object.isRequired,
+  height: React.PropTypes.number.isRequired,
+  width: React.PropTypes.number.isRequired,
+  margin: React.PropTypes.object.isRequired,
+};
+
+WorldMap.defaultProps = {
+  height: 1200,
+  width: 1920,
+  margin: {top: 50, left: 50, right: 50, bottom: 50},
 };
 
 export default WorldMap;
