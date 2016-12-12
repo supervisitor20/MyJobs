@@ -1,9 +1,32 @@
 import React from 'react';
 import {Component} from 'react';
 import d3 from 'd3';
+import ToolTip from '../Common/ToolTip';
 import mapData from 'common/resources/maps/countries';
 
 class WorldMap extends Component {
+  constructor() {
+    super();
+    this.state = {
+      x: 0,
+      y: 0,
+      country: {},
+      showToolTip: false,
+    };
+  }
+  showToolTip(country, event) {
+    this.setState({
+      x: event.pageX,
+      y: event.pageY,
+      country: country,
+      showToolTip: true,
+    });
+  }
+  hideToolTip() {
+    this.setState({
+      showToolTip: false,
+    });
+  }
   render() {
     const {chartData} = this.props;
     const margin = {top: 50, left: 50, right: 50, bottom: 50};
@@ -22,7 +45,7 @@ class WorldMap extends Component {
     };
     const paths = mapData.features.map((country, i) => {
       return (
-        <path key={i} d={path(country)} className="country" stroke="#5A6D81" fill={fill(country)}></path>
+        <path key={i} onMouseEnter={this.showToolTip.bind(this, country)} onMouseLeave={this.hideToolTip.bind(this)} d={path(country)} className="country" stroke="#5A6D81" fill={fill(country)}></path>
       );
     });
     return (
@@ -39,6 +62,7 @@ class WorldMap extends Component {
            {paths}
          </g>
          </svg>
+         <ToolTip activeToolTip={this.state.showToolTip} countryData={this.state.country} x={this.state.x} y={this.state.y}/>
       </div>
     );
   }

@@ -316,6 +316,28 @@ a {
     shape-rendering: crispEdges;
   }
 }
+.chart-tooltip {
+  position: absolute;
+  display: none;
+  text-align: center;
+  width: 300px;
+  max-width: 300px;
+  height: auto;
+  font-size: 16px;
+  color: $primary-blue;
+  padding: 10px 5px;
+  background: $white;
+  border: 2px solid $primary-blue;
+  border-radius: 5px;
+  z-index: 9;
+  pointer-events: none;
+}
+.chart-tooltip.active-tooltip {
+  display: block;
+}
+.tool-tip-text {
+  margin: 0;
+}
 
 /*CSS FOR THE DATA TABLE*/
 
