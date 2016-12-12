@@ -1,9 +1,8 @@
-import json, math, csv
+import json, math
 
 from datetime import datetime, timedelta
 
-from pymongo import MongoClient
-from secrets import MONGO_HOST
+from pymongoenv import connect_db
 
 from django.shortcuts import HttpResponse
 from django.http import HttpResponseNotAllowed, Http404
@@ -32,8 +31,7 @@ def views_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
-    job_views = client.analytics.job_views
+    job_views = get_mongo_db().job_views
 
     query = [
         {'$match': {'time_first_viewed': {'$type': 'date'}}},
@@ -41,7 +39,7 @@ def views_last_7_days(request):
                                                   timedelta(days=7)}}},
         {'$match': {'time_first_viewed': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -78,8 +76,7 @@ def activity_last_7_days(request):
             'hits': input_dict['count']
         }
 
-    client = MongoClient(MONGO_HOST)
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'time': {'$type': 'date'}}},
@@ -87,7 +84,7 @@ def activity_last_7_days(request):
                                      timedelta(days=7)}}},
         {'$match': {'time': {'$lte': datetime.today()}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -118,13 +115,12 @@ def campaign_percentages(request):
         record_date = input_dict['_id']
         return input_dict
 
-    client = MongoClient(MONGO_HOST)
-    filtered_analytics = client.analytics.analytics
+    filtered_analytics = get_mongo_db().analytics
 
     query = [
         {'$match': {'dn': {'$type': 'string'}}},
         {
-            "$group" :
+            "$group":
                 {
                     "_id":
                         {
@@ -200,8 +196,7 @@ def dynamic_chart(request):
 
     # user_company = get_company_or_404(request)
 
-    client = MongoClient(MONGO_HOST)
-    job_views = client.analytics.job_views
+    job_views = get_mongo_db().job_views
     query_data = json.loads(request.POST.get('request', '{}'))
 
     if not query_data:
@@ -322,3 +317,11 @@ def get_drilldown_categories(request):
     ]
 
     return HttpResponse(json.dumps(response))
+
+
+def get_mongo_db():
+    """
+    Retrieve the current mongo database (defined in settings.MONGO_DBNAME).
+    :return: a mongo database
+    """
+    return connect_db().db
