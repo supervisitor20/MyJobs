@@ -5,14 +5,13 @@ import TableSearch from './TableSearch';
 class Table extends Component {
   render() {
     const {tableData} = this.props;
-    console.log(tableData);
     return (
-      <div id="table_data">
-        <div id="table_search">
-              <TableSearch/>
+      <div id={'table_data_tab_' + tableData.navId} className="table-data">
+        <div id={'table_search_tab_' + tableData.navId} className="table-search">
+              <TableSearch searchData={tableData}/>
             </div>
             <div className="clearfix"></div>
-        <table id="data_table" className="title-data rwd-table">
+        <table id={'data_table_tab_' + tableData.navId} className="title-data rwd-table">
           {this.props.children}
         </table>
       </div>
