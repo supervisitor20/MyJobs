@@ -33,8 +33,11 @@ def update_or_create(model, defaults=None, **kwargs):
     instance with the dict passed in defaults. Otherwise creates a new instance
     with the specified kwargs.
 
-    This should be updated to use model.objects.update_or_create()
-    when we get to post-Django 1.7.
+    Note: defaults is used because, while it makes things slightly more
+          annoying now, with the switch to Django 1.9
+          model.objects.update_or_create() can be used directly,
+          which will make this code easier to follow.
+
 
     :param defaults: Any fields and values that should be updated, but
                      should not be used as query terms.
@@ -56,18 +59,12 @@ def update_or_create(model, defaults=None, **kwargs):
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    @staticmethod
+    def add_base_user():
         """
-        Create default development data to make running the app without
-        access to real data easier.
-
-        Note: defaults is used because, while it makes things slightly more
-              annoying now, with the switch to Django 1.9
-              update_or_create() can be used, which will make this code
-              easier to follow.
+        Creates a generic base user.
 
         """
-        # Generic base user.
         defaults = {
             'email': 'dev@apps.directemployers.org',
             'is_staff': True,
@@ -78,6 +75,21 @@ class Command(BaseCommand):
         user.set_password('password')
         user.save()
 
+    @staticmethod
+    def add_base_sites():
+        """
+        Creates a few generic base SeoSite instances:
+
+            Basic clones of www.my.jobs:
+                www.my.jobs
+                localhost
+                127.0.0.1
+            A company site:
+                directemployers.jobs
+            A regional site:
+                indianapolis.jobs
+
+        """
         # A default SEO group, so Business Units, Faces and all those things
         # can be easily accessible.
         defaults = {'name': 'Default SEO Group'}
@@ -102,6 +114,13 @@ class Command(BaseCommand):
         config, _ = update_or_create(Configuration, pk=1, defaults=defaults)
         site.configurations.add(config)
 
+        defaults['domain'] = 'localhost'
+        site, _ = update_or_create(SeoSite, pk=2, defaults=defaults)
+        site.configurations.add(config)
+        defaults['domain'] = '127.0.0.1'
+        site, _ = update_or_create(SeoSite, pk=3, defaults=defaults)
+        site.configurations.add(config)
+
         # A fake company site.
         defaults = {
             'domain': 'directemployers.jobs',
@@ -110,7 +129,7 @@ class Command(BaseCommand):
             'site_heading': 'Dev Jobs for Direct Employers',
             'site_description': 'The Right Place for Development Jobs.',
         }
-        site, _ = update_or_create(SeoSite, pk=2, defaults=defaults)
+        site, _ = update_or_create(SeoSite, pk=4, defaults=defaults)
 
         defaults = {
             'title': 'Direct Employers Jobs - development home page',
@@ -129,7 +148,7 @@ class Command(BaseCommand):
             'site_heading': 'Dev My.jobs',
             'site_description': 'The Right Place for Developers.',
         }
-        site, _ = update_or_create(SeoSite, pk=3, defaults=defaults)
+        site, _ = update_or_create(SeoSite, pk=5, defaults=defaults)
 
         defaults = {
             'title': 'My jobs - development home page',
@@ -139,3 +158,12 @@ class Command(BaseCommand):
         }
         config, _ = update_or_create(Configuration, pk=3, defaults=defaults)
         site.configurations.add(config)
+
+    def handle(self, *args, **options):
+        """
+        Create default development data to make running the app without
+        access to real data easier.
+
+        """
+        self.add_base_user()
+        self.add_base_sites()
