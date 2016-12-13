@@ -1,8 +1,9 @@
+from datetime import datetime
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 
 from myjobs.models import User
-from seo.models import Configuration, SeoSite
+from seo.models import BusinessUnit, Company, Configuration, SeoSite
 
 
 def get_object(model, **kwargs):
@@ -123,6 +124,12 @@ class Command(BaseCommand):
 
         # A fake company site.
         defaults = {
+            'date_crawled': datetime.now(),
+            'date_updated': datetime.now(),
+        }
+        bu, _ = update_or_create(BusinessUnit, pk=1, defaults=defaults)
+
+        defaults = {
             'domain': 'directemployers.jobs',
             'group': group,
             'site_title': 'Dev Jobs for Direct Employers',
@@ -130,6 +137,7 @@ class Command(BaseCommand):
             'site_description': 'The Right Place for Development Jobs.',
         }
         site, _ = update_or_create(SeoSite, pk=4, defaults=defaults)
+        site.business_units.add(bu)
 
         defaults = {
             'title': 'Direct Employers Jobs - development home page',
@@ -139,6 +147,15 @@ class Command(BaseCommand):
         }
         config, _ = update_or_create(Configuration, pk=2, defaults=defaults)
         site.configurations.add(config)
+
+        defaults = {
+            'name': 'DirectEmployers',
+            'company_slug': 'directemployers',
+            'member': True,
+            'digital_strategies_customer': True,
+        }
+        company, _ = update_or_create(Company, pk=1, defaults=defaults)
+        company.job_source_ids.add(bu)
 
         # A fake regional site.
         defaults = {
