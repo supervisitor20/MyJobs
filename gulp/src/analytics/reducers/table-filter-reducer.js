@@ -39,6 +39,8 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
+          startDate: null,
+          endDate: null,
           PageLoadData: action.payload,
         },
       ],

@@ -12,9 +12,9 @@ class TableRows extends Component {
     dispatch(doGetSelectedFilterData(tableValue, typeValue));
   }
   render() {
-    const {data} = this.props;
-    const rowData = data.rows;
-    const columnData = data.column_names;
+    const {rowData} = this.props;
+    const newRowData = rowData.PageLoadData.rows;
+    const columnData = rowData.PageLoadData.column_names;
     const originalHeader = [];
     const modHeader = [];
     columnData.map((colData) => {
@@ -23,7 +23,7 @@ class TableRows extends Component {
     });
     originalHeader.shift();
     const mod = modHeader.splice(0, 1);
-    const getHeaders = rowData.map((item, i) => {
+    const getHeaders = newRowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
         return (
           <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key], colData.key)} href="#">{item[colData.key]}</a></td>
@@ -46,7 +46,7 @@ class TableRows extends Component {
 }
 
 TableRows.propTypes = {
-  data: React.PropTypes.object.isRequired,
+  rowData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 

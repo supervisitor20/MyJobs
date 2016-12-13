@@ -31,7 +31,7 @@ class WorldMap extends Component {
   render() {
     const {chartData, width, height, margin} = this.props;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(135);
+    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(155);
     const path = d3.geo.path().projection(projection);
     const fill = (countryData) => {
       const rowData = chartData.PageLoadData.rows;
@@ -77,7 +77,7 @@ WorldMap.propTypes = {
 WorldMap.defaultProps = {
   height: 1200,
   width: 1920,
-  margin: {top: 50, left: 50, right: 50, bottom: 50},
+  margin: {top: 50, left: 25, right: 25, bottom: 25},
 };
 
 export default WorldMap;
