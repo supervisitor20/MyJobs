@@ -47,11 +47,6 @@ class WorldMap extends Component {
         <Paths key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
     });
-    // const paths = mapData.features.map((country, i) => {
-    //   return (
-    //     <path key={i} onMouseEnter={this.showToolTip.bind(this, country)} onMouseLeave={this.hideToolTip.bind(this)} d={path(country)} className="country" stroke="#5A6D81" fill={fill(country)}></path>
-    //   );
-    // });
     return (
       <div id="chart-container" style={{width: '100%'}}>
         <svg
