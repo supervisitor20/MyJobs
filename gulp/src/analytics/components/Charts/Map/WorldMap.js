@@ -44,7 +44,7 @@ class WorldMap extends Component {
     };
     const paths = mapData.features.map((country, i) => {
       return (
-        <Paths key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
+        <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
     });
     return (
@@ -61,7 +61,7 @@ class WorldMap extends Component {
            {paths}
          </g>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} countryData={this.state.country} x={this.state.x} y={this.state.y}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={this.state.country} x={this.state.x} y={this.state.y}/>
       </div>
     );
   }
