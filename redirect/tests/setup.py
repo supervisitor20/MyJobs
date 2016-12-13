@@ -4,7 +4,8 @@ import sys
 from django.core.management import call_command
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TransactionTestCase, override_settings
+from django.test import TransactionTestCase
+from django.test.utils import override_settings
 from django.conf import settings
 
 import redirect_settings
