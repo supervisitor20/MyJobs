@@ -3,18 +3,18 @@ import {Component} from 'react';
 
 class Paths extends Component {
   render() {
-    const {showToolTip, hideToolTip} = this.props;
+    const {d, fill, stroke, classes, showToolTip, hideToolTip} = this.props;
     return (
-      <path onMouseEnter={showToolTip} onMouseLeave={hideToolTip} d={this.props.d} fill={this.props.fill} stroke={this.props.stroke} className={this.props.class}></path>
+      <path onMouseEnter={showToolTip} onMouseLeave={hideToolTip} d={d} fill={fill} stroke={stroke} className={classes}></path>
     );
   }
 }
 
 Paths.propTypes = {
-  d: React.PropTypes.string.isRequired,
+  d: React.PropTypes.string,
   fill: React.PropTypes.string,
   stroke: React.PropTypes.string,
-  class: React.PropTypes.string,
+  classes: React.PropTypes.string,
   showToolTip: React.PropTypes.func,
   hideToolTip: React.PropTypes.func,
 };

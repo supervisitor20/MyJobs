@@ -18,7 +18,7 @@ class ChartContainer extends Component {
       chartType = <WorldMap width={1920} height={800} chartData={chartData} />;
       break;
     case 'state':
-      chartType = <USAMap chartData={chartData} />;
+      chartType = <USAMap width={1920} height={700} chartData={chartData} />;
       break;
     default:
       chartType = <WorldMap chartData={chartData} />;

@@ -1,53 +1,64 @@
 import React from 'react';
 import {Component} from 'react';
 import d3 from 'd3';
+import Paths from '../Common/Paths';
+import ToolTip from '../Common/ToolTip';
 import mapData from 'common/resources/maps/us';
 
 class USAMap extends Component {
+  constructor() {
+    super();
+    this.state = {
+      x: 0,
+      y: 0,
+      state: {},
+      showToolTip: false,
+    };
+  }
+  showToolTip(state, event) {
+    this.setState({
+      x: event.pageX,
+      y: event.pageY,
+      state: state,
+      showToolTip: true,
+    });
+  }
+  hideToolTip() {
+    this.setState({
+      showToolTip: false,
+    });
+  }
   render() {
-    // const {chartData} = this.props;
-    const margin = {top: 50, left: 50, right: 50, bottom: 50};
-    const width = 3200 - margin.left - margin.right;
-    const projection = d3.geo.albersUsa()
-            .scale(2000)
-            .translate([width / 2, 450]);
-    const path = d3.geo.path()
-          .projection(projection);
-    const color = d3.scale.linear().domain([1, 100])
-          .range(['rgb(236,231,242)', 'rgb(166,189,219)', 'rgb(43,140,190)']);
-
-    // generate chloropleth values
-    function randomizer(d) {
-      for (let i = 0; i < d.features.length; i++) {
-        const random = Math.floor(Math.random() * 100);
-        d.features[i].properties.chloropleth = random;
+    const {chartData, width, height} = this.props;
+    const projection = d3.geo.albersUsa().scale(1450).translate([width / 2, height / 2]);
+    const path = d3.geo.path().projection(projection);
+    const fill = (stateData) => {
+      const rowData = chartData.PageLoadData.rows;
+      for (let i = 0; i < rowData.length; i++) {
+        if (rowData[i].state === stateData.properties.STUSPS) {
+          return '#5A6D81';
+        }
       }
-    }
-    randomizer(mapData);
-    const fill = (d) => {
-      const chloropleth = d.properties.chloropleth;
-      if (chloropleth) {
-        return color(chloropleth);
-      }
-      return '#666666';
+      return '#E6E6E6';
     };
     const paths = mapData.features.map((state, i) => {
       return (
-        <path key={i} d={path(state)} className="country" fill={fill(state)}></path>
+        <Paths showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
       );
     });
     return (
-      <div id="chart-container" style={{width: '100%'}}>
+      <div className="chart-container" style={{width: '100%'}}>
         <svg
           className="chart"
           version="1.1"
-          height={1000}
-          width={3200}
-          viewBox="0 0 3200 1000"
+          height={height}
+          width={width}
+          viewBox={'0 0 ' + width + ' ' + height + ''}
           preserveAspectRatio="xMinYMin meet"
          >
          {paths}
          </svg>
+         <ToolTip activeToolTip={this.state.showToolTip} data={this.state.state} x={this.state.x} y={this.state.y}/>
       </div>
     );
   }
@@ -55,6 +66,14 @@ class USAMap extends Component {
 
 USAMap.propTypes = {
   chartData: React.PropTypes.object.isRequired,
+  height: React.PropTypes.number.isRequired,
+  width: React.PropTypes.number.isRequired,
+};
+
+USAMap.defaultProps = {
+  height: 800,
+  width: 1920,
+  margin: {top: 50, left: 25, right: 25, bottom: 25},
 };
 
 export default USAMap;

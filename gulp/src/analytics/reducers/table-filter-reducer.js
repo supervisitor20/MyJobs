@@ -5,6 +5,7 @@ export const initialPageData = {
   pageFetching: true,
   navFetching: false,
   navigation: [],
+  activeFilters: [],
   primaryDimensions: {},
 };
 

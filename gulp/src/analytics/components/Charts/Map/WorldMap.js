@@ -48,7 +48,7 @@ class WorldMap extends Component {
       );
     });
     return (
-      <div id="chart-container" style={{width: '100%'}}>
+      <div className="chart-container" style={{width: '100%'}}>
         <svg
           className="chart"
           version="1.1"
