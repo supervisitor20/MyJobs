@@ -97,7 +97,7 @@ class Command(BaseCommand):
             'title': 'My jobs - development home page',
             'status': Configuration.STATUS_PRODUCTION,
             'browse_moc_show': True,
-            'home_page_template': 'home_page/home_page_my_jobs.html',
+            'home_page_template': 'home_page/home_page_listing.html',
         }
         config, _ = update_or_create(Configuration, pk=1, defaults=defaults)
         site.configurations.add(config)
