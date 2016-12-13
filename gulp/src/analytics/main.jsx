@@ -10,7 +10,7 @@ import {installPolyfills} from '../common/polyfills';
 
 import AnalyticsApp from './components/AnalyticsApp';
 
-import filterReducer, {initialPageData} from './reducers/table-filter-reducer';
+import filterReducer, {initialPageData} from './reducers/analytics-reducer';
 
 import Api from './api';
 import {MyJobsApi} from '../common/myjobs-api';

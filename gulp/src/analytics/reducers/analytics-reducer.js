@@ -51,7 +51,7 @@ export default handleActions({
     return {
       ...state,
       navigation: [
-        ...state.navigation,
+        ...state.navigation.map(nav => Object.assign({}, nav, {active: false})),
         {
           navId: navCount++,
           active: true,
