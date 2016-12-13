@@ -109,7 +109,13 @@ export default handleActions({
     const selectedTab = action.payload;
     return {
       ...state,
-      navigation: state.navigation.filter(nav => nav.navId !== selectedTab),
+      navigation: state.navigation.filter((nav) => {
+        if (state.navigation.length > 1) {
+          return nav.navId !== selectedTab;
+        }
+        return nav;
+      }),
+      // navigation: state.navigation.filter(nav => nav.navId !== selectedTab),
     };
   },
 }, initialPageData);
