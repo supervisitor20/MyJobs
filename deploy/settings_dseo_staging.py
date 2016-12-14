@@ -1,7 +1,9 @@
 import datetime
 
 from default_settings import *
-from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
+from secrets import (REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING,
+                     STAGING_MONGO_HOST, STAGING_MONGO_SSL,
+                     STAGING_MONGO_DBNAME)
 
 
 ALLOWED_HOSTS = ['*', ]
@@ -105,3 +107,7 @@ CELERY_ROUTES = {
         'routing_key': 'solr.update_solr'
     },
 }
+
+MONGO_HOST = STAGING_MONGO_HOST
+MONGO_DBNAME = STAGING_MONGO_DBNAME
+MONGO_SSL = STAGING_MONGO_SSL
