@@ -473,7 +473,7 @@ a {
   margin-bottom: 75px;
 }
 
-#search_table {
+.search-table {
   border: none;
   background: rgba(0, 0, 0, 0);
   width: 35%;
@@ -486,19 +486,19 @@ a {
   top: 50px;
 }
 
-#search_table::-webkit-input-placeholder {
+.search-table::-webkit-input-placeholder {
 color: $primary-blue;
 }
 
-#search_table:-moz-placeholder {
+.search-table:-moz-placeholder {
    color: $primary-blue;
 }
 
-#search_table::-moz-placeholder {
+.search-table::-moz-placeholder {
    color: $primary-blue;
 }
 
-#search_table:-ms-input-placeholder {
+.search-table:-ms-input-placeholder {
    color: $primary-blue;
 }
 
