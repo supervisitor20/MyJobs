@@ -1,5 +1,6 @@
 import os.path
 from contextlib import contextmanager
+from pymongoenv.tests import MongoTestMixin
 
 from django.conf import settings
 from django.core.cache import cache
@@ -40,7 +41,7 @@ class TestSolrGrpEngine(SolrGrpEngine):
     backend = TestSolrGrpSearchBackend
 
 
-class DirectSEOBase(TestCase):
+class DirectSEOBase(MongoTestMixin, TestCase):
     def setUp(self):
         db_backend = settings.DATABASES['default']['ENGINE'].split('.')[-1]
 

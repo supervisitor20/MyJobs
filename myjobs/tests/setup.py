@@ -1,5 +1,6 @@
 from importlib import import_module
 from mock import patch
+from pymongoenv.tests import MongoTestMixin
 
 from django.conf import settings
 from django.contrib.auth import login
@@ -91,7 +92,7 @@ class TestClient(Client):
         request.session.save()
 
 
-class MyJobsBase(TestCase):
+class MyJobsBase(MongoTestMixin, TestCase):
     def setUp(self):
         settings.ROOT_URLCONF = "myjobs_urls"
         settings.PROJECT = "myjobs"
