@@ -43,6 +43,8 @@ class TestSolrGrpEngine(SolrGrpEngine):
 
 class DirectSEOBase(MongoTestMixin, TestCase):
     def setUp(self):
+        super(DirectSEOBase, self).setUp()
+
         db_backend = settings.DATABASES['default']['ENGINE'].split('.')[-1]
 
         # Set columns that are utf8 in production to utf8
@@ -105,6 +107,8 @@ class DirectSEOBase(MongoTestMixin, TestCase):
         CompanyFactory.reset_sequence()
 
     def tearDown(self):
+        super(DirectSEOBase, self).tearDown()
+
         from django.conf import settings
         from django.template import context
 

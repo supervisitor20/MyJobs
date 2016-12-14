@@ -94,6 +94,7 @@ class TestClient(Client):
 
 class MyJobsBase(MongoTestMixin, TestCase):
     def setUp(self):
+        super(MyJobsBase, self).setUp()
         settings.ROOT_URLCONF = "myjobs_urls"
         settings.PROJECT = "myjobs"
 
@@ -138,6 +139,7 @@ class MyJobsBase(MongoTestMixin, TestCase):
         self.client.login_user(self.user)
 
     def tearDown(self):
+        super(MyJobsBase, self).tearDown()
         self.ms_solr.delete(q='*:*')
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
                 self.base_context_processors)
