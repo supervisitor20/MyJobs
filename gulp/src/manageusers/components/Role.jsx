@@ -131,7 +131,7 @@ class Role extends React.Component {
     const dataToSend = {
       role_name: roleName,
       assigned_activities: assignedActivities,
-      assigned_users: assignedUsers.map(user => user.display),
+      assigned_users: assignedUsers.map(user => user.name),
     };
 
     // Submit to server

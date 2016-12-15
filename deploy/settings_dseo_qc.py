@@ -1,7 +1,8 @@
 import datetime
 
 from default_settings import *
-from secrets import REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING
+from secrets import (REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING,
+                     QC_MONGO_HOST, QC_MONGO_DBNAME, QC_MONGO_SSL)
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
@@ -106,3 +107,7 @@ CELERY_ROUTES = {
         'routing_key': 'solr.update_solr'
     },
 }
+
+MONGO_HOST = QC_MONGO_HOST
+MONGO_DBNAME = QC_MONGO_DBNAME
+MONGO_SSL = QC_MONGO_SSL
