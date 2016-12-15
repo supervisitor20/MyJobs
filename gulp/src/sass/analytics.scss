@@ -45,7 +45,7 @@ a {
     position: fixed;
     top: 40%;
     left: 43%;
-    z-index: 2;
+    z-index: 9999;
 }
 .loading-overlay {
   position: absolute;
@@ -53,7 +53,7 @@ a {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 999;
   background-color: rgba(0,0,0,0.2); /*dim the background*/
 }
 @keyframes spin {
@@ -271,10 +271,10 @@ a {
 
 /*CSS FOR THE CHARTS SECTION*/
 
-#charts {
+.charts {
   background: $white;
   margin-bottom: 50px;
-  padding: 10px;
+  padding: 10px 10px 0 10px;
 
   .chart-title h2 {
     font-weight: 100;
@@ -316,10 +316,32 @@ a {
     shape-rendering: crispEdges;
   }
 }
+.chart-tooltip {
+  position: absolute;
+  display: none;
+  text-align: center;
+  width: 300px;
+  max-width: 300px;
+  height: auto;
+  font-size: 16px;
+  color: $primary-blue;
+  padding: 10px 5px;
+  background: $white;
+  border: 2px solid $primary-blue;
+  border-radius: 5px;
+  z-index: 9;
+  pointer-events: none;
+}
+.chart-tooltip.active-tooltip {
+  display: block;
+}
+.tool-tip-text {
+  margin: 0;
+}
 
 /*CSS FOR THE DATA TABLE*/
 
-#table_data {
+.table-data {
   padding: 10px;
   background: $white;
   position: relative;
@@ -446,12 +468,12 @@ a {
    width: 300px;
 }
 
-#table_search{
+.table-search{
   padding-top: 20px;
   margin-bottom: 75px;
 }
 
-#search_table {
+.search-table {
   border: none;
   background: rgba(0, 0, 0, 0);
   width: 35%;
@@ -464,19 +486,19 @@ a {
   top: 50px;
 }
 
-#search_table::-webkit-input-placeholder {
+.search-table::-webkit-input-placeholder {
 color: $primary-blue;
 }
 
-#search_table:-moz-placeholder {
+.search-table:-moz-placeholder {
    color: $primary-blue;
 }
 
-#search_table::-moz-placeholder {
+.search-table::-moz-placeholder {
    color: $primary-blue;
 }
 
-#search_table:-ms-input-placeholder {
+.search-table:-ms-input-placeholder {
    color: $primary-blue;
 }
 
@@ -712,7 +734,7 @@ color: $primary-blue;
    /* Medium Devices, Desktops */
    @media only screen and (min-width : 992px) {
      .analytics-loader {
-        left: 43%;
+        left: 45%;
      }
      #page_wrapper {
        margin-top: 0px;

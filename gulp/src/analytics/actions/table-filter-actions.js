@@ -1,6 +1,7 @@
 import {createAction} from 'redux-actions';
 
 import {markPageLoadingAction} from '../../common/actions/loading-actions';
+import {markNavLoadingAction} from '../../common/actions/loading-actions';
 
 export const setPageData = createAction('SET_PAGE_DATA');
 export const setPrimaryDimensions = createAction('SET_PRIMARY_DIMENSIONS');
@@ -18,11 +19,12 @@ export function doGetPageData(start, end) {
   };
 }
 
-export function doGetSelectedFilterData() {
+// Function for setting the current applied table data to the tab
+export function doGetSelectedFilterData(tableValue, typeValue) {
   return async (dispatch, _, {api}) => {
-    dispatch(markPageLoadingAction(true));
-    const selectedFilterData = await api.getSelectedFilterData();
+    dispatch(markNavLoadingAction(true));
+    const selectedFilterData = await api.getSelectedFilterData(tableValue, typeValue);
     dispatch(setSelectedFilterData(selectedFilterData));
-    dispatch(markPageLoadingAction(false));
+    dispatch(markNavLoadingAction(false));
   };
 }
