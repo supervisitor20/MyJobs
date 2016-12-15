@@ -269,6 +269,10 @@ a {
   }
 }
 
+#tabbed div:first-of-type a.tab .close-tab {
+  display: none;
+}
+
 /*CSS FOR THE CHARTS SECTION*/
 
 .charts {
