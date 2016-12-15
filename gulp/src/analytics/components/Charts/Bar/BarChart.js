@@ -4,6 +4,8 @@ import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveC
 
 class SimpleBarChart extends Component {
   render() {
+    // const {chartData} = this.props;
+    // const barData = chartData.PageLoadData.rows;
     const data = [
           {name: 'Page A', pv: 2400, amt: 2400},
           {name: 'Page B', pv: 1398, amt: 2210},
@@ -33,5 +35,9 @@ class SimpleBarChart extends Component {
     );
   }
 }
+
+// SimpleBarChart.propTypes = {
+//   chartData: React.PropTypes.object.isRequired,
+// };
 
 export default SimpleBarChart;

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
-// import SimpleBarChart from './Bar/BarChart';
+import SimpleBarChart from './Bar/BarChart';
 // import SimpleLineChart from './Line/LineChart';
 // import SimplePieChart from './Pie/PieChart';
 import WorldMap from './Map/WorldMap';
@@ -21,6 +21,18 @@ class ChartContainer extends Component {
       break;
     case 'state':
       chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      break;
+    case 'city':
+      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      break;
+    case 'found_on':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
+      break;
+    case 'title':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
+      break;
+    case 'job_guid':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
       break;
     default:
       chartDisplay = <WorldMap chartData={chartData} />;
