@@ -135,7 +135,6 @@ export default handleActions({
         }
         return nav;
       }),
-      // navigation: state.navigation.filter(nav => nav.navId !== selectedTab),
     };
   },
 }, initialPageData);
