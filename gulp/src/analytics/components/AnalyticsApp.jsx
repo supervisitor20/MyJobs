@@ -18,13 +18,14 @@ class AnalyticsApp extends React.Component {
   }
   render() {
     const {analytics} = this.props;
-    if (analytics.fetching) {
+    if (analytics.pageFetching) {
       return (
         <LoadingSpinner/>
       );
     }
     return (
       <div id="page_wrapper">
+          {analytics.navFetching ? <LoadingSpinner/> : ''}
           <SideBar/>
           <Header/>
         <div id="page_content">
