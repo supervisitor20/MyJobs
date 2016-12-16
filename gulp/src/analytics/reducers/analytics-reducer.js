@@ -7,6 +7,11 @@ export const initialPageData = {
   navFetching: false,
   navigation: [],
   activeFilters: [],
+  month: '',
+  day: '',
+  year: '',
+  startDate: {},
+  endDate: {},
   activeReport: '',
   primaryDimensions: {},
 };
@@ -34,8 +39,8 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          startDate: null,
-          endDate: null,
+          startDate: {},
+          endDate: {},
           PageLoadData: action.payload,
         },
       ],
@@ -135,6 +140,41 @@ export default handleActions({
         }
         return nav;
       }),
+    };
+  },
+  'SET_CURRENT_MONTH': (state, action) => {
+    const currentMonth = action.payload;
+    return {
+      ...state,
+      month: currentMonth,
+    }
+  },
+  'SET_CURRENT_YEAR': (state, action) => {
+    const currentYear = action.payload;
+    return {
+      ...state,
+      year: currentYear,
+    }
+  },
+  'SET_CURRENT_DAY': (state, action) => {
+    const currentDay = action.payload;
+    return {
+      ...state,
+      day: currentDay,
+    }
+  },
+  'SET_SELECTED_MONTH': (state, action) => {
+    const selectedMonth = action.payload;
+    return {
+      ...state,
+      month: selectedMonth,
+    };
+  },
+  'SET_SELECTED_YEAR': (state, action) => {
+    const selectedYear = action.payload;
+    return {
+      ...state,
+      year: selectedYear,
     };
   },
 }, initialPageData);

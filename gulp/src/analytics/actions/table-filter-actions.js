@@ -9,14 +9,25 @@ export const setSelectedFilterData = createAction('SET_SELECTED_FILTER_DATA');
 export const storeActiveFilter = createAction('STORE_ACTIVE_FILTER');
 export const storeInitialReport = createAction('STORE_INITIAL_REPORT');
 
+export const setCurrentMonth = createAction('SET_CURRENT_MONTH');
+export const setCurrentYear = createAction('SET_CURRENT_YEAR');
+export const setCurrentDay = createAction('SET_CURRENT_DAY');
+
 // Function to set the default loading data for the analytics page
 export function doGetPageData(start, end) {
   return async (dispatch, _, {api}) => {
     dispatch(markPageLoadingAction(true));
+    const dateObject = new Date();
+    const startingMonth = dateObject.getMonth();
+    const startingDay = dateObject.getDay();
+    const startingYear = dateObject.getFullYear();
     const rawPageData = await api.getInitialPageData(start, end);
     const dimensionData = await api.getPrimaryDimensions();
     const reportType = await api.getStartingPointReport();
     dispatch(setPageData(rawPageData));
+    dispatch(setCurrentMonth(startingMonth));
+    dispatch(setCurrentYear(startingYear));
+    dispatch(setCurrentDay(startingDay));
     dispatch(setPrimaryDimensions(dimensionData));
     dispatch(storeInitialReport(reportType));
     dispatch(markPageLoadingAction(false));
