@@ -3,8 +3,8 @@ from default_settings import *
 import datetime
 import os
 
-from secrets import (REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING,
-                     QC_MONGO_HOST, QC_MONGO_DBNAME, QC_MONGO_SSL)
+from secrets import REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING
+import secrets
 
 DEBUG = True
 
@@ -108,6 +108,6 @@ LOGGING['loggers']['mypartners.views']['level'] = 'INFO'
 # The email host used to parse communication records
 PRM_EMAIL_HOST = 'qc.my.jobs'
 
-MONGO_HOST = QC_MONGO_HOST
-MONGO_DBNAME = QC_MONGO_DBNAME
-MONGO_SSL = QC_MONGO_SSL
+setattr(secrets, 'MONGO_HOST', secrets.QC_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.QC_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.QC_MONGO_SSL)
