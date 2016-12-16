@@ -5,6 +5,7 @@ import moment from 'moment';
 import {Button} from 'react-bootstrap';
 import {doSetSelectedMonth} from '../../actions/calendar-actions';
 import {doSetSelectedYear} from '../../actions/calendar-actions';
+import {doSetSelectedDay} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
 
 class Header extends Component {
@@ -15,9 +16,10 @@ class Header extends Component {
       displayCalendar: true,
     };
   }
-  // onSelect(d) {
-  //
-  // }
+  daySelected(day) {
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedDay(day));
+  }
   updateMonth(month) {
     const {dispatch} = this.props;
     dispatch(doSetSelectedMonth(month));
@@ -25,7 +27,6 @@ class Header extends Component {
   updateYear(year) {
     const {dispatch} = this.props;
     dispatch(doSetSelectedYear(year));
-    // console.log('Analytics', analytics);
   }
   generateYearChoices() {
     const now = new Date();
@@ -47,6 +48,7 @@ class Header extends Component {
   }
   render() {
     const {analytics} = this.props;
+    console.log(analytics);
     const localizeTime = moment().format('LT');
     const localizeDate = moment().format('MMMM Do, YYYY');
     const day = analytics.day;
@@ -61,7 +63,7 @@ class Header extends Component {
                       day={day}
                       onYearChange={y => this.updateYear(y)}
                       onMonthChange={m => this.updateMonth(m)}
-                      onSelect={d => this.onSelect(d)}
+                      onSelect={d => this.daySelected(d)}
                       yearChoices={this.generateYearChoices()}
                     />);
     }
@@ -81,7 +83,7 @@ class Header extends Component {
             <li><a href="#"><span className="head-icon fa fa-file-excel-o"></span></a></li>
           </ul>
         </nav>
-        {calendar}
+          {calendar}          
       </div>
     );
   }

@@ -147,21 +147,21 @@ export default handleActions({
     return {
       ...state,
       month: currentMonth,
-    }
+    };
   },
   'SET_CURRENT_YEAR': (state, action) => {
     const currentYear = action.payload;
     return {
       ...state,
       year: currentYear,
-    }
+    };
   },
   'SET_CURRENT_DAY': (state, action) => {
     const currentDay = action.payload;
     return {
       ...state,
       day: currentDay,
-    }
+    };
   },
   'SET_SELECTED_MONTH': (state, action) => {
     const selectedMonth = action.payload;
@@ -175,6 +175,13 @@ export default handleActions({
     return {
       ...state,
       year: selectedYear,
+    };
+  },
+  'SET_SELECTED_DAY': (state, action) => {
+    const selectedDay = action.payload;
+    return {
+      ...state,
+      day: selectedDay,
     };
   },
 }, initialPageData);
