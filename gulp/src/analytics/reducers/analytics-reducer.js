@@ -1,4 +1,5 @@
 import {handleActions} from 'redux-actions';
+import {findIndex} from 'lodash-compat';
 
 let navCount = 1;
 export const initialPageData = {
@@ -6,6 +7,7 @@ export const initialPageData = {
   navFetching: false,
   navigation: [],
   activeFilters: [],
+  activeReport: '',
   primaryDimensions: {},
 };
 
@@ -24,14 +26,6 @@ export default handleActions({
       navFetching: navLoad,
     };
   },
-  'SET_PRIMARY_DIMENSIONS': (state, action) => {
-    return {
-      ...state,
-      primaryDimensions: {
-        dimensionList: action.payload,
-      },
-    };
-  },
   'SET_PAGE_DATA': (state, action) => {
     return {
       ...state,
@@ -45,6 +39,44 @@ export default handleActions({
           PageLoadData: action.payload,
         },
       ],
+    };
+  },
+  'SET_PRIMARY_DIMENSIONS': (state, action) => {
+    return {
+      ...state,
+      primaryDimensions: {
+        dimensionList: action.payload,
+      },
+    };
+  },
+  'STORE_INITIAL_REPORT': (state, action) => {
+    return {
+      ...state,
+      activeReport: action.payload,
+    };
+  },
+  'STORE_ACTIVE_FILTER': (state, action) => {
+    const checkType = action.payload.type;
+    const index = findIndex(state.activeFilters, f => f.type === checkType);
+    if (index > -1) {
+      return {
+        ...state,
+        navigation: state.navigation.slice(0, index + 1),
+        activeFilters: state.activeFilters.slice(0, index).concat(action.payload),
+      };
+    }
+    return {
+      ...state,
+      activeFilters: [
+        ...state.activeFilters,
+        action.payload,
+      ],
+    };
+  },
+  'STORE_ACTIVE_REPORT': (state, action) => {
+    return {
+      ...state,
+      activeReport: action.payload,
     };
   },
   'SET_SELECTED_FILTER_DATA': (state, action) => {
@@ -78,31 +110,19 @@ export default handleActions({
       }),
     };
   },
-  'SWITCH_MAIN_DIMENSION': (state) => {
+  'SWITCH_MAIN_DIMENSION': (state, action) => {
     return {
       ...state,
       navigation: [
         {
           navId: navCount++,
           active: true,
-          PageLoadData: {
-            column_names: [
-              {key: 'newContent', label: 'New Tab Content'},
-              {key: 'new_content', label: 'New Tab Content Again'},
-            ],
-            rows: [
-              {newContent: 'New Content', new_content: 45815},
-              {newContent: 'New Content', new_content: 14253},
-              {newContent: 'New Content', new_content: 1245},
-              {newContent: 'New Content', new_content: 54623},
-              {newContent: 'New Content', new_content: 8459},
-              {newContent: 'New Content', new_content: 7842},
-              {newContent: 'New Content', new_content: 15423},
-              {newContent: 'New Content', new_content: 25643},
-            ],
-          },
+          startDate: null,
+          endDate: null,
+          PageLoadData: action.payload,
         },
       ],
+      activeFilters: [],
     };
   },
   'REMOVE_SELECTED_TAB': (state, action) => {
@@ -115,7 +135,6 @@ export default handleActions({
         }
         return nav;
       }),
-      // navigation: state.navigation.filter(nav => nav.navId !== selectedTab),
     };
   },
 }, initialPageData);

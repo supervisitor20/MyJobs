@@ -2,14 +2,11 @@ import React from 'react';
 import {Component} from 'react';
 
 class SideBarDimension extends Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     const {dimension, active} = this.props;
     return (
       <li onClick={active} className="side-dimension">
-        <span>{dimension.display}</span>
+         <span className="side-circle-btn"></span><span className="side-dimension-title">{dimension.display}</span>
       </li>
     );
   }

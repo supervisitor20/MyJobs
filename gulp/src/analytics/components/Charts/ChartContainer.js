@@ -1,7 +1,9 @@
 import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
-// import BarChart from './Bar/BarChart';
+import SimpleBarChart from './Bar/BarChart';
+// import SimpleLineChart from './Line/LineChart';
+// import SimplePieChart from './Pie/PieChart';
 import WorldMap from './Map/WorldMap';
 import USAMap from './Map/USAMap';
 
@@ -11,17 +13,29 @@ class ChartContainer extends Component {
   }
   render() {
     const {chartData} = this.props;
-    const chartDisplay = chartData.PageLoadData.column_names[0].key;
-    let chartType;
-    switch (chartDisplay) {
+    const chartType = chartData.PageLoadData.column_names[0].key;
+    let chartDisplay;
+    switch (chartType) {
     case 'country':
-      chartType = <WorldMap width={1920} height={800} chartData={chartData} />;
+      chartDisplay = <WorldMap width={1920} height={800} chartData={chartData} />;
       break;
     case 'state':
-      chartType = <USAMap width={1920} height={700} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      break;
+    case 'city':
+      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      break;
+    case 'found_on':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
+      break;
+    case 'title':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
+      break;
+    case 'job_guid':
+      chartDisplay = <SimpleBarChart chartData={chartData} />;
       break;
     default:
-      chartType = <WorldMap chartData={chartData} />;
+      chartDisplay = <WorldMap chartData={chartData} />;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">
@@ -35,7 +49,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                {chartType}
+                {chartDisplay}
               </Col>
             </Row>
         </div>
