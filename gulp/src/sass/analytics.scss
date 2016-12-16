@@ -310,6 +310,16 @@ a {
   display: none;
 }
 
+.calendar-panel {
+  position: absolute;
+  right: 200px;
+  top: 60px;
+  z-index: 99;
+  border: 1px solid $primary-blue;
+  background: $white;
+  padding: 15px;
+}
+
 /*CSS FOR THE CHARTS SECTION*/
 
 .charts {
