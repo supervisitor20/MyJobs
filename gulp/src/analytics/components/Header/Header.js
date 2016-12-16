@@ -28,19 +28,31 @@ class Header extends Component {
   onMouseInCalendar(value) {
     this.setState({mouseInCalendar: value});
   }
+  // updateYear(year) {
+  //   const {onChange, value} = this.props;
+  //
+  //   if (!moment(value, 'MM/DD/YYYY', true).isValid()) {
+  //     this.resetDateToNow();
+  //   }
+  //
+  //   const fakeEvent = {};
+  //   fakeEvent.target = {};
+  //   fakeEvent.target.name = this.props.name;
+  //   fakeEvent.target.type = 'calendar-year';
+  //   fakeEvent.target.value = year;
+  //   onChange(fakeEvent);
+  // }
   // onDaySelect(day) {
   //   this.updateDay(day);
   //   this.closeCalendar();
   // }
   generateYearChoices() {
-    const {pastOnly, numberOfYears} = this.props;
     const now = new Date();
+    const numberOfYears = 50;
     let offset = 0;
-    if (!pastOnly) {
-      // how many years should come before and after the current year
-      const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
-      offset = Math.floor(pivot / 2);
-    }
+    // how many years should come before and after the current year
+    const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
+    offset = Math.floor(pivot / 2);
     const startYear = now.getFullYear() + offset;
 
     const yearChoices = [];
@@ -110,21 +122,16 @@ class Header extends Component {
   render() {
     const localizeTime = moment().format('LT');
     const localizeDate = moment().format('MMMM Do, YYYY');
-    let momentObject = moment('MM/DD/YYYY');
-    let day;
-    let month;
-    let year;
+    const dateObject = new Date();
+    const day = dateObject.getDay();
+    const month = dateObject.getMonth();
+    const year = dateObject.getFullYear();
 
     // Handle error message
     // let errorMessage;
     // if (error) {
     //   errorMessage = error;
     // }
-
-      momentObject = moment('MM/DD/YYYY');
-      day = momentObject.date();
-      month = momentObject.month();
-      year = momentObject.year();
 
     // let errorComponent;
     // if (errorMessage) {
@@ -142,8 +149,6 @@ class Header extends Component {
                       onSelect={d => console.log('Select Change', d)}
                       onYearChange={y => console.log('Year Change', y)}
                       onMonthChange={m => console.log('Month Change', m)}
-                      closeCalendar={() => this.closeCalendar()}
-                      pastOnly
                     />);
     }
     return (
