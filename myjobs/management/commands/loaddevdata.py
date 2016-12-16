@@ -2,7 +2,7 @@ from datetime import datetime
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 
-from myjobs.models import User
+from myjobs.models import AppAccess, Activity, Role, User, update_activities
 from seo.models import BusinessUnit, Company, Configuration, SeoSite
 
 
@@ -61,9 +61,10 @@ def update_or_create(model, defaults=None, **kwargs):
 
 class Command(BaseCommand):
     @staticmethod
-    def add_base_user():
+    def add_base_users():
         """
-        Creates a generic base user.
+        Creates a generic admin user, and a couple users for
+        PRM/user management/other apps.
 
         """
         defaults = {
@@ -71,13 +72,35 @@ class Command(BaseCommand):
             'is_staff': True,
             'is_superuser': True,
             'is_verified': True,
+            'first_name': 'DirectEmployers',
+            'last_name': 'Developer',
+            'user_guid': 'dev',
         }
         user, _ = update_or_create(User, pk=1, defaults=defaults)
         user.set_password('password')
         user.save()
 
-    @staticmethod
-    def add_base_sites():
+        defaults = {
+            'email': 'lukeskywalker@apps.directemployers.org',
+            'is_verified': True,
+            'password': user.password,
+            'first_name': 'Luke',
+            'last_name': 'Skywalker',
+            'user_guid': 'lukeskywalker',
+        }
+        user, _ = update_or_create(User, pk=2, defaults=defaults)
+
+        defaults = {
+            'email': 'r2d2@apps.directemployers.org',
+            'is_verified': True,
+            'password': user.password,
+            'first_name': 'R2',
+            'last_name': 'D2',
+            'user_guid': 'r2d2',
+        }
+        user, _ = update_or_create(User, pk=3, defaults=defaults)
+
+    def add_base_sites(self):
         """
         Creates a few generic base SeoSite instances:
 
@@ -156,6 +179,7 @@ class Command(BaseCommand):
         }
         company, _ = update_or_create(Company, pk=1, defaults=defaults)
         company.job_source_ids.add(bu)
+        self.add_roles(company)
 
         # A fake regional site.
         defaults = {
@@ -176,11 +200,36 @@ class Command(BaseCommand):
         config, _ = update_or_create(Configuration, pk=3, defaults=defaults)
         site.configurations.add(config)
 
+    @staticmethod
+    def add_roles(company):
+        """
+        Creates the default activities and roles.
+        Adds any user with is_superuser=True to the 'Admin'
+        role.
+
+        :param company: The company the role should be created for.
+
+        """
+        update_activities()
+
+        company.app_access.add(*AppAccess.objects.all())
+
+        superusers = User.objects.filter(is_superuser=True)
+        role, _ = update_or_create(Role, name='Admin', company=company,
+                                   defaults={})
+        role.activities.add(*Activity.objects.all())
+        role.user_set.add(*superusers)
+
+        not_superusers = User.objects.exclude(is_superuser=True)
+        role, _ = update_or_create(Role, name='Deactivated', company=company,
+                                   defaults={})
+        role.user_set.add(*not_superusers)
+
     def handle(self, *args, **options):
         """
         Create default development data to make running the app without
         access to real data easier.
 
         """
-        self.add_base_user()
+        self.add_base_users()
         self.add_base_sites()
