@@ -7,7 +7,7 @@ export default class Api {
     const loadStartingPointReport = await this.api.get('/analytics/api/available-reports');
     const initialPageRequest = {
       'date_start': start + ' 00:00:00',
-      'date_end': end + ' 00:00:00',
+      'date_end': end + ' 23:59:00',
       'active_filters': [],
       'report': loadStartingPointReport.reports[0].value,
     };

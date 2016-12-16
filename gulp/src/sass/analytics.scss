@@ -312,14 +312,70 @@ a {
 
 /*CSS FOR THE CALENDAR*/
 
-.calendar-panel {
+.calendar-container {
+  display: block;
   position: absolute;
-  right: 200px;
+  right: 175px;
   top: 60px;
   z-index: 99;
+}
+
+// .calendar-container.active {
+//   display: block;
+//   position: absolute;
+//   right: 200px;
+//   top: 60px;
+//   z-index: 99;
+// }
+
+.calendar-panel {
   border: 1px solid $primary-blue;
   background: $white;
   padding: 15px;
+}
+
+.range-container {
+  background: $white;
+  border: 1px solid $black;
+  z-index: 99;
+}
+.range-selections {
+  margin: 0;
+  padding: 0;
+}
+.range {
+  background: $primary-blue;
+  text-align: center;
+  border-bottom: 1px solid $white;
+  padding: 10px 20px;
+  color: $white;
+  font-size: 14px;
+}
+.range:hover {
+  cursor: pointer;
+  background: $white;
+  color: $primary-blue;
+}
+.apply-cancel {
+  text-align: center;
+  padding: 10px 20px;
+}
+.range-btn {
+  padding: 5px 5px;
+  border: none;
+  color: white;
+  border-radius: 5px;
+}
+.apply-range {
+  background: #63AB62;
+  color: $white;
+  border: 1px solid #63AB62;
+  margin-right: 10px;
+}
+.cancel-range {
+  background: $white;
+  border: 1px solid $primary-blue;
+  color: $primary-blue
 }
 
 

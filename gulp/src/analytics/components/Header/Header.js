@@ -7,13 +7,14 @@ import {doSetSelectedMonth} from '../../actions/calendar-actions';
 import {doSetSelectedYear} from '../../actions/calendar-actions';
 import {doSetSelectedDay} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
+import RangeSelection from '../Calendar/RangeSelection';
+import Calendar from '../Calendar/Calendar';
 
 class Header extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
-      displayCalendar: true,
+      displayCalendar: false,
     };
   }
   daySelected(day) {
@@ -46,6 +47,11 @@ class Header extends Component {
     }
     return yearChoices;
   }
+  showCalendar() {
+    this.setState({
+      displayCalendar: true,
+    });
+  }
   render() {
     const {analytics} = this.props;
     console.log(analytics);
@@ -55,9 +61,7 @@ class Header extends Component {
     const month = analytics.month;
     const year = analytics.year;
 
-    let calendar;
-    if (this.state.displayCalendar) {
-      calendar = ( <CalendarPanel
+    const calendar = ( <CalendarPanel
                       year={year}
                       month={month}
                       day={day}
@@ -66,14 +70,14 @@ class Header extends Component {
                       onSelect={d => this.daySelected(d)}
                       yearChoices={this.generateYearChoices()}
                     />);
-    }
+
     return (
       <div className="tabs-header">
         <nav>
           <i className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
           <ul className="nav navbar-nav navbar-right right-options">
             <li>
-              <Button className="selected-date-range-btn">
+              <Button onClick={this.showCalendar.bind(this)} className="selected-date-range-btn">
                   <i className="head-icon fa fa-calendar" aria-hidden="true"></i>
                   <span className="dashboard-date">{localizeDate} {localizeTime}</span>
               </Button>
@@ -83,7 +87,7 @@ class Header extends Component {
             <li><a href="#"><span className="head-icon fa fa-file-excel-o"></span></a></li>
           </ul>
         </nav>
-          {calendar}          
+        <Calendar/>
       </div>
     );
   }
