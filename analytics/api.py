@@ -205,7 +205,7 @@ def adjust_records_for_sampling(records, error_and_count):
     return return_list
 
 
-def build_top_query(query_data, buids=None):
+def build_top_query(date_start, date_end, buids=None):
     """
     build the highest level query from the data provided
 
@@ -215,15 +215,6 @@ def build_top_query(query_data, buids=None):
 
 
     """
-    try:
-        date_start = dateparser.parse(query_data['date_start'])
-    except ValueError:
-        raise Http404('Invalid date start: ' + query_data['date_start'])
-
-    try:
-        date_end = dateparser.parse(query_data['date_end'])
-    except ValueError:
-        raise Http404('Invalid date end: ' + query_data['date_end'])
 
     top_query = {}
     if buids:
@@ -237,7 +228,6 @@ def build_top_query(query_data, buids=None):
                                       '$lte': date_end
                                      }
 
-    print top_query
     return top_query
 
 
@@ -251,16 +241,16 @@ def build_active_filter_query(query_data):
 
     """
     filter_match = {'$match': {}}
-    for a_filter in query_data['active_filters']:
+    for a_filter in query_data.get('active_filters', []):
         filter_match['$match'][a_filter['type']] = a_filter['value']
 
     return [filter_match] if filter_match['$match'] else []
 
 
-def determine_data_group_by_column(query_data):
+def determine_data_group_by_column(query_data, reporttype_datatype):
     """
     determine what to group the data by. this can be retrieved from the db
-    or provided in the request if a filter_overwrite is present
+    or provided in the request if a group_overwrite is present
 
     :param query_data: data from the request
     :return: the column to group data by
@@ -268,8 +258,16 @@ def determine_data_group_by_column(query_data):
 
     """
     # TODO: Add DB handling / "filter chain" logic
-    next_filter = query_data['next_filter']
-    return next_filter
+
+    configuration = reporttype_datatype.configuration
+    config_columns = configuration.configurationcolumn_set.all().order_by('order')
+    group_overwrite = query_data.get('group_overwrite')
+    if group_overwrite:
+        return config_columns.get(column_name=group_overwrite)
+    else:
+        # import ipdb; ipdb.set_trace()
+        active_filters = [f['type'] for f in query_data.get('active_filters', [])]
+        return config_columns.exclude(column_name__in=active_filters).first()
 
 
 def retrieve_sampling_query_and_count(collection, top_query, sample_size):
@@ -341,6 +339,26 @@ def get_company_buids(request):
     return [job_source.id for job_source in job_sources]
 
 
+def get_analytics_reporttype_datatype(analytics_report_id):
+    """
+    get analytics report type object based on an id provided
+
+    :param analytics_report_id: id of desired report
+    :return: report type or none
+    """
+    rit_analytics = ReportingType.objects.get(reporting_type="web-analytics")
+
+    report_type = (
+        ReportType.objects.active_for_reporting_type(rit_analytics)
+        .filter(report_type=analytics_report_id))
+    report_data = (
+        ReportTypeDataTypes.objects.first_active_for_report_type_data_type(
+            report_type=report_type,
+            data_type=DataType.objects.filter(data_type='unaggregated')))
+
+    return report_data
+
+
 @requires("view analytics")
 @csrf_exempt
 def dynamic_chart(request):
@@ -354,8 +372,8 @@ def dynamic_chart(request):
         "date_end": "01/08/2016 00:00:00",
         "active_filters": [{"type": "country", "value": "USA"},
                          {"type": "state", "value": "Indiana"}],
-        "next_filter": "browser",
-        "sample_size": "10000"
+        "report": "found_on",
+        "group_overwrite": "browser",
     }
 
     response
@@ -381,18 +399,53 @@ def dynamic_chart(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    sample_size = 50000 # TODO: Add sample size to request object
+    validator = ApiValidator()
 
     query_data = json.loads(request.POST.get('request', '{}'))
     if not query_data:
-        raise Http404('No data provided')
+        validator.note_error("No data provided.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    required_fields = ['date_end', 'date_start', 'report']
+    for field in required_fields:
+        if not query_data.get(field):
+            validator.note_field_error(field, '%s is required' % field)
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    try:
+        date_start = dateparser.parse(query_data['date_start'])
+    except ValueError:
+        validator.note_field_error('date_start',
+                                   'Invalid date start: ' +
+                                    query_data['date_end'])
+
+    try:
+        date_end = dateparser.parse(query_data['date_end'])
+    except ValueError:
+        validator.note_field_error('date_end',
+                                   'Invalid date end: ' +
+                                   query_data['date_end'])
+
+    report_data = get_analytics_reporttype_datatype(query_data['report'])
+
+    if not report_data:
+        validator.note_field_error(
+            "analytics_report_id", "No analytics report found.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    sample_size = 50000 # TODO: Add sample size to request object
 
     job_views = get_mongo_db().job_views
 
-    buids = []
     buids = get_company_buids(request)
 
-    top_query = build_top_query(query_data, buids)
+    top_query = build_top_query(date_start, date_end, buids)
 
     sample_query, total_count = retrieve_sampling_query_and_count(job_views,
                                                                   top_query,
@@ -403,15 +456,13 @@ def dynamic_chart(request):
 
     active_filter_query = build_active_filter_query(query_data)
 
-    group_by = determine_data_group_by_column(query_data)
+    group_by = determine_data_group_by_column(query_data, report_data)
 
-    group_query = build_group_by_query(group_by)
+    group_query = build_group_by_query(group_by.column_name)
 
     query = [
         {'$match': top_query},
     ] + sample_query + active_filter_query + group_query
-
-    print query
 
     records = job_views.aggregate(query, allowDiskUse=True)
 
@@ -424,12 +475,13 @@ def dynamic_chart(request):
     response = {
         "column_names":
             [
-                {"key": "found_on", "label": "Found On"},
+                {"key": group_by.column_name,
+                 "label": group_by.filter_interface_display},
                 {"key": "job_views", "label": "Job Views"},
                 {"key": "visitors", "label": "Visitors"},
              ],
         "rows":
-            [format_return_dict(r, group_by) for r in records],
+            [format_return_dict(r, group_by.column_name) for r in records],
     }
 
     return HttpResponse(json.dumps(response))
@@ -475,7 +527,6 @@ def get_available_analytics(request):
 
     return HttpResponse(json.dumps(result), content_type="application/json")
 
-
 @requires("view analytics")
 def get_report_info(request):
     """Get information about an analytics report.
@@ -509,15 +560,7 @@ def get_report_info(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    rit_analytics = ReportingType.objects.get(reporting_type="web-analytics")
-
-    report_type = (
-        ReportType.objects.active_for_reporting_type(rit_analytics)
-        .filter(report_type=analytics_report_id))
-    report_data = (
-        ReportTypeDataTypes.objects.first_active_for_report_type_data_type(
-            report_type=report_type,
-            data_type=DataType.objects.filter(data_type='unaggregated')))
+    report_data = get_analytics_reporttype_datatype(analytics_report_id)
 
     if not report_data:
         validator.note_field_error(

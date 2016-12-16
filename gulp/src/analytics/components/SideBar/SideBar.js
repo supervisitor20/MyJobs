@@ -1,22 +1,22 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {switchMainDimension} from '../../actions/sidebar-actions';
+import {doSwitchMainDimension} from '../../actions/sidebar-actions';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension() {
+  activeDimension(mainDimension) {
     const {dispatch} = this.props;
-    dispatch(switchMainDimension());
+    dispatch(doSwitchMainDimension(mainDimension));
   }
   render() {
     const {analytics} = this.props;
     const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={report} />
+        <SideBarDimension active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
       );
     });
     return (
