@@ -1,6 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
-import {PieChart, Pie, ResponsiveContainer} from 'Recharts';
+import {PieChart, Pie, ResponsiveContainer} from 'recharts';
 
 class SimplePieChart extends Component {
   render() {
