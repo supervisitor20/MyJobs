@@ -14,9 +14,10 @@ class SideBar extends Component {
   }
   render() {
     const {analytics} = this.props;
+    const activeDimension = analytics.activePrimaryDimension;
     const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
+        <SideBarDimension selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
       );
     });
     return (

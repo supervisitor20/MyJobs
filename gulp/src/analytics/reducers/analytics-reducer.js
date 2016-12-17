@@ -14,6 +14,7 @@ export const initialPageData = {
   endDate: {},
   activeReport: '',
   primaryDimensions: {},
+  activePrimaryDimension: '',
 };
 
 export default handleActions({
@@ -49,6 +50,7 @@ export default handleActions({
   'SET_PRIMARY_DIMENSIONS': (state, action) => {
     return {
       ...state,
+      activePrimaryDimension: action.payload.reports[0].value,
       primaryDimensions: {
         dimensionList: action.payload,
       },
@@ -128,6 +130,13 @@ export default handleActions({
         },
       ],
       activeFilters: [],
+    };
+  },
+  'SET_MAIN_DIMENSION': (state, action) => {
+    const activeMainDimension = action.payload;
+    return {
+      ...state,
+      activePrimaryDimension: activeMainDimension,
     };
   },
   'REMOVE_SELECTED_TAB': (state, action) => {
