@@ -2,6 +2,7 @@ import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doGetSelectedFilterData} from '../../actions/table-filter-actions';
+import NoResults from '../../NoResults';
 
 class TableRows extends Component {
   constructor(props) {
@@ -39,6 +40,7 @@ class TableRows extends Component {
     });
     return (
       <tbody>
+        <NoResults type="table" errorMessage="No results found"/>
         {getHeaders}
       </tbody>
     );

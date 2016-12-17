@@ -6,6 +6,7 @@ import SimpleBarChart from './Bar/BarChart';
 // import SimplePieChart from './Pie/PieChart';
 import WorldMap from './Map/WorldMap';
 import USAMap from './Map/USAMap';
+import NoResults from '../../NoResults';
 
 class ChartContainer extends Component {
   constructor(props, context) {
@@ -49,6 +50,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
+                <NoResults type="div" errorMessage="No chart data"/>
                 {chartDisplay}
               </Col>
             </Row>
