@@ -331,7 +331,7 @@ a {
 .calendar-panel {
   border: 1px solid $primary-blue;
   background: $white;
-  padding: 15px;
+  padding: 17px;
 }
 
 .range-container {
@@ -378,6 +378,9 @@ a {
   color: $primary-blue
 }
 
+.calendar-pick {
+  display: inline-block;
+}
 
 /*CSS FOR THE CHARTS SECTION*/
 

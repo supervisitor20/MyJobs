@@ -1,8 +1,11 @@
 import {createAction} from 'redux-actions';
 
+// import {markNavLoadingAction} from '../../common/actions/loading-actions';
+
 export const setSelectedMonth = createAction('SET_SELECTED_MONTH');
 export const setSelectedYear = createAction('SET_SELECTED_YEAR');
 export const setSelectedDay = createAction('SET_SELECTED_DAY');
+export const setSelectedRange = createAction('SET_SELECTED_DAY');
 
 // Sets the current month selected for the calendar
 export function doSetSelectedMonth(month) {
@@ -25,3 +28,14 @@ export function doSetSelectedDay(day) {
     dispatch(setSelectedDay(currentDay));
   };
 }
+// Sets the selected range for the calendar
+// export function doSetSelectedRange(start, end) {
+//   return async(dispatch, _, {api}) => {
+//   dispatch(markNavLoadingAction(true));
+//   const currentStartRange = start;
+//   const currentEndRange = end;
+//   const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange);
+//   dispatch(setSelectedRange(rangeData));
+//   dispatch(markNavLoadingAction(true));
+//   };
+// }

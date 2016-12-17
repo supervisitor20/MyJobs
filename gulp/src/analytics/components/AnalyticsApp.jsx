@@ -10,7 +10,7 @@ import moment from 'moment';
 class AnalyticsApp extends React.Component {
   componentDidMount() {
     let startDate = moment();
-    const endDate = moment().format('MM/DD/YYYY');
+    const endDate = moment().format('MM/DD/YYYY H:mm:ss');
     startDate = startDate.subtract(30, 'days');
     startDate = startDate.format('MM/DD/YYYY');
     const {dispatch} = this.props;

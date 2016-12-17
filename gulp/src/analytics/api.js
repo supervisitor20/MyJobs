@@ -7,7 +7,7 @@ export default class Api {
     const loadStartingPointReport = await this.api.get('/analytics/api/available-reports');
     const initialPageRequest = {
       'date_start': start + ' 00:00:00',
-      'date_end': end + ' 23:59:00',
+      'date_end': end,
       'active_filters': [],
       'report': loadStartingPointReport.reports[0].value,
     };
@@ -26,7 +26,7 @@ export default class Api {
   async getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport) {
     const selectedFilterRequest = {
       'date_start': '12/01/2016 00:00:00',
-      'date_end': '12/12/2016 00:00:00',
+      'date_end': '12/12/2016 23:59:59',
       'active_filters': storedFilters,
       'report': currentReport,
     };
@@ -36,10 +36,20 @@ export default class Api {
   async getMainDimensionData(mainDimension) {
     const mainDimensionDataRequest = {
       'date_start': '12/01/2016 00:00:00',
-      'date_end': '12/12/2016 00:00:00',
+      'date_end': '12/12/2016 23:59:59',
       'active_filters': [],
       'report': mainDimension,
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
   }
+  // Get the date range data selected from the Calendar
+  // async getDateRangeData(start, end) {
+  //   const mainDimensionDataRequest = {
+  //     'date_start': start,
+  //     'date_end': end,
+  //     'active_filters': [],
+  //     'report': mainDimension,
+  //   };
+  //   return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
+  // }
 }
