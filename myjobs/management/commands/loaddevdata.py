@@ -73,7 +73,7 @@ class Command(BaseCommand):
             'site_heading': 'Dev My.jobs',
             'site_description': 'The Right Place for Developers.',
         }
-        site = SeoSite.objects.create(**defaults)
+        site = SeoSite.objects.create(pk=1, **defaults)
 
         config = Configuration.objects.create(
             title='My jobs - development home page',
