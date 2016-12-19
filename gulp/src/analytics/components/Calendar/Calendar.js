@@ -30,9 +30,9 @@ class Calendar extends Component {
     });
   }
   updateMonth(month) {
-    console.log(month);
+    const updatedMonth = (month - 1);
     const {dispatch} = this.props;
-    dispatch(doSetSelectedMonth(month));
+    dispatch(doSetSelectedMonth(updatedMonth));
   }
   updateYear(year) {
     const {dispatch} = this.props;
