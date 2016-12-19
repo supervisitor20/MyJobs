@@ -13,6 +13,9 @@ class Header extends Component {
       showPicker: false,
     };
   }
+  /**
+   * Handling the click event outside of the Calendar to close the calendar
+   */
   componentDidMount() {
     window.addEventListener('mousedown', this.pageClick.bind(this), false);
   }

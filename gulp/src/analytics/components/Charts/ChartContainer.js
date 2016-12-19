@@ -2,8 +2,6 @@ import React from 'react';
 import {Component} from 'react';
 import {Row, Col} from 'react-bootstrap';
 import SimpleBarChart from './Bar/BarChart';
-// import SimpleLineChart from './Line/LineChart';
-// import SimplePieChart from './Pie/PieChart';
 import WorldMap from './Map/WorldMap';
 import USAMap from './Map/USAMap';
 import NoResults from 'common/ui/NoResults';
@@ -16,6 +14,7 @@ class ChartContainer extends Component {
   render() {
     const {chartData} = this.props;
     const chartType = chartData.PageLoadData.column_names[0].key;
+    // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const helpError = 'We couldn\'t find any results using the filters applied. Please change your criteria.';
     let chartDisplay;

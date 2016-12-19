@@ -19,12 +19,13 @@ class TableRows extends Component {
     const columnData = rowData.PageLoadData.column_names;
     const originalHeader = [];
     const modHeader = [];
+    // Looping through the current data and pushing it to a new array to edit it
     columnData.map((colData) => {
       originalHeader.push(colData);
       modHeader.push(colData);
     });
     originalHeader.shift();
-    const mod = modHeader.splice(0, 1);
+    const mod = modHeader.slice(0, 1);
     const getHeaders = newRowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
         return (

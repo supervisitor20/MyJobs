@@ -30,10 +30,17 @@ class NoResults extends Component {
 }
 
 NoResults.propTypes = {
-  // Input the type to display for html format
+  /**
+   * Type is a string input used for displaying a certain html element for No Display
+   */
   type: React.PropTypes.string.isRequired,
-  // Error message to display
+  /**
+   * Error Message is a string passed showing what the error message will say
+   */
   errorMessage: React.PropTypes.string.isRequired,
+  /**
+   * Help Error message is a string passed giving the user some kind of help as to why the are getting the error message
+   */
   helpErrorMessage: React.PropTypes.string,
 };
 
