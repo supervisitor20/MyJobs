@@ -334,6 +334,18 @@ a {
 
 /*CSS FOR THE CALENDAR*/
 
+.calendar-container.active-picker {
+  display: block;
+}
+.calendar-container.non-active-picker {
+  display: none;
+}
+.hide-calendar {
+  display: none;
+}
+.show-calendar {
+  float: left;
+}
 .calendar-container {
   display: block;
   position: absolute;
@@ -342,6 +354,10 @@ a {
   z-index: 99;
 }
 
+.calendar-pick {
+  border: 1px solid $primary-blue;
+  background: $white;
+}
 // .calendar-container.active {
 //   display: block;
 //   position: absolute;
@@ -351,7 +367,6 @@ a {
 // }
 
 .calendar-panel {
-  border: 1px solid $primary-blue;
   background: $white;
   padding: 17px;
 }
@@ -360,6 +375,7 @@ a {
   background: $white;
   border: 1px solid $black;
   z-index: 99;
+  float: left;
 }
 .range-selections {
   margin: 0;

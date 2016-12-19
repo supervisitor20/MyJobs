@@ -2,6 +2,7 @@ import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doSwitchMainDimension} from '../../actions/sidebar-actions';
+import moment from 'moment';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
@@ -9,8 +10,12 @@ class SideBar extends Component {
     super(props);
   }
   activeDimension(mainDimension) {
+    let startDate = moment();
+    const endDate = moment().format('MM/DD/YYYY H:mm:ss');
+    startDate = startDate.subtract(30, 'days');
+    startDate = startDate.format('MM/DD/YYYY');
     const {dispatch} = this.props;
-    dispatch(doSwitchMainDimension(mainDimension));
+    dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
     const {analytics} = this.props;

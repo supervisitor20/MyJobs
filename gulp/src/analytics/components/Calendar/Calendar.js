@@ -4,29 +4,35 @@ import {connect} from 'react-redux';
 import {doSetSelectedMonth} from '../../actions/calendar-actions';
 import {doSetSelectedYear} from '../../actions/calendar-actions';
 import {doSetSelectedDay} from '../../actions/calendar-actions';
+import {doSetSelectedRange} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
 import RangeSelection from './RangeSelection';
 
 class Calendar extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
-      displayCalendar: false,
+      showCalendar: false,
     };
   }
-  setRangeSelection() {
-    // const startRange = range[0];
-    // const endRange = range[1];
-    // dispatch(doSetSelectedRange(startRange, endRange));
+  setRangeSelection(range) {
+    const {dispatch, analytics} = this.props;
+    const startRange = range[0];
+    const endRange = range[1];
+    const activeMainDimension = analytics.activePrimaryDimension;
+    const activeFilters = analytics.activeFilters;
+    dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
   }
   showCalendar() {
     this.setState({
-      displayCalendar: true,
+      showCalendar: true,
     });
   }
   updateMonth(month) {
+    const updatedMonth = (month - 1);
     const {dispatch} = this.props;
-    dispatch(doSetSelectedMonth(month));
+    dispatch(doSetSelectedMonth(updatedMonth));
   }
   updateYear(year) {
     const {dispatch} = this.props;
@@ -55,7 +61,7 @@ class Calendar extends Component {
     dispatch(doSetSelectedDay(day));
   }
   render() {
-    const {analytics} = this.props;
+    const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
     const day = analytics.day;
     const month = analytics.month;
     const year = analytics.year;
@@ -70,13 +76,13 @@ class Calendar extends Component {
                       yearChoices={this.generateYearChoices()}
                     />);
     return (
-      <div className="calendar-container">
+      <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
-            {calendar}
-          </li>
-          <li className="calendar-pick quick-calendar">
-            <RangeSelection showCustomRange={() => this.showRange()} setRange={y => this.setRangeSelection(y)}/>
+            <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+              {calendar}
+            </div>
+            <RangeSelection cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
         </ul>
       </div>
@@ -84,9 +90,14 @@ class Calendar extends Component {
   }
 }
 
+
 Calendar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  showCalendarRangePicker: React.PropTypes.bool,
+  hideCalendarRangePicker: React.PropTypes.func,
+  onMouseDown: React.PropTypes.func,
+  onMouseUp: React.PropTypes.func,
 };
 
 export default connect(state => ({
