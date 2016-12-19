@@ -13,9 +13,31 @@ class Header extends Component {
       showPicker: false,
     };
   }
+  componentDidMount() {
+    window.addEventListener('mousedown', this.pageClick.bind(this), false);
+  }
+  pageClick() {
+    if (this.mouseIsDownOnCalendar) {
+      return;
+    }
+    this.setState({
+      showPicker: false,
+    });
+  }
+  mouseDownHandler() {
+    this.mouseIsDownOnCalendar = true;
+  }
+  mouseUpHandler() {
+    this.mouseIsDownOnCalendar = false;
+  }
   showCalendarRangePicker() {
     this.setState({
       showPicker: true,
+    });
+  }
+  hideCalendarRangePicker() {
+    this.setState({
+      showPicker: false,
     });
   }
   render() {
@@ -37,7 +59,7 @@ class Header extends Component {
             <li><a href="#"><span className="head-icon fa fa-file-excel-o"></span></a></li>
           </ul>
         </nav>
-        <Calendar showCalendarRangePicker={this.state.showPicker}/>
+        <Calendar onMouseDown={this.mouseDownHandler.bind(this)} onMouseUp={this.mouseUpHandler.bind(this)} showCalendarRangePicker={this.state.showPicker} hideCalendarRangePicker={this.hideCalendarRangePicker.bind(this)}/>
       </div>
     );
   }

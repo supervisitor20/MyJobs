@@ -30,6 +30,7 @@ class Calendar extends Component {
     });
   }
   updateMonth(month) {
+    console.log(month);
     const {dispatch} = this.props;
     dispatch(doSetSelectedMonth(month));
   }
@@ -59,10 +60,8 @@ class Calendar extends Component {
     const {dispatch} = this.props;
     dispatch(doSetSelectedDay(day));
   }
-  showRange() {
-  }
   render() {
-    const {analytics, showCalendarRangePicker} = this.props;
+    const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
     const day = analytics.day;
     const month = analytics.month;
     const year = analytics.year;
@@ -77,13 +76,13 @@ class Calendar extends Component {
                       yearChoices={this.generateYearChoices()}
                     />);
     return (
-      <div className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
+      <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
             <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
               {calendar}
             </div>
-            <RangeSelection showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
+            <RangeSelection cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
         </ul>
       </div>
@@ -91,10 +90,14 @@ class Calendar extends Component {
   }
 }
 
+
 Calendar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
   showCalendarRangePicker: React.PropTypes.bool,
+  hideCalendarRangePicker: React.PropTypes.func,
+  onMouseDown: React.PropTypes.func,
+  onMouseUp: React.PropTypes.func,
 };
 
 export default connect(state => ({
