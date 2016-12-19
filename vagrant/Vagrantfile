@@ -47,7 +47,6 @@ sudo debconf-set-selections <<< 'mysql-server-5.6 mysql-server/root_password_aga
 sudo apt-get --yes install mysql-client-core-5.6
 sudo apt-get --yes install mysql-client-5.6 libmysqlclient-dev
 sudo apt-get --yes install mysql-server-5.6
-mysql -u root -ppassword -e "create database db;"
 
 
 # Install memcached.
@@ -75,8 +74,9 @@ touch /home/web/MyJobs/dseo.log
 chmod 777 /home/web/MyJobs/dseo.log
 
 # Create the database.
+mysql -u root -ppassword -e "create database db;"
 cd /home/web/MyJobs
-/home/web/virtualenvs/myjobs/bin/python manage.py syncdb --all --no-inital-data --noinput
+/home/web/virtualenvs/myjobs/bin/python manage.py syncdb --all --no-initial-data --noinput
 
 
 SCRIPT
