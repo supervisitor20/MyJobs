@@ -9,6 +9,10 @@
 dk2/dev/requirements.txt
 dk2/revproxy/
 
+# Vagrant
+.vagrant
+vagrant/id_rsa*
+
 # Misc
 files/
 reports/

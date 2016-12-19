@@ -1,0 +1,107 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+box  = "ubuntu/trusty64"
+ip = "192.168.33.11"
+memory = "3072"
+cpus = "2"
+
+$provision = <<SCRIPT
+set -x
+
+# Base installation. I wish I could move this *anywhere* else.
+sudo apt-get update
+sudo apt-get --yes install wget curl software-properties-common apt-transport-https
+sudo add-apt-repository -ys 'deb https://deb.nodesource.com/node_5.x trusty main'
+sudo curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
+sudo apt-get update
+sudo apt-get --yes build-dep libgeos-dev
+sudo apt-get --yes install python-setuptools python-dev python-pip
+sudo apt-get --yes install libxml2 libxml2-dev libxslt-dev
+sudo apt-get --yes install phantomjs python-ipdb strace nodejs libgeos-dev
+sudo apt-get --yes install git-core inotify-tools python-virtualenv
+
+
+# Install Solr.
+sudo apt-get update
+sudo wget -q http://archive.apache.org/dist/lucene/solr/5.1.0/solr-5.1.0.tgz
+
+# Which includes installing Java 8 (not as quietly as I'd like yet).
+apt-get -y -q install software-properties-common htop java-common
+add-apt-repository -y ppa:webupd8team/java
+apt-get -y -q update
+echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+apt-get -y -q install oracle-java8-installer
+apt-get -y -q install oracle-java7-installer
+update-java-alternatives -s java-8-oracle
+sudo apt install -y oracle-java8-set-default
+
+sudo tar xvf solr-5.1.0.tgz solr-5.1.0/bin/install_solr_service.sh --strip-components=2
+sudo bash ./install_solr_service.sh solr-5.1.0.tgz
+
+
+# Install MySQL.
+sudo debconf-set-selections <<< 'mysql-server-5.6 mysql-server/root_password password password'
+sudo debconf-set-selections <<< 'mysql-server-5.6 mysql-server/root_password_again password password'
+sudo apt-get --yes install mysql-client-core-5.6
+sudo apt-get --yes install mysql-client-5.6 libmysqlclient-dev
+sudo apt-get --yes install mysql-server-5.6
+
+
+# Install memcached.
+sudo apt-get install --yes memcached
+
+
+# Install the virtualenv.
+# Hopefully we're using a shared folder for the virtualenv, but don't assume we are...
+sudo mkdir -p /home/web/MyJobs/virtualenvs
+cd /home/web/virtualenvs
+
+# Since it's the first boot of this VM, make a new virtualenv whether you want to or not!
+sudo rm -rf *
+virtualenv myjobs
+myjobs/bin/pip install -r /home/web/MyJobs/requirements.txt
+
+SCRIPT
+
+
+Vagrant::Config.run do |config|
+
+  config.vm.box = box
+
+  #config.vm.boot_mode = :gui
+
+  config.vm.network :hostonly, ip
+
+  config.vm.customize [
+    'modifyvm', :id,
+    '--memory', memory,
+    '--ioapic', "on",
+    '--cpus', cpus,
+  ]
+
+  # Forward ports for an actual web server.
+  config.vm.forward_port 80, 80
+  config.vm.forward_port 443, 443
+
+  # Forward ports for runserver.
+  config.vm.forward_port 8000, 8000
+  config.vm.forward_port 8001, 8001
+  config.vm.forward_port 8002, 8002
+
+  # Forward ports for solr
+  config.vm.forward_port 8983, 8983
+
+  # Share app files.
+  config.vm.share_folder("v-de-myjobs", "/home/web/MyJobs", "../../MyJobs",owner:"root",group:"root")
+
+  # If the virtualenv is available for sharing. share the virtualenv.
+  if File.exists?('../../virtualenvs')
+    config.vm.share_folder("v-de-venv", "/home/web/virtualenvs", "../../virtualenvs",owner:"root",group:"root")
+  end
+
+  # Run the provisioning script.
+  config.vm.provision :shell, :inline => $provision
+
+end
