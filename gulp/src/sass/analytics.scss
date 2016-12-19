@@ -76,6 +76,9 @@ a {
   color: $primary-blue;
   background: #FCF8E3;
 }
+.no-results p {
+  font-size: 18px;
+}
 
 /*CSS FOR THE SIDE MENU*/
 #page_wrapper {
@@ -538,6 +541,9 @@ a {
   }
   .rwd-table th:last-child, .rwd-table td:last-child {
     padding-right: 0;
+  }
+  .rwd-table .table-no-results td {
+    padding-left: 15px;
   }
 }
 

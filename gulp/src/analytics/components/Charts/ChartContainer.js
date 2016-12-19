@@ -6,7 +6,8 @@ import SimpleBarChart from './Bar/BarChart';
 // import SimplePieChart from './Pie/PieChart';
 import WorldMap from './Map/WorldMap';
 import USAMap from './Map/USAMap';
-import NoResults from '../../NoResults';
+import NoResults from 'common/ui/NoResults';
+import {isEmpty} from 'lodash-compat/lang';
 
 class ChartContainer extends Component {
   constructor(props, context) {
@@ -15,6 +16,8 @@ class ChartContainer extends Component {
   render() {
     const {chartData} = this.props;
     const chartType = chartData.PageLoadData.column_names[0].key;
+    const dataPresent = chartData.PageLoadData.rows;
+    const helpError = 'We couldn\'t find any results using the filters applied. Please change your criteria.';
     let chartDisplay;
     switch (chartType) {
     case 'country':
@@ -50,8 +53,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                <NoResults type="div" errorMessage="No chart data"/>
-                {chartDisplay}
+                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/> : chartDisplay}
               </Col>
             </Row>
         </div>

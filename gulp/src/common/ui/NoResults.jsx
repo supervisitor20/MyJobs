@@ -3,7 +3,7 @@ import {Component} from 'react';
 
 class NoResults extends Component {
   render() {
-    const {type, errorMessage} = this.props;
+    const {type, errorMessage, helpErrorMessage} = this.props;
     switch (type) {
     case 'table':
       return (
@@ -15,12 +15,14 @@ class NoResults extends Component {
       return (
         <div className="no-results">
           <h1>{errorMessage}</h1>
+          <p>{helpErrorMessage}</p>
         </div>
       );
     default:
       return (
         <div className="no-result">
           <h1>{errorMessage}</h1>
+          <p>{helpErrorMessage}</p>
         </div>
       );
     }
@@ -32,6 +34,7 @@ NoResults.propTypes = {
   type: React.PropTypes.string.isRequired,
   // Error message to display
   errorMessage: React.PropTypes.string.isRequired,
+  helpErrorMessage: React.PropTypes.string,
 };
 
 export default NoResults;

@@ -14,8 +14,7 @@ class Calendar extends Component {
       displayCalendar: false,
     };
   }
-  setRangeSelection(range) {
-    console.log(range);
+  setRangeSelection() {
     // const startRange = range[0];
     // const endRange = range[1];
     // dispatch(doSetSelectedRange(startRange, endRange));
@@ -28,7 +27,6 @@ class Calendar extends Component {
   updateMonth(month) {
     const {dispatch} = this.props;
     dispatch(doSetSelectedMonth(month));
-    console.log(month);
   }
   updateYear(year) {
     const {dispatch} = this.props;
@@ -55,9 +53,6 @@ class Calendar extends Component {
   daySelected(day) {
     const {dispatch} = this.props;
     dispatch(doSetSelectedDay(day));
-  }
-  showRange() {
-    console.log('SHOWING');
   }
   render() {
     const {analytics} = this.props;
