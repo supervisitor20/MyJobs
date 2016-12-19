@@ -6,59 +6,6 @@ from myjobs.models import AppAccess, Activity, Role, User, update_activities
 from seo.models import BusinessUnit, Company, Configuration, SeoSite
 
 
-def get_object(model, **kwargs):
-    """
-    Tries to get an object from the database. If the object doesn't exist,
-    returns a new, unsaved, instance of that object.
-
-    :param model: The model of the object being requested from the database.
-    :param kwargs: Any kwargs that should be used as lookup for
-                   the model instance.
-
-    :return: The object, if it exists, otherwise a new, unsaved instance
-             of the requested model with the kwargs used to look up the object
-             set.
-    """
-    try:
-        return model.objects.get(**kwargs), False
-    except model.DoesNotExist:
-        return model(**kwargs), True
-    # Note: model.MultipleObjectsReturned is explicitly not handled here,
-    #       so you should probably make sure that doesn't happen if you're
-    #       using this.
-
-
-def update_or_create(model, defaults=None, **kwargs):
-    """
-    If the object exists in the database, retrieves and updates the existing
-    instance with the dict passed in defaults. Otherwise creates a new instance
-    with the specified kwargs.
-
-    Note: defaults is used because, while it makes things slightly more
-          annoying now, with the switch to Django 1.9
-          model.objects.update_or_create() can be used directly,
-          which will make this code easier to follow.
-
-
-    :param defaults: Any fields and values that should be updated, but
-                     should not be used as query terms.
-    :param kwargs: Any fields and values that should be used to query for an
-                   existing object.
-    :return: The object instance, and a boolean for whether or not it was
-             created.
-    """
-    defaults = defaults or {}
-
-    instance, created = get_object(model, **kwargs)
-
-    for key, value in defaults.items():
-        setattr(instance, key, value)
-
-    instance.save()
-
-    return instance, created
-
-
 class Command(BaseCommand):
     @staticmethod
     def add_base_users():
@@ -67,38 +14,38 @@ class Command(BaseCommand):
         PRM/user management/other apps.
 
         """
-        defaults = {
-            'email': 'dev@apps.directemployers.org',
-            'is_staff': True,
-            'is_superuser': True,
-            'is_verified': True,
-            'first_name': 'DirectEmployers',
-            'last_name': 'Developer',
-            'user_guid': 'dev',
-        }
-        user, _ = update_or_create(User, pk=1, defaults=defaults)
+        user = User.objects.create(
+            pk=1,
+            email='dev@apps.directemployers.org',
+            is_staff=True,
+            is_superuser=True,
+            is_verified=True,
+            first_name='DirectEmployers',
+            last_name='Developer',
+            user_guid='dev',
+        )
         user.set_password('password')
         user.save()
 
-        defaults = {
-            'email': 'lukeskywalker@apps.directemployers.org',
-            'is_verified': True,
-            'password': user.password,
-            'first_name': 'Luke',
-            'last_name': 'Skywalker',
-            'user_guid': 'lukeskywalker',
-        }
-        user, _ = update_or_create(User, pk=2, defaults=defaults)
+        User.objects.create(
+            pk=2,
+            email='lukeskywalker@apps.directemployers.org',
+            is_verified=True,
+            password=user.password,
+            first_name='Luke',
+            last_name='Skywalker',
+            user_guid='lukeskywalker',
+        )
 
-        defaults = {
-            'email': 'r2d2@apps.directemployers.org',
-            'is_verified': True,
-            'password': user.password,
-            'first_name': 'R2',
-            'last_name': 'D2',
-            'user_guid': 'r2d2',
-        }
-        user, _ = update_or_create(User, pk=3, defaults=defaults)
+        User.objects.create(
+            pk=3,
+            email='r2d2@apps.directemployers.org',
+            is_verified=True,
+            password=user.password,
+            first_name='R2',
+            last_name='D2',
+            user_guid='r2d2',
+        )
 
     def add_base_sites(self):
         """
@@ -116,8 +63,7 @@ class Command(BaseCommand):
         """
         # A default SEO group, so Business Units, Faces and all those things
         # can be easily accessible.
-        defaults = {'name': 'Default SEO Group'}
-        group, _ = update_or_create(Group, pk=1, defaults=defaults)
+        group = Group.objects.create(name="Default SEO Group")
 
         # Clone of www.my.jobs.
         defaults = {
@@ -127,77 +73,71 @@ class Command(BaseCommand):
             'site_heading': 'Dev My.jobs',
             'site_description': 'The Right Place for Developers.',
         }
-        site, _ = update_or_create(SeoSite, pk=1, defaults=defaults)
+        site = SeoSite.objects.create(**defaults)
 
-        defaults = {
-            'title': 'My jobs - development home page',
-            'status': Configuration.STATUS_PRODUCTION,
-            'browse_moc_show': True,
-            'home_page_template': 'home_page/home_page_listing.html',
-        }
-        config, _ = update_or_create(Configuration, pk=1, defaults=defaults)
+        config = Configuration.objects.create(
+            title='My jobs - development home page',
+            status=Configuration.STATUS_PRODUCTION,
+            browse_moc_show=True,
+            home_page_template='home_page/home_page_listing.html',
+        )
         site.configurations.add(config)
 
         defaults['domain'] = 'localhost'
-        site, _ = update_or_create(SeoSite, pk=2, defaults=defaults)
+        site = SeoSite.objects.create(**defaults)
         site.configurations.add(config)
+
         defaults['domain'] = '127.0.0.1'
-        site, _ = update_or_create(SeoSite, pk=3, defaults=defaults)
+        site = SeoSite.objects.create(**defaults)
         site.configurations.add(config)
 
         # A fake company site.
-        defaults = {
-            'date_crawled': datetime.now(),
-            'date_updated': datetime.now(),
-        }
-        bu, _ = update_or_create(BusinessUnit, pk=1, defaults=defaults)
-
-        defaults = {
-            'domain': 'directemployers.jobs',
-            'group': group,
-            'site_title': 'Dev Jobs for Direct Employers',
-            'site_heading': 'Dev Jobs for Direct Employers',
-            'site_description': 'The Right Place for Development Jobs.',
-        }
-        site, _ = update_or_create(SeoSite, pk=4, defaults=defaults)
+        bu = BusinessUnit.objects.create(
+            id=1,
+            date_crawled=datetime.now(),
+            date_updated=datetime.now(),
+        )
+        site = SeoSite.objects.create(
+            domain='directemployers.jobs',
+            group=group,
+            site_title='Dev Jobs for Direct Employers',
+            site_heading='Dev Jobs for Direct Employers',
+            site_description='The Right Place for Development Jobs.',
+        )
         site.business_units.add(bu)
 
-        defaults = {
-            'title': 'Direct Employers Jobs - development home page',
-            'status': Configuration.STATUS_PRODUCTION,
-            'browse_moc_show': True,
-            'home_page_template': 'home_page/home_page_billboard.html',
-        }
-        config, _ = update_or_create(Configuration, pk=2, defaults=defaults)
+        config = Configuration.objects.create(
+            title='Direct Employers Jobs - development home page',
+            status=Configuration.STATUS_PRODUCTION,
+            browse_moc_show=True,
+            home_page_template='home_page/home_page_billboard.html',
+        )
         site.configurations.add(config)
 
-        defaults = {
-            'name': 'DirectEmployers',
-            'company_slug': 'directemployers',
-            'member': True,
-            'digital_strategies_customer': True,
-        }
-        company, _ = update_or_create(Company, pk=1, defaults=defaults)
+        company = Company.objects.create(
+            name='DirectEmployers',
+            company_slug='directemployers',
+            member=True,
+            digital_strategies_customer=True,
+        )
         company.job_source_ids.add(bu)
         self.add_roles(company)
 
         # A fake regional site.
-        defaults = {
-            'domain': 'indianapolis.jobs',
-            'group': group,
-            'site_title': 'Dev My.jobs',
-            'site_heading': 'Dev My.jobs',
-            'site_description': 'The Right Place for Developers.',
-        }
-        site, _ = update_or_create(SeoSite, pk=5, defaults=defaults)
+        site = SeoSite.objects.create(
+            domain='indianapolis.jobs',
+            group=group,
+            site_title='Dev My.jobs',
+            site_heading='Dev My.jobs',
+            site_description='The Right Place for Developers in Indiana.',
+        )
 
-        defaults = {
-            'title': 'My jobs - development home page',
-            'status': Configuration.STATUS_PRODUCTION,
-            'browse_moc_show': True,
-            'home_page_template': 'home_page/home_page_listing.html',
-        }
-        config, _ = update_or_create(Configuration, pk=3, defaults=defaults)
+        config = Configuration.objects.create(
+            title='My jobs - development home page',
+            status=Configuration.STATUS_PRODUCTION,
+            browse_moc_show=True,
+            home_page_template='home_page/home_page_listing.html',
+        )
         site.configurations.add(config)
 
     @staticmethod
@@ -215,14 +155,13 @@ class Command(BaseCommand):
         company.app_access.add(*AppAccess.objects.all())
 
         superusers = User.objects.filter(is_superuser=True)
-        role, _ = update_or_create(Role, name='Admin', company=company,
-                                   defaults={})
+
+        role, _ = Role.objects.get_or_create(name='Admin', company=company)
         role.activities.add(*Activity.objects.all())
         role.user_set.add(*superusers)
 
         not_superusers = User.objects.exclude(is_superuser=True)
-        role, _ = update_or_create(Role, name='Deactivated', company=company,
-                                   defaults={})
+        role = Role.objects.create(name='Deactivated', company=company)
         role.user_set.add(*not_superusers)
 
     def handle(self, *args, **options):
