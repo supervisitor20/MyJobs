@@ -56,10 +56,13 @@ sudo apt-get install --yes memcached
 # Install the virtualenv.
 # Hopefully we're using a shared folder for the virtualenv, but don't assume we are...
 sudo mkdir -p /home/web/MyJobs/virtualenvs
-cd /home/web/virtualenvs
+
 
 # Since it's the first boot of this VM, make a new virtualenv whether you want to or not!
-sudo rm -rf *
+cd /home/web/virtualenvs
+if [ -d "myjobs" ]; then
+  sudo rm -rf myjobs
+fi
 virtualenv myjobs
 myjobs/bin/pip install -r /home/web/MyJobs/requirements.txt
 
