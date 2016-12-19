@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {doSetSelectedMonth} from '../../actions/calendar-actions';
 import {doSetSelectedYear} from '../../actions/calendar-actions';
 import {doSetSelectedDay} from '../../actions/calendar-actions';
+import {doSetSelectedRange} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
 import RangeSelection from './RangeSelection';
 
@@ -15,10 +16,12 @@ class Calendar extends Component {
     };
   }
   setRangeSelection(range) {
-    console.log(range);
-    // const startRange = range[0];
-    // const endRange = range[1];
-    // dispatch(doSetSelectedRange(startRange, endRange));
+    const {dispatch, analytics} = this.props;
+    const startRange = range[0];
+    const endRange = range[1];
+    const activeMainDimension = analytics.activePrimaryDimension;
+    const activeFilters = analytics.activeFilters;
+    dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
   }
   showCalendar() {
     this.setState({
@@ -28,7 +31,6 @@ class Calendar extends Component {
   updateMonth(month) {
     const {dispatch} = this.props;
     dispatch(doSetSelectedMonth(month));
-    console.log(month);
   }
   updateYear(year) {
     const {dispatch} = this.props;
@@ -57,7 +59,7 @@ class Calendar extends Component {
     dispatch(doSetSelectedDay(day));
   }
   showRange() {
-    console.log('SHOWING');
+
   }
   render() {
     const {analytics} = this.props;

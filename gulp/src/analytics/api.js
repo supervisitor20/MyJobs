@@ -33,23 +33,25 @@ export default class Api {
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(selectedFilterRequest)});
   }
   // Get the data from the main dimensions selected from sidebar
-  async getMainDimensionData(mainDimension) {
+  async getMainDimensionData(mainDimension, start, end) {
     const mainDimensionDataRequest = {
-      'date_start': '12/01/2016 00:00:00',
-      'date_end': '12/12/2016 23:59:59',
+      'date_start': start,
+      'date_end': end,
       'active_filters': [],
       'report': mainDimension,
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
   }
   // Get the date range data selected from the Calendar
-  // async getDateRangeData(start, end) {
-  //   const mainDimensionDataRequest = {
-  //     'date_start': start,
-  //     'date_end': end,
-  //     'active_filters': [],
-  //     'report': mainDimension,
-  //   };
-  //   return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
-  // }
+  async getDateRangeData(start, end, mainDimension, activeFilters) {
+    const setDateRangeDataRequest = {
+      'date_start': start,
+      'date_end': end,
+      'active_filters': activeFilters,
+      'report': mainDimension,
+    };
+    // console.log(setDateRangeDataRequest);
+    // console.log(await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)}));
+    return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)});
+  }
 }

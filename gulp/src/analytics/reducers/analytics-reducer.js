@@ -193,4 +193,20 @@ export default handleActions({
       day: selectedDay,
     };
   },
+  'SET_SELECTED_RANGE': (state, action) => {
+    const selectedRangeData = action.payload;
+    console.log('Selected Range: ', selectedRangeData);
+    return {
+      ...state,
+      navigation: state.navigation.map((nav) => {
+        if (nav.active === true) {
+          return {
+            ...nav,
+            PageLoadData: selectedRangeData,
+          };
+        }
+        return nav;
+      }),
+    };
+  },
 }, initialPageData);

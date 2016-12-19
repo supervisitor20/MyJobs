@@ -19,11 +19,11 @@ export function doGetPrimaryDimensions() {
 }
 
 // Action for switching the main dimensions from the sidebar
-export function doSwitchMainDimension(mainDimension) {
+export function doSwitchMainDimension(mainDimension, start, end) {
   return async (dispatch, getState, {api}) => {
     dispatch(markNavLoadingAction(true));
     dispatch(storeActiveReport(mainDimension));
-    const currentDimensionData = await api.getMainDimensionData(mainDimension);
+    const currentDimensionData = await api.getMainDimensionData(mainDimension, start, end);
     dispatch(switchMainDimension(currentDimensionData));
     dispatch(markNavLoadingAction(false));
     dispatch(setMainDimension(mainDimension));
