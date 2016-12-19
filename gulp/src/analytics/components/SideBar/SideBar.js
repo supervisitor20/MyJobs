@@ -1,37 +1,32 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
+import {doSwitchMainDimension} from '../../actions/sidebar-actions';
 import SideBarDimension from './SideBarDimensionList';
-import {doGetActiveFilterData} from '../../actions/table-filter-action';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension() {
+  activeDimension(mainDimension) {
     const {dispatch} = this.props;
-    dispatch(doGetActiveFilterData());
+    dispatch(doSwitchMainDimension(mainDimension));
   }
   render() {
-    const dimensions = [
-      {name: 'Demographics'},
-      {name: 'Geo'},
-      {name: 'Technology'},
-      {name: 'Mobile'},
-    ];
-    const dimension = dimensions.map((dim, i) => {
+    const {analytics} = this.props;
+    const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={dim} />
+        <SideBarDimension active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
       );
     });
     return (
       <div id="menu">
         <ul className="sidebar-container">
           <li className="side-dimension-header">
-            <p className="filter-header">Dimensions</p>
+            <p className="filter-header">Primary Dimensions</p>
             <div className="clearfix"></div>
            </li>
-          {dimension}
+          {primaryDimensions}
         </ul>
       </div>
     );
@@ -40,6 +35,7 @@ class SideBar extends Component {
 
 SideBar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  analytics: React.PropTypes.object.isRequired,
 };
 
 export default connect(state => ({

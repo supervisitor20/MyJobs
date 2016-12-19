@@ -9,13 +9,11 @@
 {% endblock %}
 
 {% block extra-js %}
-    <script type="text/javascript" src="{% static "analytics.js" %}"></script>
 
 {% if wp_base_url %}
   <script src="{{wp_base_url}}/analytics.js"></script>
 {% else %}
   {% compress js %}
-      <script src="{% static "bundle/vendor.js" %}"></script>
       <script src="{% static "bundle/analytics.js" %}"></script>
   {% endcompress %}
 {% endif %}
