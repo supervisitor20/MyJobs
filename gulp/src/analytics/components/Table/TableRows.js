@@ -2,6 +2,8 @@ import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doGetSelectedFilterData} from '../../actions/table-filter-actions';
+import NoResults from 'common/ui/NoResults';
+import {isEmpty} from 'lodash-compat/lang';
 
 class TableRows extends Component {
   constructor(props) {
@@ -39,7 +41,7 @@ class TableRows extends Component {
     });
     return (
       <tbody>
-        {getHeaders}
+        {isEmpty(newRowData) ? <NoResults type="table" errorMessage="No results found"/> : getHeaders}
       </tbody>
     );
   }
