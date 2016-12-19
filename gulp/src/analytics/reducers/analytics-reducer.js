@@ -195,7 +195,6 @@ export default handleActions({
   },
   'SET_SELECTED_RANGE': (state, action) => {
     const selectedRangeData = action.payload;
-    console.log('Selected Range: ', selectedRangeData);
     return {
       ...state,
       navigation: state.navigation.map((nav) => {

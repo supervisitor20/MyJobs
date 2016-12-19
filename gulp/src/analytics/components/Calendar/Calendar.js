@@ -11,8 +11,9 @@ import RangeSelection from './RangeSelection';
 class Calendar extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
-      displayCalendar: false,
+      showCalendar: false,
     };
   }
   setRangeSelection(range) {
@@ -25,7 +26,7 @@ class Calendar extends Component {
   }
   showCalendar() {
     this.setState({
-      displayCalendar: true,
+      showCalendar: true,
     });
   }
   updateMonth(month) {
@@ -59,10 +60,9 @@ class Calendar extends Component {
     dispatch(doSetSelectedDay(day));
   }
   showRange() {
-
   }
   render() {
-    const {analytics} = this.props;
+    const {analytics, showCalendarRangePicker} = this.props;
     const day = analytics.day;
     const month = analytics.month;
     const year = analytics.year;
@@ -77,13 +77,13 @@ class Calendar extends Component {
                       yearChoices={this.generateYearChoices()}
                     />);
     return (
-      <div className="calendar-container">
+      <div className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
-            {calendar}
-          </li>
-          <li className="calendar-pick quick-calendar">
-            <RangeSelection showCustomRange={() => this.showRange()} setRange={y => this.setRangeSelection(y)}/>
+            <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+              {calendar}
+            </div>
+            <RangeSelection showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
         </ul>
       </div>
@@ -94,6 +94,7 @@ class Calendar extends Component {
 Calendar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  showCalendarRangePicker: React.PropTypes.bool,
 };
 
 export default connect(state => ({
