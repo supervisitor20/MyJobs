@@ -1,51 +1,105 @@
 import React from 'react';
 import {Component} from 'react';
-import moment from 'moment';
-import DateRangePicker from 'react-bootstrap-daterangepicker';
-import {Button} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {doSetSelectedMonth} from '../../actions/calendar-actions';
+import {doSetSelectedYear} from '../../actions/calendar-actions';
+import {doSetSelectedDay} from '../../actions/calendar-actions';
+import {doSetSelectedRange} from '../../actions/calendar-actions';
+import CalendarPanel from 'common/ui/CalendarPanel';
+import RangeSelection from './RangeSelection';
 
 class Calendar extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
-      ranges: {
-        'Today': [moment(), moment()],
-        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-      },
-      startDate: moment().subtract(29, 'days'),
-      endDate: moment(),
+      showCalendar: false,
     };
   }
-  handleEvent(event, picker) {
+  setRangeSelection(range) {
+    const {dispatch, analytics} = this.props;
+    const startRange = range[0];
+    const endRange = range[1];
+    const activeMainDimension = analytics.activePrimaryDimension;
+    const activeFilters = analytics.activeFilters;
+    dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
+  }
+  showCalendar() {
     this.setState({
-      startDate: picker.startDate,
-      endDate: picker.endDate,
+      showCalendar: true,
     });
   }
-  applyDateRange() {
-
+  updateMonth(month) {
+    const updatedMonth = (month - 1);
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedMonth(updatedMonth));
   }
-  cancelDateRange() {
+  updateYear(year) {
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedYear(year));
+  }
+  generateYearChoices() {
+    const now = new Date();
+    const numberOfYears = 50;
+    let offset = 0;
+    // how many years should come before and after the current year
+    const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
+    offset = Math.floor(pivot / 2);
+    const startYear = now.getFullYear() + offset;
 
+    const yearChoices = [];
+    for (let i = 0; i < numberOfYears; i++) {
+      yearChoices.push({
+        value: (startYear - i),
+        display: (startYear - i).toString(),
+      });
+    }
+    return yearChoices;
+  }
+  daySelected(day) {
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedDay(day));
   }
   render() {
-    const localizeTime = moment().format('LT');
-    const localizeDate = moment().format('MMMM Do, YYYY');
+    const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
+    const day = analytics.day;
+    const month = analytics.month;
+    const year = analytics.year;
+
+    const calendar = ( <CalendarPanel
+                      year={year}
+                      month={month}
+                      day={day}
+                      onYearChange={y => this.updateYear(y)}
+                      onMonthChange={m => this.updateMonth(m)}
+                      onSelect={d => this.daySelected(d)}
+                      yearChoices={this.generateYearChoices()}
+                    />);
     return (
-      <div>
-        <DateRangePicker opens="left" onApply={this.applyDateRange.bind(this)} onCancel={this.cancelDateRange.bind(this)} startDate={this.state.startDate} endDate={this.state.endDate} ranges={this.state.ranges} onEvent={this.handleEvent.bind(this)}>
-          <Button className="selected-date-range-btn">
-              <i className="head-icon fa fa-calendar" aria-hidden="true"></i>
-              <span className="dashboard-date">{localizeDate} {localizeTime}</span>
-          </Button>
-        </DateRangePicker>
+      <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
+        <ul>
+          <li className="calendar-pick full-calendar">
+            <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+              {calendar}
+            </div>
+            <RangeSelection cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
+          </li>
+        </ul>
       </div>
     );
   }
 }
 
-export default Calendar;
+
+Calendar.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
+  analytics: React.PropTypes.object.isRequired,
+  showCalendarRangePicker: React.PropTypes.bool,
+  hideCalendarRangePicker: React.PropTypes.func,
+  onMouseDown: React.PropTypes.func,
+  onMouseUp: React.PropTypes.func,
+};
+
+export default connect(state => ({
+  analytics: state.pageLoadData,
+}))(Calendar);
