@@ -21,7 +21,6 @@ class AnalyticsApp extends React.Component {
   }
   render() {
     const {analytics} = this.props;
-    console.log('analytics data: ', analytics);
     if (analytics.pageFetching) {
       return (
         <LoadingSpinner/>

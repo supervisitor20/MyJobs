@@ -7,7 +7,7 @@ export const setSelectedDay = createAction('SET_SELECTED_DAY');
 export const setSelectedRange = createAction('SET_SELECTED_RANGE');
 
 /**
- * This action sets the current month selected from the Calendar
+ * This action sets the current month selected from the Calendar ONLY
  */
 export function doSetSelectedMonth(month) {
   return async(dispatch) => {
@@ -16,7 +16,7 @@ export function doSetSelectedMonth(month) {
   };
 }
 /**
- * This action sets the current year selected from the Calendar
+ * This action sets the current year selected from the Calendar ONLY
  */
 export function doSetSelectedYear(year) {
   return async(dispatch) => {
@@ -25,7 +25,7 @@ export function doSetSelectedYear(year) {
   };
 }
 /**
- * This action sets the current day selected from the Calendar
+ * This action sets the current day selected from the Calendar ONLY
  */
 export function doSetSelectedDay(day) {
   return async(dispatch) => {
@@ -37,14 +37,20 @@ export function doSetSelectedDay(day) {
  * This action sets the selected range from the quick range selections, not the Calendar
  */
 export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
-  return async(dispatch, _, {api}) => {
+  return async(dispatch, getState, {api}) => {
     dispatch(markNavLoadingAction(true));
     const currentStartRange = start;
     const currentEndRange = end;
     const currentDimension = mainDimension;
     const currentFilters = activeFilters;
     const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
-    dispatch(setSelectedRange(rangeData));
+    // Creating object to send to reducer with date range data and start and end dates
+    const updatedRangeData = {
+      data: rangeData,
+      startDate: start,
+      endDate: end,
+    };
+    dispatch(setSelectedRange(updatedRangeData));
     dispatch(markNavLoadingAction(false));
   };
 }
