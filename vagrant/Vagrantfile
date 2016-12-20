@@ -20,6 +20,7 @@ sudo apt-get --yes install python-setuptools python-dev python-pip
 sudo apt-get --yes install libxml2 libxml2-dev libxslt-dev
 sudo apt-get --yes install phantomjs python-ipdb strace nodejs libgeos-dev
 sudo apt-get --yes install git-core inotify-tools python-virtualenv
+sudo apt-get build-dep build-essential npm
 
 
 # Install Solr.
@@ -31,9 +32,7 @@ apt-get -y -q install software-properties-common htop java-common
 add-apt-repository -y ppa:webupd8team/java
 apt-get -y -q update
 echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
-echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 apt-get -y -q install oracle-java8-installer
-apt-get -y -q install oracle-java7-installer
 update-java-alternatives -s java-8-oracle
 sudo apt install -y oracle-java8-set-default
 
@@ -55,8 +54,8 @@ sudo apt-get install --yes memcached
 
 # Install the virtualenv.
 # Hopefully we're using a shared folder for the virtualenv, but don't assume we are...
-sudo mkdir -p /home/web/MyJobs/virtualenvs
-
+chown -R vagrant:vagrant /home/web
+mkdir -p /home/web/virtualenvs
 
 # Since it's the first boot of this VM, make a new virtualenv whether you want to or not!
 cd /home/web/virtualenvs
@@ -67,17 +66,36 @@ virtualenv myjobs
 myjobs/bin/pip install -r /home/web/MyJobs/requirements.txt
 
 
+# Log file creation.
 # To Do: stop being lazy about permissions.
 touch /home/web/MyJobs/myjobs.log
 chmod 777 /home/web/MyJobs/myjobs.log
 touch /home/web/MyJobs/dseo.log
 chmod 777 /home/web/MyJobs/dseo.log
 
+
 # Create the database.
 mysql -u root -ppassword -e "create database db;"
 cd /home/web/MyJobs
 /home/web/virtualenvs/myjobs/bin/python manage.py syncdb --all --no-initial-data --noinput
 
+
+# Create the solr cores.
+sudo mkdir -p /var/solr/data
+sudo chown -R solr:solr /var/solr/data/
+
+sudo su solr -c "/opt/solr/bin/solr create -c seo -d /home/web/deployment/search/solr/conf/seo*"
+sudo su solr -c "/opt/solr/bin/solr create -c seo_test -d /home/web/deployment/search/solr/conf/seo*"
+
+sudo service solr restart
+
+
+# Set up all the JavaScript stuff.
+sudo cp /home/web/MyJobs/vagrant/confs/custom.sh /etc/profile.d/custom.sh
+source /etc/profile.d/custom.sh
+
+cd /home/web/MyJobs/gulp
+npm install
 
 SCRIPT
 
@@ -106,15 +124,23 @@ Vagrant::Config.run do |config|
   config.vm.forward_port 8001, 8001
   config.vm.forward_port 8002, 8002
 
+  # Foward ports for js server.
+  config.vm.forward_port 8080, 8080
+
+
   # Forward ports for solr
   config.vm.forward_port 8983, 8983
 
   # Share app files.
-  config.vm.share_folder("v-de-myjobs", "/home/web/MyJobs", "../../MyJobs",owner:"root",group:"root")
+  config.vm.share_folder("v-de-myjobs", "/home/web/MyJobs", "../../MyJobs",owner:"vagrant",group:"vagrant")
 
-  # If the virtualenv is available for sharing. share the virtualenv.
+  # Share deployment so we can have access to some of the deployment-y stuff.
+  config.vm.share_folder("v-de-deploy", "/home/web/deployment", "../../deployment",owner:"vagrant",group:"vagrant")
+
+
+  # If the virtualenv is available for sharing, share the virtualenv.
   if File.exists?('../../virtualenvs')
-    config.vm.share_folder("v-de-venv", "/home/web/virtualenvs", "../../virtualenvs",owner:"root",group:"root")
+    config.vm.share_folder("v-de-venv", "/home/web/virtualenvs", "../../virtualenvs",owner:"vagrant",group:"vagrant")
   end
 
   # Run the provisioning script.
