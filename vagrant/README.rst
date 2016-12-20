@@ -1,3 +1,23 @@
+### Overview
+
+Vagrant, with just a few commands and a little bit of waiting, will provide a VM capable of running the MyJobs platform.
+
+
+This VM will be running at the IP address 192.168.33.11. It's recommended that you add the following entry in your hosts file to account for this:
+
+`192.168.33.11	secure.my.jobs www.my.jobs my.jobs indianapolis.jobs directemployers.jobs`
+
+
+### Defaults
+The following are the default usernames and passwords configured:
+* OS (passwordless sudo is configured, so this should not be needed):
+    * username: `vagrant`
+    * password: `vagrant`
+* MySQL:
+    * username: `root`
+    * password: `password`
+
+
 ### Required Directory Structure
 ```
 ├── /MyJobs

@@ -17,10 +17,20 @@ function runjs() {
 
 function rebuildjs() {
     cd /home/web/MyJobs/gulp
+    if [ -d "node_modules" ]; then
+      sudo rm -rf node_modules
+    fi
     npm install
 }
 
-function rebuilddev() {
+function rebuildvenv() {
+    if [ -d "/home/web/virtualenvs/myjobs" ]; then
+      sudo rm -rf /home/web/virtualenvs/myjobs
+    fi
     /home/web/virtualenvs/myjobs/bin/pip install -r /home/web/MyJobs/requirements.txt
 }
 
+function rebuilddev() {
+    rebuildjs
+    rebuildvenv
+}
