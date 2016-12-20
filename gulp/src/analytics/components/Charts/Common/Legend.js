@@ -7,9 +7,9 @@ class Legend extends Component {
     const legendSize = 200;
     const transform = 'translate(' + (mapProps.width - 300) + ',' + 100 + ')';
     const stroke = '#000000';
-    const fill = '#FFFFFF';
-    const textX = 4;
-    const textY = legendSize * 2;
+    const fill = '#000000';
+    // const textX = 4;
+    // const textY = legendSize * 2;
     return (
       <g className="map-legend" transform={transform}>
         <rect
@@ -20,6 +20,7 @@ class Legend extends Component {
           x="50"
           y="50"
         >
+        <text>SOME TEXT RIGHT HERE</text>
         </rect>
         <rect
           width={legendSize}

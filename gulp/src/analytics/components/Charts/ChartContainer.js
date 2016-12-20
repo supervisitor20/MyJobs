@@ -20,13 +20,13 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'country':
-      chartDisplay = <WorldMap width={1920} height={800} chartData={chartData} />;
+      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
       break;
     case 'state':
-      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
     case 'city':
-      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
     case 'found_on':
       chartDisplay = <SimpleBarChart chartData={chartData} />;
@@ -38,7 +38,7 @@ class ChartContainer extends Component {
       chartDisplay = <SimpleBarChart chartData={chartData} />;
       break;
     default:
-      chartDisplay = <WorldMap chartData={chartData} />;
+      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">

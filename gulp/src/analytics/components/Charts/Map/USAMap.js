@@ -29,8 +29,8 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height} = this.props;
-    const projection = d3.geo.albersUsa().scale(1450).translate([width / 2, height / 2]);
+    const {chartData, width, height, scale} = this.props;
+    const projection = d3.geo.albersUsa().scale(scale).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
     const fill = (stateData) => {
       const rowData = chartData.PageLoadData.rows;
@@ -65,14 +65,32 @@ class USAMap extends Component {
 }
 
 USAMap.propTypes = {
+  /**
+   * Type of object representing the data going into the object
+   */
   chartData: React.PropTypes.object.isRequired,
+  /**
+   * Type is a number for the height of the chart
+   */
   height: React.PropTypes.number.isRequired,
+  /**
+   * Type is a number value for the width of the map
+   */
   width: React.PropTypes.number.isRequired,
+  /**
+   * Margin is an object with keys of left, right, top, bottom and values equaling numbers for the margins of the map
+   */
+  margin: React.PropTypes.object,
+  /**
+   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
+   */
+  scale: React.PropTypes.number.isRequired,
 };
 
 USAMap.defaultProps = {
-  height: 800,
+  height: 500,
   width: 1920,
+  scale: 1000,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
 };
 
