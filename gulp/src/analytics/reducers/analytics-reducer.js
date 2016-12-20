@@ -47,6 +47,7 @@ export default handleActions({
     };
   },
   'SET_PAGE_DATA': (state, action) => {
+    const loadData = action.payload;
     return {
       ...state,
       navigation: [
@@ -54,7 +55,9 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          PageLoadData: action.payload,
+          startDate: loadData.startDate,
+          endDate: loadData.endDate,
+          PageLoadData: loadData.pageData,
         },
       ],
     };
@@ -99,6 +102,7 @@ export default handleActions({
     };
   },
   'SET_SELECTED_FILTER_DATA': (state, action) => {
+    const filterData = action.payload;
     return {
       ...state,
       navigation: [
@@ -106,7 +110,9 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          PageLoadData: action.payload,
+          startDate: filterData.date.startDate,
+          endDate: filterData.date.endDate,
+          PageLoadData: filterData.data,
         },
       ],
     };
