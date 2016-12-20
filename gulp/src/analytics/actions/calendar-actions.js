@@ -37,7 +37,7 @@ export function doSetSelectedDay(day) {
  * This action sets the selected range from the quick range selections, not the Calendar
  */
 export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
-  return async(dispatch, getState, {api}) => {
+  return async(dispatch, _, {api}) => {
     dispatch(markNavLoadingAction(true));
     const currentStartRange = start;
     const currentEndRange = end;
