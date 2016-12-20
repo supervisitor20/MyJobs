@@ -1,4 +1,4 @@
-export DEVSERVER_HTTPS=true
+export DEVSERVER_HTTPS=false
 
 function runsecure() {
     cd /home/web/MyJobs/
