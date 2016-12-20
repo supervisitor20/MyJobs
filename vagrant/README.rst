@@ -21,8 +21,10 @@ The following are the default usernames and passwords configured:
 ### Required Directory Structure
 ```
 ├── /MyJobs
-|   ├── /....
+|   ├── /...
 |   ├── /vagrant
+|   ├── /dseo_settings.py
+|   ├── /myjobs_settings.py
 |   └── /....
 ├── /deployment
 |   ├── /...
@@ -40,6 +42,8 @@ The following are the default usernames and passwords configured:
 ├── /virtualenvs
 |   └── /myjobs
 ```
+
+In order for the custom bash commands to work dseo_settings.py and myjobs_settings.py need to be placed as specified.
 
 Note: The virtualenvs directory is recommended but not required.
 

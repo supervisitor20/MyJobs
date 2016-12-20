@@ -27,6 +27,8 @@ function rebuildvenv() {
     if [ -d "/home/web/virtualenvs/myjobs" ]; then
       sudo rm -rf /home/web/virtualenvs/myjobs
     fi
+    cd /home/web/virtualenvs
+    virtualenv myjobs
     /home/web/virtualenvs/myjobs/bin/pip install -r /home/web/MyJobs/requirements.txt
 }
 
