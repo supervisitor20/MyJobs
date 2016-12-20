@@ -1,6 +1,22 @@
 import {handleActions} from 'redux-actions';
 import {findIndex} from 'lodash-compat';
 
+/**
+ *  Contents used for the entire app at this point. All state is currently held here
+ *
+ *  navCount starts the count of the tabs and increments as they are added
+ *  pageFetching is used to show loading when the app initial boots
+ *  navFetching is used when there is a new tab being created through filtering or dimension switching
+ *  navigation holds the tabs and their independent data
+ *  activeFilters stores the current filters for sending back to the API
+ *  month stores the current month for when the app boots
+ *  day stores the current month for when the app boots
+ *  year stores the current month for when the app boots
+ *  activeReport stores the current report type for sending back to the API
+ *  primaryDimensions stores the primary dimensions given back from the API to create the sidebar list
+ * activePrimaryDimension stores the current primary dimension that is actively chosen at that time
+ */
+
 let navCount = 1;
 export const initialPageData = {
   pageFetching: true,
@@ -10,8 +26,6 @@ export const initialPageData = {
   month: '',
   day: '',
   year: '',
-  startDate: {},
-  endDate: {},
   activeReport: '',
   primaryDimensions: {},
   activePrimaryDimension: '',
@@ -40,8 +54,6 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          startDate: {},
-          endDate: {},
           PageLoadData: action.payload,
         },
       ],
@@ -124,8 +136,6 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          startDate: null,
-          endDate: null,
           PageLoadData: action.payload,
         },
       ],

@@ -37,8 +37,17 @@ class RangeSelection extends Component {
 }
 
 RangeSelection.propTypes = {
+  /**
+   * Set Range is a function on the list items passing the range of dates used
+   */
   setRange: React.PropTypes.func.isRequired,
+  /**
+   * Function passed to show the calendar when a custom range is clicked
+   */
   showCustomRange: React.PropTypes.func,
+  /**
+   * Closes the calendar and cancels the date change
+   */
   cancelSelection: React.PropTypes.func,
 };
 

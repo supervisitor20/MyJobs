@@ -1,5 +1,4 @@
 import {createAction} from 'redux-actions';
-
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
 
 export const setSelectedMonth = createAction('SET_SELECTED_MONTH');
@@ -7,28 +6,36 @@ export const setSelectedYear = createAction('SET_SELECTED_YEAR');
 export const setSelectedDay = createAction('SET_SELECTED_DAY');
 export const setSelectedRange = createAction('SET_SELECTED_RANGE');
 
-// Sets the current month selected for the calendar
+/**
+ * This action sets the current month selected from the Calendar
+ */
 export function doSetSelectedMonth(month) {
   return async(dispatch) => {
     const currentMonth = month;
     dispatch(setSelectedMonth(currentMonth));
   };
 }
-// Sets the selected year for the calendar
+/**
+ * This action sets the current year selected from the Calendar
+ */
 export function doSetSelectedYear(year) {
   return async(dispatch) => {
     const currentYear = year;
     dispatch(setSelectedYear(currentYear));
   };
 }
-// Sets the selected day for the calendar
+/**
+ * This action sets the current day selected from the Calendar
+ */
 export function doSetSelectedDay(day) {
   return async(dispatch) => {
     const currentDay = day.day;
     dispatch(setSelectedDay(currentDay));
   };
 }
-// Sets the selected range for the calendar
+/**
+ * This action sets the selected range from the quick range selections, not the Calendar
+ */
 export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
     dispatch(markNavLoadingAction(true));

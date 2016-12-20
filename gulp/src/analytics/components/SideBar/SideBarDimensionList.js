@@ -14,7 +14,13 @@ class SideBarDimension extends Component {
 
 SideBarDimension.propTypes = {
   dimension: React.PropTypes.object.isRequired,
+  /**
+   * Active function for sending the information to the API
+   */
   active: React.PropTypes.func.isRequired,
+  /**
+   * Adding a selected to the current primary dimensions to be highlighted in the sidebar clicked when send a string equal to value to API
+   */
   selected: React.PropTypes.string.isRequired,
 };
 

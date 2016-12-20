@@ -1,3 +1,10 @@
+// Abstract the details of building urls and serializing requests for the
+// analytics api.
+//
+// This uses the fetch api. Fetch works somewhat differently from jQuery.ajax.
+// This module encapsulates all of that. Errors are translated to JS exceptions.
+
+
 export default class Api {
   constructor(api) {
     this.api = api;
@@ -50,8 +57,6 @@ export default class Api {
       'active_filters': activeFilters,
       'report': mainDimension,
     };
-    // console.log(setDateRangeDataRequest);
-    // console.log(await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)}));
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)});
   }
 }
